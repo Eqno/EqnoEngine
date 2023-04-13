@@ -159,6 +159,7 @@ auto Device::CreateLogicalDevice(
 		physicalDevice,
 		surface
 	);
+	constexpr auto   queuePriorities = 1.0f;
 	QueueCreateInfos queueCreateInfos;
 	for (const std::set uniqueQueueFamilies = {
 		     graphicsFamily.value(),
@@ -169,7 +170,7 @@ auto Device::CreateLogicalDevice(
 				.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 				.queueFamilyIndex = queueFamily,
 				.queueCount = 1,
-				.pQueuePriorities = new float(1.0f),
+				.pQueuePriorities = &queuePriorities,
 			}
 		);
 	}
@@ -179,7 +180,7 @@ auto Device::CreateLogicalDevice(
 		.pQueueCreateInfos = queueCreateInfos.data(),
 		.enabledExtensionCount = static_cast<uint32_t>(Extensions.size()),
 		.ppEnabledExtensionNames = Extensions.data(),
-		.pEnabledFeatures = new VkPhysicalDeviceFeatures(),
+		.pEnabledFeatures = {},
 	};
 	if (validation.GetEnabled()) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validation.

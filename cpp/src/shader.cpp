@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-Shader::Shader(const Definitions& definitions = {}) {
+Shader::Shader(const Definitions& definitions) {
 	for (const auto& [name, value]: definitions) {
 		options.AddMacroDefinition(name, value);
 	}
@@ -78,15 +78,14 @@ auto Shader::CreateModule(
 	const UIntegers& code,
 	const VkDevice&  device
 ) -> VkShaderModule {
+	const VkShaderModuleCreateInfo createInfo = {
+		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+		.codeSize = code.size(),
+		.pCode = code.data(),
+	};
 	if (VkShaderModule shaderModule; vkCreateShaderModule(
 		device,
-		new VkShaderModuleCreateInfo(
-			{
-				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-				.codeSize = code.size(),
-				.pCode = code.data(),
-			}
-		),
+		&createInfo,
 		nullptr,
 		&shaderModule
 	) == VK_SUCCESS) { return shaderModule; }

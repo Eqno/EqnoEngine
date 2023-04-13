@@ -33,6 +33,21 @@
     <ClCompile Include="src\render.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\swapchain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pipeline.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\uniform.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vertex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\buffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\shader.h">
@@ -54,6 +69,21 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\swapchain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\pipeline.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\uniform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vertex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\buffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

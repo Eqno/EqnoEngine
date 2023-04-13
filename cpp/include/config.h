@@ -1,5 +1,6 @@
 #pragma once
 
+constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 constexpr bool ENABLE_VALIDATION_LAYER = true;
 
 constexpr uint32_t DEFAULT_WINDOW_WIDTH = 800;

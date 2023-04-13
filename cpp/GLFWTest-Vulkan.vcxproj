@@ -137,18 +137,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\buffer.cpp" />
+    <ClCompile Include="src\uniform.cpp" />
     <ClCompile Include="src\device.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\pipeline.cpp" />
     <ClCompile Include="src\render.cpp" />
     <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\swapchain.cpp" />
+    <ClCompile Include="src\vertex.cpp" />
     <ClCompile Include="src\window.cpp" />
     <ClCompile Include="src\validation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\buffer.h" />
     <ClInclude Include="include\config.h" />
+    <ClInclude Include="include\uniform.h" />
     <ClInclude Include="include\device.h" />
+    <ClInclude Include="include\pipeline.h" />
     <ClInclude Include="include\render.h" />
     <ClInclude Include="include\shader.h" />
+    <ClInclude Include="include\swapchain.h" />
+    <ClInclude Include="include\vertex.h" />
     <ClInclude Include="include\window.h" />
     <ClInclude Include="include\utils.h" />
     <ClInclude Include="include\validation.h" />

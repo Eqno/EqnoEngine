@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-struct Vertex;
+class Vertex;
 using Vertexes = std::vector<Vertex>;
 
 using Integers = std::vector<int32_t>;
