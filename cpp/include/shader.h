@@ -1,10 +1,12 @@
 #pragma once
 
-#include <string>
 #include <unordered_map>
-#include <vector>
 #include <shaderc/shaderc.hpp>
+#include <vulkan/vulkan_core.h>
 
+#include "utils.h"
+
+using ShaderStages = std::vector<VkPipelineShaderStageCreateInfo>;
 using Definitions = std::vector<std::pair<std::string, std::string>>;
 
 struct ShaderTypeInfo {
@@ -36,28 +38,28 @@ public:
 	explicit Shader() = default;
 	explicit Shader(const Definitions& definitions);
 
-	static auto GetSPVPathFromGLSLPath(std::string glslPath) -> std::string;
-	static auto GetShaderTypeByGLSLSuffix(
+	auto GetTypeByName(
 		const std::string& glslPath
-	) -> std::basic_string<char>;
+	) const -> const ShaderTypeInfo&;
 
-	auto CompileShaderFromGLSLToSPV(const std::string& glslPath) const -> void;
+	auto CompileFromGLSLToSPV(const std::string& glslPath) const -> void;
 
 	[[nodiscard]] static auto ReadSPVFileAsBinary(
 		const std::string& spvPath
-	) -> std::vector<uint32_t>;
+	) -> UIntegers;
 
 	[[nodiscard]] auto ReadGLSLFileAsBinary(
 		const std::string& glslPath
-	) const -> std::vector<uint32_t>;
+	) const -> UIntegers;
 
-	static auto CreateShaderModule(
-		const std::vector<uint32_t>& code,
-		const VkDevice&              device
+	static auto CreateModule(
+		const UIntegers& code,
+		const VkDevice&  device
 	) -> VkShaderModule;
-	auto DestroyShaderModules(const VkDevice& device) const -> void;
 
-	[[nodiscard]] auto AutoCreateShaderStages(
+	auto DestroyModules(const VkDevice& device) const -> void;
+
+	[[nodiscard]] auto AutoCreateStages(
 		const VkDevice& device
-	) const -> std::vector<VkPipelineShaderStageCreateInfo>;
+	) const -> ShaderStages;
 };
