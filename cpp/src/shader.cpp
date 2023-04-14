@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 Shader::Shader(const Definitions& definitions) {
 	for (const auto& [name, value]: definitions) {

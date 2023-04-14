@@ -1,7 +1,8 @@
+#include "swapchain.h"
+
 #include <algorithm>
 #include <stdexcept>
 
-#include "swapchain.h"
 #include "device.h"
 #include "window.h"
 
@@ -83,13 +84,13 @@ auto SwapChain::Create(const Device& device, const Window& window) -> void {
 		createInfo.pQueueFamilyIndices   = queueFamilyIndices;
 	} else { createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; }
 
-	if (vkCreateSwapchainKHR(device.Get(), &createInfo, nullptr, &chain) !=
+	if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain) !=
 		VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain!");
 	}
-	vkGetSwapchainImagesKHR(device.Get(), chain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, nullptr);
 	images.resize(imageCount);
-	vkGetSwapchainImagesKHR(device.Get(), chain, &imageCount, images.data());
+	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, images.data());
 
 	imageFormat = format;
 	extent      = newExtent;

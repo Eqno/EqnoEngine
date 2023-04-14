@@ -1,8 +1,8 @@
+#include "validation.h"
+
 #include <iostream>
-#include <utility>
 #include <vulkan/vulkan_core.h>
 
-#include "validation.h"
 #include "config.h"
 
 auto VKAPI_CALL DebugCallback(
@@ -26,7 +26,7 @@ auto Validation::GetDebugMessenger() const -> const VkDebugUtilsMessengerEXT& {
 	return debugMessenger;
 }
 
-Validation::Validation() : enabled(ENABLE_VALIDATION_LAYER),
+Validation::Validation() : enabled(Config::ENABLE_VALIDATION_LAYER),
 	layers({ "VK_LAYER_KHRONOS_validation" }),
 	messengerCreateInfo(
 		{

@@ -5,6 +5,7 @@
 #include <vector>
 
 class Vertex;
+
 using Vertexes = std::vector<Vertex>;
 
 using Integers = std::vector<int32_t>;

@@ -1,28 +1,14 @@
-#define GLM_FORCE_RADIANS // NOLINT(clang-diagnostic-unused-macros)
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
-#include <algorithm>
-#include <array>
-#include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
+
 #include <iostream>
-#include <limits>
-#include <optional>
-#include <set>
 #include <stdexcept>
-#include <vector>
-#include <GLFW/glfw3.h>
 
 #include "buffer.h"
-#include "uniform.h"
 #include "device.h"
 #include "pipeline.h"
 #include "shader.h"
 #include "swapchain.h"
+#include "uniform.h"
 #include "validation.h"
 #include "vertex.h"
 #include "window.h"
@@ -82,60 +68,60 @@ private:
 		device.CreateLogicalDevice(window.GetSurface(), validation);
 
 		swapChain.Create(device, window);
-		swapChain.CreateImageViews(device.Get());
+		swapChain.CreateImageViews(device.GetLogical());
 
-		pipeline.CreateRenderPass(swapChain.GetImageFormat(), device.Get());
+		pipeline.CreateRenderPass(swapChain.GetImageFormat(), device.GetLogical());
 
-		descriptor.CreateDescriptorSetLayout(device.Get());
+		descriptor.CreateDescriptorSetLayout(device.GetLogical());
 
 		pipeline.CreateGraphicsPipeline(
 			shader,
-			device.Get(),
+			device.GetLogical(),
 			descriptor.GetSetLayout()
 		);
 
-		swapChain.CreateFrameBuffers(device.Get(), pipeline.GetRenderPass());
+		swapChain.CreateFrameBuffers(device.GetLogical(), pipeline.GetRenderPass());
 
 		createCommandPool();
 		createVertexBuffer();
 		createIndexBuffer();
 		descriptor.CreateUniformBuffers(device);
-		descriptor.CreateDescriptorPool(device.Get());
-		descriptor.CreateDescriptorSets(device.Get());
+		descriptor.CreateDescriptorPool(device.GetLogical());
+		descriptor.CreateDescriptorSets(device.GetLogical());
 
 		createCommandBuffers();
 		createSyncObjects();
 	}
 
 	auto Cleanup() const -> void {
-		swapChain.CleanupSwapChain(device.Get());
-		pipeline.DestroyGraphicsPipeline(device.Get());
+		swapChain.CleanupSwapChain(device.GetLogical());
+		pipeline.DestroyGraphicsPipeline(device.GetLogical());
 
-		descriptor.Destroy(device.Get());
+		descriptor.Destroy(device.GetLogical());
 
-		vkDestroyBuffer(device.Get(), indexBuffer, nullptr);
-		vkFreeMemory(device.Get(), indexBufferMemory, nullptr);
+		vkDestroyBuffer(device.GetLogical(), indexBuffer, nullptr);
+		vkFreeMemory(device.GetLogical(), indexBufferMemory, nullptr);
 
-		vkDestroyBuffer(device.Get(), vertexBuffer, nullptr);
-		vkFreeMemory(device.Get(), vertexBufferMemory, nullptr);
+		vkDestroyBuffer(device.GetLogical(), vertexBuffer, nullptr);
+		vkFreeMemory(device.GetLogical(), vertexBufferMemory, nullptr);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(
-				device.Get(),
+				device.GetLogical(),
 				renderFinishedSemaphores[i],
 				nullptr
 			);
 			vkDestroySemaphore(
-				device.Get(),
+				device.GetLogical(),
 				imageAvailableSemaphores[i],
 				nullptr
 			);
-			vkDestroyFence(device.Get(), inFlightFences[i], nullptr);
+			vkDestroyFence(device.GetLogical(), inFlightFences[i], nullptr);
 		}
 
-		vkDestroyCommandPool(device.Get(), commandPool, nullptr);
+		vkDestroyCommandPool(device.GetLogical(), commandPool, nullptr);
 
-		vkDestroyDevice(device.Get(), nullptr);
+		vkDestroyDevice(device.GetLogical(), nullptr);
 
 		if (validation.GetEnabled()) {
 			Validation::DestroyMessengerEXT(
@@ -155,11 +141,11 @@ private:
 		window.OnRecreateSwapChain();
 		device.WaitIdle();
 
-		swapChain.CleanupSwapChain(device.Get());
+		swapChain.CleanupSwapChain(device.GetLogical());
 
 		swapChain.Create(device, window);
-		swapChain.CreateImageViews(device.Get());
-		swapChain.CreateFrameBuffers(device.Get(), pipeline.GetRenderPass());
+		swapChain.CreateImageViews(device.GetLogical());
+		swapChain.CreateFrameBuffers(device.GetLogical(), pipeline.GetRenderPass());
 	}
 
 	auto CreateInstance() -> void {
@@ -212,7 +198,7 @@ private:
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-		if (vkCreateCommandPool(device.Get(), &poolInfo, nullptr, &commandPool)
+		if (vkCreateCommandPool(device.GetLogical(), &poolInfo, nullptr, &commandPool)
 			!= VK_SUCCESS) {
 			throw std::runtime_error("failed to create graphics command pool!");
 		}
@@ -234,9 +220,9 @@ private:
 		);
 
 		void* data;
-		vkMapMemory(device.Get(), stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, vertices.data(), bufferSize);
-		vkUnmapMemory(device.Get(), stagingBufferMemory);
+		vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 		Buffer::CreateBuffer(
 			device,
@@ -256,8 +242,8 @@ private:
 			commandPool
 		);
 
-		vkDestroyBuffer(device.Get(), stagingBuffer, nullptr);
-		vkFreeMemory(device.Get(), stagingBufferMemory, nullptr);
+		vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
+		vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 	}
 
 	auto createIndexBuffer() -> void {
@@ -276,9 +262,9 @@ private:
 		);
 
 		void* data;
-		vkMapMemory(device.Get(), stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, indices.data(), bufferSize);
-		vkUnmapMemory(device.Get(), stagingBufferMemory);
+		vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 		Buffer::CreateBuffer(
 			device,
@@ -297,12 +283,12 @@ private:
 			commandPool
 		);
 
-		vkDestroyBuffer(device.Get(), stagingBuffer, nullptr);
-		vkFreeMemory(device.Get(), stagingBufferMemory, nullptr);
+		vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
+		vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 	}
 
 	auto createCommandBuffers() -> void {
-		commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+		commandBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
 
 		VkCommandBufferAllocateInfo allocInfo {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -312,7 +298,7 @@ private:
 			size());
 
 		if (vkAllocateCommandBuffers(
-			device.Get(),
+			device.GetLogical(),
 			&allocInfo,
 			commandBuffers.data()
 		) != VK_SUCCESS) {
@@ -410,9 +396,9 @@ private:
 	}
 
 	auto createSyncObjects() -> void {
-		imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+		imageAvailableSemaphores.resize(Config::MAX_FRAMES_IN_FLIGHT);
+		renderFinishedSemaphores.resize(Config::MAX_FRAMES_IN_FLIGHT);
+		inFlightFences.resize(Config::MAX_FRAMES_IN_FLIGHT);
 
 		VkSemaphoreCreateInfo semaphoreInfo {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -421,19 +407,19 @@ private:
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
 			if (vkCreateSemaphore(
-				device.Get(),
+				device.GetLogical(),
 				&semaphoreInfo,
 				nullptr,
 				&imageAvailableSemaphores[i]
 			) != VK_SUCCESS || vkCreateSemaphore(
-				device.Get(),
+				device.GetLogical(),
 				&semaphoreInfo,
 				nullptr,
 				&renderFinishedSemaphores[i]
 			) != VK_SUCCESS || vkCreateFence(
-				device.Get(),
+				device.GetLogical(),
 				&fenceInfo,
 				nullptr,
 				&inFlightFences[i]
@@ -447,7 +433,7 @@ private:
 
 	auto drawFrame() -> void {
 		vkWaitForFences(
-			device.Get(),
+			device.GetLogical(),
 			1,
 			&inFlightFences[currentFrame],
 			VK_TRUE,
@@ -456,7 +442,7 @@ private:
 
 		uint32_t imageIndex;
 		auto     result = vkAcquireNextImageKHR(
-			device.Get(),
+			device.GetLogical(),
 			swapChain.Get(),
 			UINT64_MAX,
 			imageAvailableSemaphores[currentFrame],
@@ -474,7 +460,7 @@ private:
 
 		descriptor.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
 
-		vkResetFences(device.Get(), 1, &inFlightFences[currentFrame]);
+		vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
 
 		vkResetCommandBuffer(
 			commandBuffers[currentFrame],
@@ -536,7 +522,7 @@ private:
 			throw std::runtime_error("failed to present swap chain image!");
 		}
 
-		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		currentFrame = (currentFrame + 1) % Config::MAX_FRAMES_IN_FLIGHT;
 	}
 
 	auto GetRequiredExtensions() const -> std::vector<const char*> {

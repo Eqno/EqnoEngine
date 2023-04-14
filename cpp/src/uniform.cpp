@@ -1,12 +1,7 @@
-#include <stdexcept>
-#include <vector>
-#include <vulkan/vulkan_core.h>
-
 #include "uniform.h"
 
 #include <chrono>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <stdexcept>
 
 #include "buffer.h"
 
@@ -73,13 +68,13 @@ auto Descriptor::CreateDescriptorSets(const VkDevice& device) -> void {
 auto Descriptor::CreateDescriptorPool(const VkDevice& device) -> void {
 	VkDescriptorPoolSize poolSize {};
 	poolSize.type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	poolSize.descriptorCount = static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT);
 
 	VkDescriptorPoolCreateInfo poolInfo {};
 	poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = 1;
 	poolInfo.pPoolSizes    = &poolSize;
-	poolInfo.maxSets       = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	poolInfo.maxSets       = static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT);
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) !=
 		VK_SUCCESS) {
@@ -96,11 +91,11 @@ auto Descriptor::Destroy(const VkDevice& device) const -> void {
 auto UniformBuffer::CreateUniformBuffers(const Device& device) -> void {
 	auto bufferSize = sizeof(UniformBufferObject);
 
-	uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-	uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+	uniformBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
+	uniformBuffersMemory.resize(Config::MAX_FRAMES_IN_FLIGHT);
+	uniformBuffersMapped.resize(Config::MAX_FRAMES_IN_FLIGHT);
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
 		Buffer::CreateBuffer(
 			device,
 			bufferSize,
@@ -112,7 +107,7 @@ auto UniformBuffer::CreateUniformBuffers(const Device& device) -> void {
 		);
 
 		vkMapMemory(
-			device.Get(),
+			device.GetLogical(),
 			uniformBuffersMemory[i],
 			0,
 			bufferSize,

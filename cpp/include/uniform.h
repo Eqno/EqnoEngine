@@ -1,6 +1,10 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS // NOLINT(clang-diagnostic-unused-macros)
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <vector>
 #include <vulkan/vulkan_core.h>
 
 #include "config.h"
@@ -23,7 +27,7 @@ class UniformBuffer {
 	UniformMemories uniformBuffersMemory;
 	UniformMapped   uniformBuffersMapped;
 public:
-	explicit UniformBuffer() : maxFramesInFlight(MAX_FRAMES_IN_FLIGHT) {}
+	explicit UniformBuffer() : maxFramesInFlight(Config::MAX_FRAMES_IN_FLIGHT) {}
 
 	explicit
 	UniformBuffer(const int maxFrames) : maxFramesInFlight(maxFrames) {}

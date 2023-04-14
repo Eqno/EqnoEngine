@@ -1,9 +1,7 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "window.h"
 
 #include <stdexcept>
 
-#include "window.h"
 #include "config.h"
 
 static auto FrameBufferResizeCallback(
@@ -30,7 +28,7 @@ auto Window::GetRequiredExtensions() -> std::pair<const char**, uint32_t> {
 }
 
 auto Window::CreateWindow() -> void {
-	CreateWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+	CreateWindow(Config::DEFAULT_WINDOW_WIDTH, Config::DEFAULT_WINDOW_HEIGHT);
 }
 
 auto Window::CreateWindow(const int width, const int height) -> void {

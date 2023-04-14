@@ -1,6 +1,9 @@
 #pragma once
 
+#include <string>
 #include <unordered_map>
+#include <vector>
+
 #include <shaderc/shaderc.hpp>
 #include <vulkan/vulkan_core.h>
 

@@ -1,5 +1,11 @@
 #pragma once
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#include <utility>
+#include <vulkan/vulkan_core.h>
+
 struct GLFWwindow;
 
 class Window {
