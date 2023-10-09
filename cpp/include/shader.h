@@ -63,7 +63,7 @@ public:
 
 	void DestroyModules(const VkDevice& device) const;
 
-	[[nodiscard]] auto AutoCreateStages(
+	[[nodiscard]] ShaderStages AutoCreateStages(
 		const VkDevice& device
-	) const -> ShaderStages;
+	) const;
 };

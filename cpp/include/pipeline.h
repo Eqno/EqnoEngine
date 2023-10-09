@@ -5,9 +5,10 @@
 #include "shader.h"
 
 class Pipeline {
-	VkRenderPass     renderPass {};
+	VkRenderPass renderPass {};
 	VkPipelineLayout pipelineLayout {};
-	VkPipeline       graphicsPipeline {};
+	VkPipeline graphicsPipeline {};
+
 public:
 	/** Pickers And Creators **/
 	/**
@@ -20,37 +21,37 @@ public:
 	/**
 	 * 创建图形管线
 	 */
-	auto CreateGraphicsPipeline(
-		const Shader&                shader,
-		const VkDevice&              device,
+	void CreateGraphicsPipeline(
+		const Shader& shader,
+		const VkDevice& device,
 		const VkDescriptorSetLayout& descriptorSetLayout
-	) -> void;
+	);
 
 	/** Destructor And Cleaners **/
 	/**
 	 * 销毁渲染流程
 	 */
-	auto DestroyGraphicsPipeline(const VkDevice& device) const -> void;
+	void DestroyGraphicsPipeline(const VkDevice& device) const;
 
 	/** Getters And Setters **/
 	/**
 	 * 获取渲染流程
 	 */
-	[[nodiscard]] auto GetRenderPass() const -> const VkRenderPass& {
+	[[nodiscard]] const VkRenderPass& GetRenderPass() const {
 		return renderPass;
 	}
 
 	/**
 	 * 获取图形管线
 	 */
-	[[nodiscard]] auto GetGraphicsPipeline() const -> const VkPipeline& {
+	[[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {
 		return graphicsPipeline;
 	}
 
 	/**
 	 * 获取管线布局
 	 */
-	[[nodiscard]] auto GetPipelineLayout() const -> const VkPipelineLayout& {
+	[[nodiscard]] const VkPipelineLayout& GetPipelineLayout() const {
 		return pipelineLayout;
 	}
 };
