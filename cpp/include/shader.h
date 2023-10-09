@@ -13,14 +13,14 @@ using ShaderStages = std::vector<VkPipelineShaderStageCreateInfo>;
 using Definitions = std::vector<std::pair<std::string, std::string>>;
 
 struct ShaderTypeInfo {
-	shaderc_shader_kind   kind;
+	shaderc_shader_kind kind;
 	VkShaderStageFlagBits stage;
-	std::string           entrance;
+	std::string entrance;
 };
 
 class Shader {
-	shaderc::Compiler                   compiler;
-	shaderc::CompileOptions             options;
+	shaderc::Compiler compiler;
+	shaderc::CompileOptions options;
 	mutable std::vector<VkShaderModule> shaderModules;
 
 	const std::unordered_map<std::string, ShaderTypeInfo> types {
@@ -37,30 +37,31 @@ class Shader {
 			}
 		},
 	};
+
 public:
 	explicit Shader() = default;
 	explicit Shader(const Definitions& definitions);
 
-	auto GetTypeByName(
+	const ShaderTypeInfo& GetTypeByName(
 		const std::string& glslPath
-	) const -> const ShaderTypeInfo&;
+	) const;
 
-	auto CompileFromGLSLToSPV(const std::string& glslPath) const -> void;
+	void CompileFromGLSLToSPV(const std::string& glslPath) const;
 
-	[[nodiscard]] static auto ReadSPVFileAsBinary(
+	[[nodiscard]] static UIntegers ReadSPVFileAsBinary(
 		const std::string& spvPath
-	) -> UIntegers;
+	);
 
-	[[nodiscard]] auto ReadGLSLFileAsBinary(
+	[[nodiscard]] UIntegers ReadGLSLFileAsBinary(
 		const std::string& glslPath
-	) const -> UIntegers;
+	) const;
 
-	static auto CreateModule(
+	static VkShaderModule CreateModule(
 		const UIntegers& code,
-		const VkDevice&  device
-	) -> VkShaderModule;
+		const VkDevice& device
+	);
 
-	auto DestroyModules(const VkDevice& device) const -> void;
+	void DestroyModules(const VkDevice& device) const;
 
 	[[nodiscard]] auto AutoCreateStages(
 		const VkDevice& device

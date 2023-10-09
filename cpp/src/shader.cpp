@@ -11,13 +11,13 @@ Shader::Shader(const Definitions& definitions) {
 	}
 }
 
-auto Shader::GetTypeByName(
+const ShaderTypeInfo& Shader::GetTypeByName(
 	const std::string& glslPath
-) const -> const ShaderTypeInfo& {
+) const {
 	return types.find(glslPath.substr(glslPath.find('.') + 1))->second;
 }
 
-auto Shader::CompileFromGLSLToSPV(const std::string& glslPath) const -> void {
+void Shader::CompileFromGLSLToSPV(const std::string& glslPath) const {
 	if (std::ifstream glslFile("shaders/glsl/" + glslPath); glslFile.
 		is_open()) {
 		std::stringstream buffer;
@@ -50,7 +50,7 @@ auto Shader::CompileFromGLSLToSPV(const std::string& glslPath) const -> void {
 	} else { throw std::runtime_error("failed to open file!"); }
 }
 
-auto Shader::ReadSPVFileAsBinary(const std::string& spvPath) -> UIntegers {
+UIntegers Shader::ReadSPVFileAsBinary(const std::string& spvPath) {
 	if (std::ifstream file(
 		"shaders/spv/" + spvPath,
 		std::ios::ate | std::ios::binary
@@ -68,17 +68,17 @@ auto Shader::ReadSPVFileAsBinary(const std::string& spvPath) -> UIntegers {
 	throw std::runtime_error("failed to open file!");
 }
 
-auto Shader::ReadGLSLFileAsBinary(
+UIntegers Shader::ReadGLSLFileAsBinary(
 	const std::string& glslPath
-) const -> UIntegers {
+) const {
 	CompileFromGLSLToSPV(glslPath);
 	return ReadSPVFileAsBinary(glslPath);
 }
 
-auto Shader::CreateModule(
+VkShaderModule Shader::CreateModule(
 	const UIntegers& code,
-	const VkDevice&  device
-) -> VkShaderModule {
+	const VkDevice& device
+) {
 	const VkShaderModuleCreateInfo createInfo = {
 		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 		.codeSize = code.size(),
@@ -93,7 +93,7 @@ auto Shader::CreateModule(
 	throw std::runtime_error("failed to create shader module!");
 }
 
-auto Shader::AutoCreateStages(const VkDevice& device) const -> ShaderStages {
+ShaderStages Shader::AutoCreateStages(const VkDevice& device) const {
 	ShaderStages shaderStages;
 	for (const auto& fileInfo: std::filesystem::directory_iterator(
 		     "shaders/glsl/"
@@ -114,7 +114,7 @@ auto Shader::AutoCreateStages(const VkDevice& device) const -> ShaderStages {
 	return shaderStages;
 }
 
-auto Shader::DestroyModules(const VkDevice& device) const -> void {
+void Shader::DestroyModules(const VkDevice& device) const {
 	for (const auto& shaderModule: shaderModules) {
 		vkDestroyShaderModule(device, shaderModule, nullptr);
 	}

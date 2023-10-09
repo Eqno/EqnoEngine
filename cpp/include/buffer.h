@@ -7,26 +7,26 @@
 
 class Buffer {
 public:
-	static auto MemoryType(
-		const VkPhysicalDevice&      physicalDevice,
-		const glm::uint32_t&         typeFilter,
+	static uint32_t MemoryType(
+		const VkPhysicalDevice& physicalDevice,
+		const glm::uint32_t& typeFilter,
 		const VkMemoryPropertyFlags& properties
-	) -> uint32_t;
+	);
 
-	static auto CreateBuffer(
-		const Device&                device,
-		const VkDeviceSize&          size,
-		const VkBufferUsageFlags&    usage,
+	static void CreateBuffer(
+		const Device& device,
+		const VkDeviceSize& size,
+		const VkBufferUsageFlags& usage,
 		const VkMemoryPropertyFlags& properties,
-		VkBuffer&                    buffer,
-		VkDeviceMemory&              bufferMemory
-	) -> void;
+		VkBuffer& buffer,
+		VkDeviceMemory& bufferMemory
+	);
 
-	static auto CopyBuffer(
-		const Device&        device,
-		const VkBuffer&      srcBuffer,
-		const VkBuffer&      dstBuffer,
-		const VkDeviceSize&  size,
+	static void CopyBuffer(
+		const Device& device,
+		const VkBuffer& srcBuffer,
+		const VkBuffer& dstBuffer,
+		const VkDeviceSize& size,
 		const VkCommandPool& commandPool
-	) -> void;
+	);
 };

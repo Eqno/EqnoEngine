@@ -22,62 +22,64 @@ struct UniformBufferObject {
 };
 
 class UniformBuffer {
-	const int       maxFramesInFlight;
-	UniformBuffers  uniformBuffers;
+	const int maxFramesInFlight;
+	UniformBuffers uniformBuffers;
 	UniformMemories uniformBuffersMemory;
-	UniformMapped   uniformBuffersMapped;
+	UniformMapped uniformBuffersMapped;
+
 public:
 	explicit UniformBuffer() : maxFramesInFlight(Config::MAX_FRAMES_IN_FLIGHT) {}
 
 	explicit
 	UniformBuffer(const int maxFrames) : maxFramesInFlight(maxFrames) {}
 
-	[[nodiscard]] auto GetMaxFramesInFlight() const -> const int& {
+	[[nodiscard]] const int& GetMaxFramesInFlight() const {
 		return maxFramesInFlight;
 	}
 
-	[[nodiscard]] auto GetUniformBuffers() const -> const UniformBuffers& {
+	[[nodiscard]] const UniformBuffers& GetUniformBuffers() const {
 		return uniformBuffers;
 	}
 
-	auto CreateUniformBuffers(const Device& device) -> void;
+	void CreateUniformBuffers(const Device& device);
 
-	auto UpdateUniformBuffer(
+	void UpdateUniformBuffer(
 		const VkExtent2D& swapChainExtent,
-		uint32_t          currentImage
-	) const -> void;
+		uint32_t currentImage
+	) const;
 
-	auto Destroy(const VkDevice& device) const -> void;
+	void Destroy(const VkDevice& device) const;
 };
 
 class Descriptor {
-	UniformBuffer         uniformBuffer {};
-	VkDescriptorPool      descriptorPool {};
+	UniformBuffer uniformBuffer {};
+	VkDescriptorPool descriptorPool {};
 	VkDescriptorSetLayout descriptorSetLayout {};
-	DescriptorSets        descriptorSets {};
+	DescriptorSets descriptorSets {};
+
 public:
-	[[nodiscard]] auto GetSetLayout() const -> const VkDescriptorSetLayout& {
+	[[nodiscard]] const VkDescriptorSetLayout& GetSetLayout() const {
 		return descriptorSetLayout;
 	}
 
-	[[nodiscard]] auto GetDescriptorSets() const -> const DescriptorSets& {
+	[[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
 		return descriptorSets;
 	}
 
-	auto CreateDescriptorSetLayout(const VkDevice& device) -> void;
-	auto CreateDescriptorSets(const VkDevice& device) -> void;
-	auto CreateDescriptorPool(const VkDevice& device) -> void;
+	void CreateDescriptorSetLayout(const VkDevice& device);
+	void CreateDescriptorSets(const VkDevice& device);
+	void CreateDescriptorPool(const VkDevice& device);
 
-	auto CreateUniformBuffers(const Device& device) -> void {
+	void CreateUniformBuffers(const Device& device) {
 		uniformBuffer.CreateUniformBuffers(device);
 	}
 
-	auto UpdateUniformBuffers(
+	void UpdateUniformBuffers(
 		const VkExtent2D& swapChainExtent,
-		uint32_t          currentImage
-	) const -> void {
+		const uint32_t currentImage
+	) const {
 		uniformBuffer.UpdateUniformBuffer(swapChainExtent, currentImage);
 	}
 
-	auto Destroy(const VkDevice& device) const -> void;
+	void Destroy(const VkDevice& device) const;
 };

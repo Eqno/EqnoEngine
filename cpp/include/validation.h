@@ -7,40 +7,41 @@
 using MessengerCreateInfo = VkDebugUtilsMessengerCreateInfoEXT;
 
 class Validation {
-	const bool                enabled;
-	const CStrings            layers;
+	const bool enabled;
+	const CStrings layers;
 	const MessengerCreateInfo messengerCreateInfo;
 
 	VkDebugUtilsMessengerEXT debugMessenger {};
+
 public:
-	[[nodiscard]] auto GetEnabled() const -> const bool&;
-	[[nodiscard]] auto GetLayers() const -> const CStrings&;
+	[[nodiscard]] const bool& GetEnabled() const;
+	[[nodiscard]] const CStrings& GetLayers() const;
 
 	Validation();
 	Validation(
-		bool                enabled,
-		CStrings            layers,
-		MessengerCreateInfo messengerInfo
+		bool enabled,
+		CStrings layers,
+		const MessengerCreateInfo& messengerInfo
 	);
 
-	[[nodiscard]] auto
-	GetMessengerCreateInfo() const -> const MessengerCreateInfo&;
-	[[nodiscard]] auto
-	GetDebugMessenger() const -> const VkDebugUtilsMessengerEXT&;
+	[[nodiscard]] const MessengerCreateInfo
+	& GetMessengerCreateInfo() const;
+	[[nodiscard]] const VkDebugUtilsMessengerEXT
+	& GetDebugMessenger() const;
 
-	auto CreateMessengerEXT(
-		const VkInstance&            instance,
+	VkResult CreateMessengerEXT(
+		const VkInstance& instance,
 		const VkAllocationCallbacks* pAllocator,
-		VkDebugUtilsMessengerEXT*    pDebugMessenger
-	) const -> VkResult;
+		VkDebugUtilsMessengerEXT* pDebugMessenger
+	) const;
 
-	static auto DestroyMessengerEXT(
-		const VkInstance&               instance,
+	static void DestroyMessengerEXT(
+		const VkInstance& instance,
 		const VkDebugUtilsMessengerEXT& debugMessenger,
-		const VkAllocationCallbacks*    pAllocator
-	) -> void;
+		const VkAllocationCallbacks* pAllocator
+	);
 
-	[[nodiscard]] auto CheckLayerSupport() const -> bool;
+	[[nodiscard]] bool CheckLayerSupport() const;
 
-	auto SetupMessenger(const VkInstance& instance) -> void;
+	void SetupMessenger(const VkInstance& instance);
 };

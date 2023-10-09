@@ -6,31 +6,32 @@
 #include "device.h"
 #include "window.h"
 
-auto SwapChain::ChooseSurfaceFormat(
+VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
 	const SurfaceFormats& availableFormats
-) -> VkSurfaceFormatKHR {
-	for (const auto& format: availableFormats) {
+) {
+	for (const auto& format : availableFormats) {
 		if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace ==
 			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) { return format; }
 	}
 	return availableFormats[0];
 }
 
-auto SwapChain::ChoosePresentMode(
+VkPresentModeKHR SwapChain::ChoosePresentMode(
 	const PresentModes& availablePresentModes
-) -> VkPresentModeKHR {
-	for (const auto& mode: availablePresentModes) {
+) {
+	for (const auto& mode : availablePresentModes) {
 		if (mode == VK_PRESENT_MODE_MAILBOX_KHR) { return mode; }
 	}
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-auto SwapChain::ChooseSwapExtent(
+VkExtent2D SwapChain::ChooseSwapExtent(
 	const VkSurfaceCapabilitiesKHR& capabilities,
-	const Window&                   window
-) const -> VkExtent2D {
+	const Window& window
+) const {
 	if (capabilities.currentExtent.width != std::numeric_limits<
 		uint32_t>::max()) { return capabilities.currentExtent; }
+
 	auto [width, height] = window.GetFrameBufferSize();
 	return {
 		std::clamp(
@@ -46,12 +47,12 @@ auto SwapChain::ChooseSwapExtent(
 	};
 }
 
-auto SwapChain::Create(const Device& device, const Window& window) -> void {
+void SwapChain::Create(const Device& device, const Window& window) {
 	const auto [capabilities, formats, presentModes] = device.
 		QuerySwapChainSupport(window.GetSurface());
 	const auto [format, colorSpace] = ChooseSurfaceFormat(formats);
-	const auto presentMode          = ChoosePresentMode(presentModes);
-	const auto newExtent            = ChooseSwapExtent(capabilities, window);
+	const auto presentMode = ChoosePresentMode(presentModes);
+	const auto newExtent = ChooseSwapExtent(capabilities, window);
 
 	auto imageCount = capabilities.minImageCount + 1;
 	if (capabilities.maxImageCount > 0 && imageCount > capabilities.
@@ -74,15 +75,17 @@ auto SwapChain::Create(const Device& device, const Window& window) -> void {
 	const auto [graphicsFamily, presentFamily] = device.FindQueueFamilies(
 		window.GetSurface()
 	);
+
 	const uint32_t queueFamilyIndices[] = {
-		graphicsFamily.value(),
-		presentFamily.value()
+		graphicsFamily.has_value() ? graphicsFamily.value() : 0,
+		presentFamily.has_value() ? presentFamily.value() : 0
 	};
 	if (graphicsFamily != presentFamily) {
-		createInfo.imageSharingMode      = VK_SHARING_MODE_CONCURRENT;
+		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices   = queueFamilyIndices;
-	} else { createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; }
+		createInfo.pQueueFamilyIndices = queueFamilyIndices;
+	}
+	else { createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; }
 
 	if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain) !=
 		VK_SUCCESS) {
@@ -93,10 +96,10 @@ auto SwapChain::Create(const Device& device, const Window& window) -> void {
 	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, images.data());
 
 	imageFormat = format;
-	extent      = newExtent;
+	extent = newExtent;
 }
 
-auto SwapChain::CreateImageViews(const VkDevice& device) -> void {
+void SwapChain::CreateImageViews(const VkDevice& device) {
 	imageViews.resize(images.size());
 	for (size_t i = 0; i < images.size(); i++) {
 		VkImageViewCreateInfo createInfo {
@@ -125,20 +128,20 @@ auto SwapChain::CreateImageViews(const VkDevice& device) -> void {
 	}
 }
 
-auto SwapChain::CleanupSwapChain(const VkDevice& device) const -> void {
-	for (const auto& frameBuffer: frameBuffers) {
+void SwapChain::CleanupSwapChain(const VkDevice& device) const {
+	for (const auto& frameBuffer : frameBuffers) {
 		vkDestroyFramebuffer(device, frameBuffer, nullptr);
 	}
-	for (const auto& imageView: imageViews) {
+	for (const auto& imageView : imageViews) {
 		vkDestroyImageView(device, imageView, nullptr);
 	}
 	vkDestroySwapchainKHR(device, chain, nullptr);
 }
 
-auto SwapChain::CreateFrameBuffers(
-	const VkDevice&     device,
+void SwapChain::CreateFrameBuffers(
+	const VkDevice& device,
 	const VkRenderPass& renderPass
-) -> void {
+) {
 	frameBuffers.resize(imageViews.size());
 	for (size_t i = 0; i < imageViews.size(); i++) {
 		VkImageView attachments[] = { imageViews[i] };

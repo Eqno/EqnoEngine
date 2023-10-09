@@ -11,14 +11,14 @@ class Pipeline {
 public:
 	/** Pickers And Creators **/
 	/**
-	 * ´´½¨äÖÈ¾Á÷³Ì
+	 * åˆ›å»ºæ¸²æŸ“æµç¨‹
 	 */
-	auto CreateRenderPass(
+	void CreateRenderPass(
 		const VkFormat& imageFormat,
 		const VkDevice& device
-	) -> void;
+	);
 	/**
-	 * ´´½¨Í¼ÐÎ¹ÜÏß
+	 * åˆ›å»ºå›¾å½¢ç®¡çº¿
 	 */
 	auto CreateGraphicsPipeline(
 		const Shader&                shader,
@@ -28,27 +28,27 @@ public:
 
 	/** Destructor And Cleaners **/
 	/**
-	 * Ïú»ÙäÖÈ¾Á÷³Ì
+	 * é”€æ¯æ¸²æŸ“æµç¨‹
 	 */
 	auto DestroyGraphicsPipeline(const VkDevice& device) const -> void;
 
 	/** Getters And Setters **/
 	/**
-	 * »ñÈ¡äÖÈ¾Á÷³Ì
+	 * èŽ·å–æ¸²æŸ“æµç¨‹
 	 */
 	[[nodiscard]] auto GetRenderPass() const -> const VkRenderPass& {
 		return renderPass;
 	}
 
 	/**
-	 * »ñÈ¡Í¼ÐÎ¹ÜÏß
+	 * èŽ·å–å›¾å½¢ç®¡çº¿
 	 */
 	[[nodiscard]] auto GetGraphicsPipeline() const -> const VkPipeline& {
 		return graphicsPipeline;
 	}
 
 	/**
-	 * »ñÈ¡¹ÜÏß²¼¾Ö
+	 * èŽ·å–ç®¡çº¿å¸ƒå±€
 	 */
 	[[nodiscard]] auto GetPipelineLayout() const -> const VkPipelineLayout& {
 		return pipelineLayout;

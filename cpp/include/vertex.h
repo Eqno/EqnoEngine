@@ -11,15 +11,16 @@ using AttributeDescriptions = std::array<VkVertexInputAttributeDescription, 2>;
 class Vertex {
 	glm::vec2 pos {};
 	glm::vec3 color {};
+
 public:
 	Vertex(const glm::vec2& pos, const glm::vec3& color) : pos(pos),
 		color(color) {}
 
-	static auto GetBindingDescription() -> VkVertexInputBindingDescription;
-	static auto GetAttributeDescriptions() -> AttributeDescriptions;
+	static VkVertexInputBindingDescription GetBindingDescription();
+	static AttributeDescriptions GetAttributeDescriptions();
 };
 
-const Vertexes vertices{
+const Vertexes vertices {
 	{ { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
 	{ { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
 	{ { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },

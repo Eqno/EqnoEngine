@@ -7,92 +7,93 @@
 #include "validation.h"
 
 struct SwapChainSupportDetails {
-	VkSurfaceCapabilitiesKHR        capabilities{};
+	VkSurfaceCapabilitiesKHR capabilities {};
 	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR>   presentModes;
+	std::vector<VkPresentModeKHR> presentModes;
 };
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 	/**
-	 * µ±Ç°²éÑ¯ÊÇ·ñÍê³É
+	 * å½“å‰æŸ¥è¯¢æ˜¯å¦å®Œæˆ
 	 */
-	[[nodiscard]] auto IsComplete() const -> bool {
+	[[nodiscard]] bool IsComplete() const {
 		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
 
 class Device {
 	/** Private Members **/
-	VkDevice         logicalDevice {};
+	VkDevice logicalDevice {};
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
 	VkQueue graphicsQueue {};
 	VkQueue presentQueue {};
+
 public:
 	/** Behaviors And Logic **/
 	/**
-	 * Ê¹µ±Ç°Âß¼­Éè±¸ÏÐÖÃµÈ´ý
+	 * ä½¿å½“å‰é€»è¾‘è®¾å¤‡é—²ç½®ç­‰å¾…
 	 */
-	auto WaitIdle() const -> void { vkDeviceWaitIdle(logicalDevice); }
+	void WaitIdle() const { vkDeviceWaitIdle(logicalDevice); }
 
 	/** Finders And Queries **/
 	/**
-	 * ²éÕÒµ±Ç°ÎïÀíÉè±¸µÄ¶ÓÁÐ×å
+	 * æŸ¥æ‰¾å½“å‰ç‰©ç†è®¾å¤‡çš„é˜Ÿåˆ—æ—
 	 */
-	[[nodiscard]] auto FindQueueFamilies(
+	[[nodiscard]] QueueFamilyIndices FindQueueFamilies(
 		const VkSurfaceKHR& surface
-	) const -> QueueFamilyIndices;
+	) const;
 	/**
-	 * ²éÑ¯µ±Ç°ÎïÀíÉè±¸µÄ½»»»Á´Ö§³Ö
+	 * æŸ¥è¯¢å½“å‰ç‰©ç†è®¾å¤‡çš„äº¤æ¢é“¾æ”¯æŒ
 	 */
-	[[nodiscard]] auto QuerySwapChainSupport(
+	[[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport(
 		const VkSurfaceKHR& surface
-	) const -> SwapChainSupportDetails;
+	) const;
 
 	/** Pickers And Creators **/
 	/**
-	 * ´´½¨Âß¼­Éè±¸µÄÊµÀý
+	 * åˆ›å»ºé€»è¾‘è®¾å¤‡çš„å®žä¾‹
 	 */
-	auto CreateLogicalDevice(
+	void CreateLogicalDevice(
 		const VkSurfaceKHR& surface,
-		const Validation&   validation
-	) -> void;
+		const Validation& validation
+	);
 	/**
-	 * Ê°È¡ÎïÀíÉè±¸µÄÊµÀý
+	 * æ‹¾å–ç‰©ç†è®¾å¤‡çš„å®žä¾‹
 	 */
-	auto PickPhysicalDevice(
-		const VkInstance&   instance,
+	void PickPhysicalDevice(
+		const VkInstance& instance,
 		const VkSurfaceKHR& surface
-	) -> void;
+	);
 
 	/** Getters And Setters **/
 	/**
-	 * »ñÈ¡Âß¼­Éè±¸µÄÒýÓÃ
+	 * èŽ·å–é€»è¾‘è®¾å¤‡çš„å¼•ç”¨
 	 */
-	[[nodiscard]] auto GetLogical() const -> const VkDevice& {
+	[[nodiscard]] const VkDevice& GetLogical() const {
 		return logicalDevice;
 	}
 
 	/**
-	 * »ñÈ¡ÎïÀíÉè±¸µÄÒýÓÃ
+	 * èŽ·å–ç‰©ç†è®¾å¤‡çš„å¼•ç”¨
 	 */
-	[[nodiscard]] auto GetPhysical() const -> const VkPhysicalDevice& {
+	[[nodiscard]] const VkPhysicalDevice& GetPhysical() const {
 		return physicalDevice;
 	}
 
 	/**
-	 * »ñÈ¡¼´Ê±Éè±¸µÄ¶ÓÁÐ
+	 * èŽ·å–å³æ—¶è®¾å¤‡çš„é˜Ÿåˆ—
 	 */
-	[[nodiscard]] auto GetPresentQueue() const -> const VkQueue& {
+	[[nodiscard]] const VkQueue& GetPresentQueue() const {
 		return presentQueue;
 	}
 
 	/**
-	 * »ñÈ¡Í¼ÐÎÉè±¸µÄ¶ÓÁÐ
+	 * èŽ·å–å›¾å½¢è®¾å¤‡çš„é˜Ÿåˆ—
 	 */
-	[[nodiscard]] auto GetGraphicsQueue() const -> const VkQueue& {
+	[[nodiscard]] const VkQueue& GetGraphicsQueue() const {
 		return graphicsQueue;
 	}
 };

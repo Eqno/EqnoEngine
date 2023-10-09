@@ -1,17 +1,15 @@
 #include "vertex.h"
 
-auto Vertex::GetBindingDescription() -> VkVertexInputBindingDescription {
-	VkVertexInputBindingDescription bindingDescription{};
-	bindingDescription.binding = 0;
-	bindingDescription.stride = sizeof(Vertex);
-	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	return bindingDescription;
+VkVertexInputBindingDescription Vertex::GetBindingDescription() {
+	return {
+		.binding = 0,
+		.stride = sizeof(Vertex),
+		.inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+	};
 }
 
-auto Vertex::GetAttributeDescriptions() -> std::array<
-	VkVertexInputAttributeDescription, 2> {
-	const std::array attributeDescriptions {
+std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDescriptions() {
+	return {
 		VkVertexInputAttributeDescription {
 			.location = 0,
 			.binding = 0,
@@ -25,5 +23,4 @@ auto Vertex::GetAttributeDescriptions() -> std::array<
 			.offset = offsetof(Vertex, color),
 		}
 	};
-	return attributeDescriptions;
 }

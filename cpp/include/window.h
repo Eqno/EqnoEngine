@@ -10,32 +10,33 @@ struct GLFWwindow;
 
 class Window {
 	VkSurfaceKHR surface {};
-	bool         frameBufferResized = false;
+	bool frameBufferResized = false;
+
 public:
 	GLFWwindow* window = nullptr;
 
-	[[nodiscard]] auto GetSurface() const -> const VkSurfaceKHR& {
+	[[nodiscard]] const VkSurfaceKHR& GetSurface() const {
 		return surface;
 	}
 
-	[[nodiscard]] auto GetFrameBufferSize() const -> std::pair<int, int>;
+	[[nodiscard]] std::pair<int, int> GetFrameBufferSize() const;
 
-	[[nodiscard]] auto GetFrameBufferResized() const -> const bool& {
+	[[nodiscard]] const bool& GetFrameBufferResized() const {
 		return frameBufferResized;
 	}
 
-	[[nodiscard]] static auto
-	GetRequiredExtensions() -> std::pair<const char**, uint32_t>;
+	[[nodiscard]] static std::pair<const char**, uint32_t>
+	GetRequiredExtensions();
 
-	auto SetFrameBufferResized(bool resized) -> void {
+	void SetFrameBufferResized(const bool resized) {
 		frameBufferResized = resized;
 	}
 
-	auto CreateWindow() -> void;
-	auto CreateWindow(int width, int height) -> void;
-	auto CreateSurface(const VkInstance& instance) -> void;
+	void CreateWindow();
+	void CreateWindow(int width, int height);
+	void CreateSurface(const VkInstance& instance);
 
-	auto DestroyWindow() const -> void;
+	void DestroyWindow() const;
 
-	auto OnRecreateSwapChain() const -> void;
+	void OnRecreateSwapChain() const;
 };

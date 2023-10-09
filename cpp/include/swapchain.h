@@ -11,48 +11,49 @@ class Device;
 
 class SwapChain {
 	VkSwapchainKHR chain {};
-	VkExtent2D     extent {};
-	VkFormat       imageFormat {};
+	VkExtent2D extent {};
+	VkFormat imageFormat {};
 
-	std::vector<VkImage>       images;
-	std::vector<VkImageView>   imageViews;
+	std::vector<VkImage> images;
+	std::vector<VkImageView> imageViews;
 	std::vector<VkFramebuffer> frameBuffers;
+
 public:
-	static auto ChooseSurfaceFormat(
+	static VkSurfaceFormatKHR ChooseSurfaceFormat(
 		const SurfaceFormats& availableFormats
-	) -> VkSurfaceFormatKHR;
+	);
 
-	static auto ChoosePresentMode(
+	static VkPresentModeKHR ChoosePresentMode(
 		const PresentModes& availablePresentModes
-	) -> VkPresentModeKHR;
+	);
 
-	[[nodiscard]] auto ChooseSwapExtent(
+	[[nodiscard]] VkExtent2D ChooseSwapExtent(
 		const VkSurfaceCapabilitiesKHR& capabilities,
-		const Window&                   window
-	) const -> VkExtent2D;
+		const Window& window
+	) const;
 
-	[[nodiscard]] auto Get() const -> const VkSwapchainKHR& { return chain; }
-	[[nodiscard]] auto GetExtent() const -> const VkExtent2D& { return extent; }
+	[[nodiscard]] const VkSwapchainKHR& Get() const { return chain; }
+	[[nodiscard]] const VkExtent2D& GetExtent() const { return extent; }
 
-	[[nodiscard]] auto GetImageFormat() const -> const VkFormat& {
+	[[nodiscard]] const VkFormat& GetImageFormat() const {
 		return imageFormat;
 	}
 
-	[[nodiscard]] auto
-	GetImageViews() const -> const std::vector<VkImageView>& {
+	[[nodiscard]] const std::vector<VkImageView>
+	& GetImageViews() const {
 		return imageViews;
 	}
 
-	[[nodiscard]] auto
-	GetFrameBuffers() const -> const std::vector<VkFramebuffer>& {
+	[[nodiscard]] const std::vector<VkFramebuffer>
+	& GetFrameBuffers() const {
 		return frameBuffers;
 	}
 
-	auto Create(const Device& device, const Window& window) -> void;
-	auto CreateImageViews(const VkDevice& device) -> void;
-	auto CleanupSwapChain(const VkDevice& device) const -> void;
-	auto CreateFrameBuffers(
-		const VkDevice&     device,
+	void Create(const Device& device, const Window& window);
+	void CreateImageViews(const VkDevice& device);
+	void CleanupSwapChain(const VkDevice& device) const;
+	void CreateFrameBuffers(
+		const VkDevice& device,
 		const VkRenderPass& renderPass
-	) -> void;
+	);
 };

@@ -2,12 +2,11 @@
 
 #include <stdexcept>
 
-auto Buffer::MemoryType(
-	const VkPhysicalDevice&      physicalDevice,
-	const glm::uint32_t&         typeFilter,
+uint32_t Buffer::MemoryType(
+	const VkPhysicalDevice& physicalDevice,
+	const glm::uint32_t& typeFilter,
 	const VkMemoryPropertyFlags& properties
-) -> uint32_t {
-
+) {
 	VkPhysicalDeviceMemoryProperties memProperties {};
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
@@ -15,18 +14,17 @@ auto Buffer::MemoryType(
 		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].
 			propertyFlags & properties) == properties) { return i; }
 	}
-	throw std::runtime_error("failed to find suitable memory type!");
+	throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-auto Buffer::CreateBuffer(
-	const Device&                device,
-	const VkDeviceSize&          size,
-	const VkBufferUsageFlags&    usage,
+void Buffer::CreateBuffer(
+	const Device& device,
+	const VkDeviceSize& size,
+	const VkBufferUsageFlags& usage,
 	const VkMemoryPropertyFlags& properties,
-	VkBuffer&                    buffer,
-	VkDeviceMemory&              bufferMemory
-) -> void {
-
+	VkBuffer& buffer,
+	VkDeviceMemory& bufferMemory
+) {
 	const VkBufferCreateInfo bufferInfo {
 		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 		.size = size,
@@ -34,7 +32,7 @@ auto Buffer::CreateBuffer(
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 	};
 	if (vkCreateBuffer(device.GetLogical(), &bufferInfo, nullptr, &buffer) !=
-		VK_SUCCESS) { throw std::runtime_error("failed to create buffer!"); }
+		VK_SUCCESS) { throw std::runtime_error("Failed to create buffer!"); }
 
 	VkMemoryRequirements memRequirements {};
 	vkGetBufferMemoryRequirements(device.GetLogical(), buffer, &memRequirements);
@@ -50,18 +48,18 @@ auto Buffer::CreateBuffer(
 	};
 	if (vkAllocateMemory(device.GetLogical(), &allocInfo, nullptr, &bufferMemory) !=
 		VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate buffer memory!");
+		throw std::runtime_error("Failed to allocate buffer memory!");
 	}
 	vkBindBufferMemory(device.GetLogical(), buffer, bufferMemory, 0);
 }
 
-auto Buffer::CopyBuffer(
-	const Device&        device,
-	const VkBuffer&      srcBuffer,
-	const VkBuffer&      dstBuffer,
-	const VkDeviceSize&  size,
+void Buffer::CopyBuffer(
+	const Device& device,
+	const VkBuffer& srcBuffer,
+	const VkBuffer& dstBuffer,
+	const VkDeviceSize& size,
 	const VkCommandPool& commandPool
-) -> void {
+) {
 	const VkCommandBufferAllocateInfo allocInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.commandPool = commandPool,
@@ -70,7 +68,7 @@ auto Buffer::CopyBuffer(
 	};
 	VkCommandBuffer commandBuffer {};
 	vkAllocateCommandBuffers(device.GetLogical(), &allocInfo, &commandBuffer);
-	const VkCommandBufferBeginInfo beginInfo {
+	constexpr VkCommandBufferBeginInfo beginInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
 	};

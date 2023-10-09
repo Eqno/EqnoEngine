@@ -5,24 +5,24 @@
 
 #include "config.h"
 
-auto VKAPI_CALL DebugCallback(
+VkBool32 VKAPI_CALL DebugCallback(
 	[[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	[[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
 	[[maybe_unused]] const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 	[[maybe_unused]] void* pUserData
-) -> VkBool32 {
-	std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+) {
+	std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
 	return VK_FALSE;
 }
 
-auto Validation::GetEnabled() const -> const bool& { return enabled; }
-auto Validation::GetLayers() const -> const CStrings& { return layers; }
+const bool& Validation::GetEnabled() const { return enabled; }
+const CStrings& Validation::GetLayers() const { return layers; }
 
-auto Validation::GetMessengerCreateInfo() const -> const MessengerCreateInfo& {
+const MessengerCreateInfo& Validation::GetMessengerCreateInfo() const {
 	return messengerCreateInfo;
 }
 
-auto Validation::GetDebugMessenger() const -> const VkDebugUtilsMessengerEXT& {
+const VkDebugUtilsMessengerEXT& Validation::GetDebugMessenger() const {
 	return debugMessenger;
 }
 
@@ -42,17 +42,17 @@ Validation::Validation() : enabled(Config::ENABLE_VALIDATION_LAYER),
 	) {}
 
 Validation::Validation(
-	const bool          enabled,
-	CStrings            layers,
-	MessengerCreateInfo messengerInfo
+	const bool enabled,
+	CStrings layers,
+	const MessengerCreateInfo& messengerInfo
 ) : enabled(enabled), layers(std::move(layers)),
 	messengerCreateInfo(messengerInfo) {}
 
-auto Validation::CreateMessengerEXT(
-	const VkInstance&            instance,
+VkResult Validation::CreateMessengerEXT(
+	const VkInstance& instance,
 	const VkAllocationCallbacks* pAllocator,
-	VkDebugUtilsMessengerEXT*    pDebugMessenger
-) const -> VkResult {
+	VkDebugUtilsMessengerEXT* pDebugMessenger
+) const {
 	if (const auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
 		vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"))) {
 		return func(
@@ -65,28 +65,28 @@ auto Validation::CreateMessengerEXT(
 	return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-auto Validation::DestroyMessengerEXT(
-	const VkInstance&               instance,
+void Validation::DestroyMessengerEXT(
+	const VkInstance& instance,
 	const VkDebugUtilsMessengerEXT& debugMessenger,
-	const VkAllocationCallbacks*    pAllocator
-) -> void {
+	const VkAllocationCallbacks* pAllocator
+) {
 	if (const auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
 		vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"))) {
 		func(instance, debugMessenger, pAllocator);
 	}
 }
 
-auto Validation::CheckLayerSupport() const -> bool {
+bool Validation::CheckLayerSupport() const {
 	uint32_t layerCount = 0;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const auto& layerName: layers) {
+	for (const auto& layerName : layers) {
 		auto layerFound = false;
 		for (const auto& [availableLayerName, specVersion, implementationVersion
-			     , description]: availableLayers) {
+			     , description] : availableLayers) {
 			if (strcmp(layerName, availableLayerName) == 0) {
 				layerFound = true;
 				break;
@@ -97,9 +97,9 @@ auto Validation::CheckLayerSupport() const -> bool {
 	return true;
 }
 
-auto Validation::SetupMessenger(const VkInstance& instance) -> void {
+void Validation::SetupMessenger(const VkInstance& instance) {
 	if (enabled && CreateMessengerEXT(instance, nullptr, &debugMessenger) !=
 		VK_SUCCESS) {
-		throw std::runtime_error("failed to set up debug messenger!");
+		throw std::runtime_error("Failed to set up debug messenger!");
 	}
 }

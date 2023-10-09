@@ -4,10 +4,10 @@
 
 #include "vertex.h"
 
-auto Pipeline::CreateRenderPass(
+void Pipeline::CreateRenderPass(
 	const VkFormat& imageFormat,
 	const VkDevice& device
-) -> void {
+) {
 	const VkAttachmentDescription colorAttachment {
 		.format = imageFormat,
 		.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -18,16 +18,16 @@ auto Pipeline::CreateRenderPass(
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 	};
-	const VkAttachmentReference colorAttachmentRef {
+	constexpr VkAttachmentReference colorAttachmentRef {
 		.attachment = 0,
 		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 	};
-	const VkSubpassDescription subPass {
+	constexpr VkSubpassDescription subPass {
 		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
 		.colorAttachmentCount = 1,
 		.pColorAttachments = &colorAttachmentRef,
 	};
-	const VkSubpassDependency dependency {
+	constexpr VkSubpassDependency dependency {
 		.srcSubpass = VK_SUBPASS_EXTERNAL,
 		.dstSubpass = 0,
 		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -66,17 +66,17 @@ auto Pipeline::CreateGraphicsPipeline(
 			attributeDescriptions.size()),
 		.pVertexAttributeDescriptions = attributeDescriptions.data(),
 	};
-	const VkPipelineInputAssemblyStateCreateInfo inputAssembly {
+	constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
 		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 		.primitiveRestartEnable = VK_FALSE,
 	};
-	const VkPipelineViewportStateCreateInfo viewportState {
+	constexpr VkPipelineViewportStateCreateInfo viewportState {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
 		.viewportCount = 1,
 		.scissorCount = 1,
 	};
-	const VkPipelineRasterizationStateCreateInfo rasterizer {
+	constexpr VkPipelineRasterizationStateCreateInfo rasterizer {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
 		.depthClampEnable = VK_FALSE,
 		.rasterizerDiscardEnable = VK_FALSE,
@@ -86,12 +86,12 @@ auto Pipeline::CreateGraphicsPipeline(
 		.depthBiasEnable = VK_FALSE,
 		.lineWidth = 1.0f,
 	};
-	const VkPipelineMultisampleStateCreateInfo multiSampling {
+	constexpr VkPipelineMultisampleStateCreateInfo multiSampling {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
 		.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
 		.sampleShadingEnable = VK_FALSE,
 	};
-	const VkPipelineColorBlendAttachmentState colorBlendAttachment {
+	constexpr VkPipelineColorBlendAttachmentState colorBlendAttachment {
 		.blendEnable = VK_FALSE,
 		.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
 		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
