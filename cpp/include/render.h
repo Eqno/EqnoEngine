@@ -15,8 +15,6 @@ class Render {
 	VkCommandPool commandPool {};
 	std::vector<VkCommandBuffer> commandBuffers;
 
-	const std::vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
-
 public:
 	void CreateCommandPool(const Device& device, const VkSurfaceKHR& surface);
 	void DestroyCommandPool(const VkDevice& device) const;
@@ -47,12 +45,6 @@ public:
 	void CreateSyncObjects(const VkDevice& device);
 	void DestroySyncObjects(const VkDevice& device) const;
 
-	[[nodiscard]] const std::vector<uint16_t>& GetIndices() const { return indices; }
-
 	[[nodiscard]] const VkCommandPool& GetCommandPool() const { return commandPool; }
 	[[nodiscard]] const std::vector<VkCommandBuffer>& GetCommandBuffers() const { return commandBuffers; }
-
-	// [[nodiscard]] const VkCommandBuffer& GetCommandBufferByFrame(const uint32_t frame) const {
-	// 	return commandBuffers[frame];
-	// }
 };

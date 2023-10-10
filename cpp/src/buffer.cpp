@@ -61,7 +61,7 @@ void Buffer::CreateBuffer(
 
 
 void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
-	const auto bufferSize = sizeof(vertices[0]) * vertices.size();
+	const auto bufferSize = sizeof(VERTICES[0]) * VERTICES.size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -77,7 +77,7 @@ void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
 
 	void* data;
 	vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, vertices.data(), bufferSize);
+	memcpy(data, VERTICES.data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(
@@ -102,7 +102,7 @@ void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
 }
 
 void Buffer::CreateIndexBuffer(const Device& device, const Render& render) {
-	const auto bufferSize = sizeof(render.GetIndices()[0]) * render.GetIndices().size();
+	const auto bufferSize = sizeof(INDICES[0]) * INDICES.size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -118,7 +118,7 @@ void Buffer::CreateIndexBuffer(const Device& device, const Render& render) {
 
 	void* data;
 	vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, render.GetIndices().data(), bufferSize);
+	memcpy(data, INDICES.data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(

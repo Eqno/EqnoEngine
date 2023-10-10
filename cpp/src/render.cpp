@@ -6,6 +6,7 @@
 #include "device.h"
 #include "swapchain.h"
 #include "uniform.h"
+#include "vertex.h"
 
 void Render::CreateCommandPool(const Device& device, const VkSurfaceKHR& surface) {
 	const auto [graphicsFamily, presentFamily] = device.FindQueueFamilies(surface);
@@ -125,7 +126,7 @@ void Render::RecordCommandBuffer(
 
 	vkCmdDrawIndexed(
 		commandBuffer,
-		static_cast<uint32_t>(indices.size()),
+		static_cast<uint32_t>(INDICES.size()),
 		1,
 		0,
 		0,
