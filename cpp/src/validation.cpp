@@ -15,17 +15,6 @@ VkBool32 VKAPI_CALL DebugCallback(
 	return VK_FALSE;
 }
 
-const bool& Validation::GetEnabled() const { return enabled; }
-const CStrings& Validation::GetLayers() const { return layers; }
-
-const MessengerCreateInfo& Validation::GetMessengerCreateInfo() const {
-	return messengerCreateInfo;
-}
-
-const VkDebugUtilsMessengerEXT& Validation::GetDebugMessenger() const {
-	return debugMessenger;
-}
-
 Validation::Validation() : enabled(Config::ENABLE_VALIDATION_LAYER),
 	layers({ "VK_LAYER_KHRONOS_validation" }),
 	messengerCreateInfo(
@@ -101,5 +90,15 @@ void Validation::SetupMessenger(const VkInstance& instance) {
 	if (enabled && CreateMessengerEXT(instance, nullptr, &debugMessenger) !=
 		VK_SUCCESS) {
 		throw std::runtime_error("Failed to set up debug messenger!");
+	}
+}
+
+void Validation::DestroyMessenger(const VkInstance& instance) const {
+	if (enabled) {
+		DestroyMessengerEXT(
+			instance,
+			debugMessenger,
+			nullptr
+		);
 	}
 }

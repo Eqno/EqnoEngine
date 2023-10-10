@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include "config.h"
 #include "pipeline.h"
+#include "render.h"
 #include "swapchain.h"
 #include "uniform.h"
 #include "vertex.h"
@@ -59,41 +59,8 @@ void Buffer::CreateBuffer(
 	vkBindBufferMemory(device.GetLogical(), buffer, bufferMemory, 0);
 }
 
-void Buffer::CopyBuffer(
-	const Device& device,
-	const VkBuffer& srcBuffer,
-	const VkBuffer& dstBuffer,
-	const VkDeviceSize& size,
-	const VkCommandPool& commandPool
-) {
-	const VkCommandBufferAllocateInfo allocInfo {
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = commandPool,
-		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-		.commandBufferCount = 1,
-	};
-	VkCommandBuffer commandBuffer {};
-	vkAllocateCommandBuffers(device.GetLogical(), &allocInfo, &commandBuffer);
-	constexpr VkCommandBufferBeginInfo beginInfo {
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-	};
-	vkBeginCommandBuffer(commandBuffer, &beginInfo);
-	const VkBufferCopy copyRegion { .size = size, };
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-	vkEndCommandBuffer(commandBuffer);
-	const VkSubmitInfo submitInfo {
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.commandBufferCount = 1,
-		.pCommandBuffers = &commandBuffer,
-	};
-	const auto& graphicsQueue = device.GetGraphicsQueue();
-	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(graphicsQueue);
-	vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, &commandBuffer);
-}
 
-void Buffer::CreateVertexBuffer(const Device& device) {
+void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
 	const auto bufferSize = sizeof(vertices[0]) * vertices.size();
 
 	VkBuffer stagingBuffer;
@@ -123,20 +90,19 @@ void Buffer::CreateVertexBuffer(const Device& device) {
 		vertexBufferMemory
 	);
 
-	CopyBuffer(
+	render.CopyCommandBuffer(
 		device,
 		stagingBuffer,
 		vertexBuffer,
-		bufferSize,
-		commandPool
+		bufferSize
 	);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 }
 
-void Buffer::CreateIndexBuffer(const Device& device) {
-	const auto bufferSize = sizeof(indices[0]) * indices.size();
+void Buffer::CreateIndexBuffer(const Device& device, const Render& render) {
+	const auto bufferSize = sizeof(render.GetIndices()[0]) * render.GetIndices().size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -152,7 +118,7 @@ void Buffer::CreateIndexBuffer(const Device& device) {
 
 	void* data;
 	vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, indices.data(), bufferSize);
+	memcpy(data, render.GetIndices().data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(
@@ -164,125 +130,21 @@ void Buffer::CreateIndexBuffer(const Device& device) {
 		indexBufferMemory
 	);
 
-	CopyBuffer(
+	render.CopyCommandBuffer(
 		device,
 		stagingBuffer,
 		indexBuffer,
-		bufferSize,
-		commandPool
+		bufferSize
 	);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 }
 
-void Buffer::CreateCommandBuffers(const Device& device) {
-	commandBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
+void Buffer::CleanupBuffers(const VkDevice& device) const {
+	vkDestroyBuffer(device, indexBuffer, nullptr);
+	vkFreeMemory(device, indexBufferMemory, nullptr);
 
-	const VkCommandBufferAllocateInfo allocInfo {
-		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-		.commandPool = commandPool,
-		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-		.commandBufferCount = static_cast<uint32_t>(commandBuffers.size()),
-	};
-
-	if (vkAllocateCommandBuffers(
-		device.GetLogical(),
-		&allocInfo,
-		commandBuffers.data()
-	) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate command buffers!");
-	}
-}
-
-void Buffer::RecordCommandBuffer(
-	const Pipeline& pipeline,
-	const SwapChain& swapChain,
-	const Descriptor& descriptor,
-	const uint32_t currentFrame,
-	const VkCommandBuffer commandBuffer,
-	const uint32_t imageIndex
-) const {
-	constexpr VkCommandBufferBeginInfo beginInfo { .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, };
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-		throw std::runtime_error(
-			"failed to begin recording command buffer!"
-		);
-	}
-
-	constexpr VkClearValue clearColor = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
-	VkRenderPassBeginInfo renderPassInfo {
-		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.renderPass = pipeline.GetRenderPass(),
-		.framebuffer = swapChain.GetFrameBuffers()[imageIndex],
-		.clearValueCount = 1,
-		.pClearValues = &clearColor,
-	};
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChain.GetExtent();
-
-	vkCmdBeginRenderPass(
-		commandBuffer,
-		&renderPassInfo,
-		VK_SUBPASS_CONTENTS_INLINE
-	);
-
-	vkCmdBindPipeline(
-		commandBuffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline.GetGraphicsPipeline()
-	);
-
-	const VkViewport viewport {
-		.x = 0.0f,
-		.y = 0.0f,
-		.width = static_cast<float>(swapChain.GetExtent().width),
-		.height = static_cast<float>(swapChain.GetExtent().height),
-		.minDepth = 0.0f,
-		.maxDepth = 1.0f,
-	};
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-	const VkRect2D scissor {
-		.offset = { 0, 0 },
-		.extent = swapChain.GetExtent(),
-	};
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-	const VkBuffer vertexBuffers[] = { vertexBuffer };
-	constexpr VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-	vkCmdBindIndexBuffer(
-		commandBuffer,
-		indexBuffer,
-		0,
-		VK_INDEX_TYPE_UINT16
-	);
-
-	vkCmdBindDescriptorSets(
-		commandBuffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline.GetPipelineLayout(),
-		0,
-		1,
-		&descriptor.GetDescriptorSets()[currentFrame],
-		0,
-		nullptr
-	);
-
-	vkCmdDrawIndexed(
-		commandBuffer,
-		static_cast<uint32_t>(indices.size()),
-		1,
-		0,
-		0,
-		0
-	);
-
-	vkCmdEndRenderPass(commandBuffer);
-
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to record command buffer!");
-	}
+	vkDestroyBuffer(device, vertexBuffer, nullptr);
+	vkFreeMemory(device, vertexBufferMemory, nullptr);
 }

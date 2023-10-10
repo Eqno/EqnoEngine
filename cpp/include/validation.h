@@ -13,9 +13,21 @@ class Validation {
 
 	VkDebugUtilsMessengerEXT debugMessenger {};
 
+	static void DestroyMessengerEXT(
+		const VkInstance& instance,
+		const VkDebugUtilsMessengerEXT& debugMessenger,
+		const VkAllocationCallbacks* pAllocator
+	);
+
+	VkResult CreateMessengerEXT(
+		const VkInstance& instance,
+		const VkAllocationCallbacks* pAllocator,
+		VkDebugUtilsMessengerEXT* pDebugMessenger
+	) const;
+
 public:
-	[[nodiscard]] const bool& GetEnabled() const;
-	[[nodiscard]] const CStrings& GetLayers() const;
+	[[nodiscard]] const bool& GetEnabled() const { return enabled; }
+	[[nodiscard]] const CStrings& GetLayers() const { return layers; }
 
 	Validation();
 	Validation(
@@ -24,24 +36,16 @@ public:
 		const MessengerCreateInfo& messengerInfo
 	);
 
-	[[nodiscard]] const MessengerCreateInfo
-	& GetMessengerCreateInfo() const;
-	[[nodiscard]] const VkDebugUtilsMessengerEXT
-	& GetDebugMessenger() const;
+	[[nodiscard]] const MessengerCreateInfo& GetMessengerCreateInfo() const {
+		return messengerCreateInfo;
+	}
 
-	VkResult CreateMessengerEXT(
-		const VkInstance& instance,
-		const VkAllocationCallbacks* pAllocator,
-		VkDebugUtilsMessengerEXT* pDebugMessenger
-	) const;
-
-	static void DestroyMessengerEXT(
-		const VkInstance& instance,
-		const VkDebugUtilsMessengerEXT& debugMessenger,
-		const VkAllocationCallbacks* pAllocator
-	);
+	[[nodiscard]] const VkDebugUtilsMessengerEXT& GetDebugMessenger() const {
+		return debugMessenger;
+	}
 
 	[[nodiscard]] bool CheckLayerSupport() const;
 
 	void SetupMessenger(const VkInstance& instance);
+	void DestroyMessenger(const VkInstance& instance) const;
 };

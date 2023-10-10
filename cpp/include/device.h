@@ -67,6 +67,7 @@ public:
 		const VkInstance& instance,
 		const VkSurfaceKHR& surface
 	);
+	void DestroyLogicalDevice() const;
 
 	/** Getters And Setters **/
 	/**

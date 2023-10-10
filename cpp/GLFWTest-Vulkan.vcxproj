@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\buffer.cpp" />
+    <ClCompile Include="src\instance.cpp" />
     <ClCompile Include="src\uniform.cpp" />
     <ClCompile Include="src\device.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -152,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="include\buffer.h" />
     <ClInclude Include="include\config.h" />
+    <ClInclude Include="include\instance.h" />
     <ClInclude Include="include\uniform.h" />
     <ClInclude Include="include\device.h" />
     <ClInclude Include="include\pipeline.h" />

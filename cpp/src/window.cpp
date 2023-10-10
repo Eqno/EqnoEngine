@@ -47,6 +47,10 @@ void Window::CreateSurface(const VkInstance& instance) {
 	}
 }
 
+void Window::DestroySurface(const VkInstance& instance) const {
+	vkDestroySurfaceKHR(instance, surface, nullptr);
+}
+
 void Window::DestroyWindow() const {
 	glfwDestroyWindow(window);
 	glfwTerminate();

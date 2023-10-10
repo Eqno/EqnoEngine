@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "device.h"
+#include "pipeline.h"
 #include "window.h"
 
 VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
@@ -164,4 +165,15 @@ void SwapChain::CreateFrameBuffers(
 			throw std::runtime_error("failed to create frame buffer!");
 		}
 	}
+}
+
+void SwapChain::RecreateSwapChain(const Device& device, const Window& window, const Pipeline& pipeline) {
+	window.OnRecreateSwapChain();
+	device.WaitIdle();
+
+	CleanupSwapChain(device.GetLogical());
+
+	Create(device, window);
+	CreateImageViews(device.GetLogical());
+	CreateFrameBuffers(device.GetLogical(), pipeline.GetRenderPass());
 }

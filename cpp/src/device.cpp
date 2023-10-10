@@ -184,6 +184,10 @@ void Device::PickPhysicalDevice(
 	}
 }
 
+void Device::DestroyLogicalDevice() const {
+	vkDestroyDevice(logicalDevice, nullptr);
+}
+
 void Device::CreateLogicalDevice(
 	const VkSurfaceKHR& surface,
 	const Validation& validation

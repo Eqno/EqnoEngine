@@ -36,6 +36,7 @@ public:
 	void CreateWindow(int width, int height);
 	void CreateSurface(const VkInstance& instance);
 
+	void DestroySurface(const VkInstance& instance) const;
 	void DestroyWindow() const;
 
 	void OnRecreateSwapChain() const;

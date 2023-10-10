@@ -3,6 +3,8 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
+#include "pipeline.h"
+
 using PresentModes = std::vector<VkPresentModeKHR>;
 using SurfaceFormats = std::vector<VkSurfaceFormatKHR>;
 
@@ -51,9 +53,11 @@ public:
 
 	void Create(const Device& device, const Window& window);
 	void CreateImageViews(const VkDevice& device);
-	void CleanupSwapChain(const VkDevice& device) const;
 	void CreateFrameBuffers(
 		const VkDevice& device,
 		const VkRenderPass& renderPass
 	);
+
+	void CleanupSwapChain(const VkDevice& device) const;
+	void RecreateSwapChain(const Device& device, const Window& window, const Pipeline& pipeline);
 };
