@@ -36,7 +36,9 @@ public:
 	/**
 	 * 使当前逻辑设备闲置等待
 	 */
-	void WaitIdle() const { vkDeviceWaitIdle(logicalDevice); }
+	void WaitIdle() const {
+		vkDeviceWaitIdle(logicalDevice);
+	}
 
 	/** Finders And Queries **/
 	/**

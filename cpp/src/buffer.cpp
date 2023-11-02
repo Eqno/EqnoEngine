@@ -18,7 +18,9 @@ uint32_t Buffer::MemoryType(
 
 	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].
-			propertyFlags & properties) == properties) { return i; }
+			propertyFlags & properties) == properties) {
+			return i;
+		}
 	}
 	throw std::runtime_error("Failed to find suitable memory type!");
 }
@@ -38,7 +40,9 @@ void Buffer::CreateBuffer(
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 	};
 	if (vkCreateBuffer(device.GetLogical(), &bufferInfo, nullptr, &buffer) !=
-		VK_SUCCESS) { throw std::runtime_error("Failed to create buffer!"); }
+		VK_SUCCESS) {
+		throw std::runtime_error("Failed to create buffer!");
+	}
 
 	VkMemoryRequirements memRequirements {};
 	vkGetBufferMemoryRequirements(device.GetLogical(), buffer, &memRequirements);

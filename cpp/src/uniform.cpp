@@ -14,7 +14,7 @@ void Descriptor::CreateDescriptorSetLayout(const VkDevice& device) {
 		.pImmutableSamplers = nullptr,
 	};
 
-	constexpr VkDescriptorSetLayoutCreateInfo layoutInfo {
+	VkDescriptorSetLayoutCreateInfo layoutInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 		.bindingCount = 1,
 		.pBindings = &uboLayoutBinding,
@@ -76,7 +76,7 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device) {
 		.descriptorCount = static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT),
 	};
 
-	constexpr VkDescriptorPoolCreateInfo poolInfo {
+	VkDescriptorPoolCreateInfo poolInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 		.maxSets = static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT),
 		.poolSizeCount = 1,

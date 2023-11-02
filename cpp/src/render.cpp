@@ -56,14 +56,14 @@ void Render::RecordCommandBuffer(
 ) const {
 	const VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
 
-	constexpr VkCommandBufferBeginInfo beginInfo { .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, };
+	constexpr VkCommandBufferBeginInfo beginInfo {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,};
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
 		throw std::runtime_error(
 			"failed to begin recording command buffer!"
 		);
 	}
 
-	constexpr VkClearValue clearColor = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
+	constexpr VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 	VkRenderPassBeginInfo renderPassInfo {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 		.renderPass = pipeline.GetRenderPass(),
@@ -71,7 +71,7 @@ void Render::RecordCommandBuffer(
 		.clearValueCount = 1,
 		.pClearValues = &clearColor,
 	};
-	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.offset = {0, 0};
 	renderPassInfo.renderArea.extent = swapChain.GetExtent();
 
 	vkCmdBeginRenderPass(
@@ -97,13 +97,13 @@ void Render::RecordCommandBuffer(
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 	const VkRect2D scissor {
-		.offset = { 0, 0 },
+		.offset = {0, 0},
 		.extent = swapChain.GetExtent(),
 	};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	const VkBuffer vertexBuffers[] = { vertexBuffer };
-	constexpr VkDeviceSize offsets[] = { 0 };
+	const VkBuffer vertexBuffers[] = {vertexBuffer};
+	constexpr VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
 	vkCmdBindIndexBuffer(
@@ -162,7 +162,7 @@ void Render::CopyCommandBuffer(
 	};
 	vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-	const VkBufferCopy copyRegion { .size = size, };
+	const VkBufferCopy copyRegion {.size = size,};
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 	vkEndCommandBuffer(commandBuffer);
 
@@ -255,7 +255,7 @@ void Render::DrawFrame(
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
-	const VkSwapchainKHR swapChains[] = { swapChain.Get() };
+	const VkSwapchainKHR swapChains[] = {swapChain.Get()};
 	const VkPresentInfoKHR presentInfo {
 		.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 		.waitSemaphoreCount = 1,

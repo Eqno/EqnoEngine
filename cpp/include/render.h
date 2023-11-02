@@ -45,6 +45,11 @@ public:
 	void CreateSyncObjects(const VkDevice& device);
 	void DestroySyncObjects(const VkDevice& device) const;
 
-	[[nodiscard]] const VkCommandPool& GetCommandPool() const { return commandPool; }
-	[[nodiscard]] const std::vector<VkCommandBuffer>& GetCommandBuffers() const { return commandBuffers; }
+	[[nodiscard]] const VkCommandPool& GetCommandPool() const {
+		return commandPool;
+	}
+
+	[[nodiscard]] const std::vector<VkCommandBuffer>& GetCommandBuffers() const {
+		return commandBuffers;
+	}
 };

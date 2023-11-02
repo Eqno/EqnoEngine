@@ -47,7 +47,10 @@ void Shader::CompileFromGLSLToSPV(const std::string& glslPath) const {
 
 		spvFile.close();
 		glslFile.close();
-	} else { throw std::runtime_error("failed to open file!"); }
+	}
+	else {
+		throw std::runtime_error("failed to open file!");
+	}
 }
 
 UIntegers Shader::ReadSPVFileAsBinary(const std::string& spvPath) {
@@ -56,7 +59,7 @@ UIntegers Shader::ReadSPVFileAsBinary(const std::string& spvPath) {
 		std::ios::ate | std::ios::binary
 	); file.is_open()) {
 		const size_t fileSize = file.tellg();
-		UIntegers    buffer(fileSize);
+		UIntegers buffer(fileSize);
 		file.seekg(0);
 		file.read(
 			reinterpret_cast<char*>(buffer.data()),
@@ -89,7 +92,9 @@ VkShaderModule Shader::CreateModule(
 		&createInfo,
 		nullptr,
 		&shaderModule
-	) == VK_SUCCESS) { return shaderModule; }
+	) == VK_SUCCESS) {
+		return shaderModule;
+	}
 	throw std::runtime_error("failed to create shader module!");
 }
 

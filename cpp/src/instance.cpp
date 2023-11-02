@@ -6,7 +6,7 @@
 #include "validation.h"
 #include "window.h"
 
-static std::vector<const char*> GetRequiredExtensions(const Validation& validation) {
+std::vector<const char*> GetRequiredExtensions(const Validation& validation) {
 	const auto& [glfwExtensions, glfwExtensionCount] =
 		Window::GetRequiredExtensions();
 	std::vector extensions(

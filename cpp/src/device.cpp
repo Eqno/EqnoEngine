@@ -34,7 +34,7 @@ namespace DeviceCheck {
 		);
 
 		QueueFamilyIndices indices = {};
-		for (auto i = 0; const auto& [queueFlags, queueCount, timestampValidBits, minImageTransferGranularity] :
+		for (auto i = 0; const auto& [queueFlags, queueCount, timestampValidBits, minImageTransferGranularity]:
 		     queueFamilies) {
 			if (queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 				indices.graphicsFamily = i;
@@ -46,8 +46,12 @@ namespace DeviceCheck {
 				surface,
 				&presentSupport
 			);
-			if (presentSupport) { indices.presentFamily = i; }
-			if (indices.IsComplete()) { break; }
+			if (presentSupport) {
+				indices.presentFamily = i;
+			}
+			if (indices.IsComplete()) {
+				break;
+			}
 			i++;
 		}
 		return indices;
@@ -76,7 +80,7 @@ namespace DeviceCheck {
 			Config::DEVICE_EXTENSIONS.begin(),
 			Config::DEVICE_EXTENSIONS.end()
 		);
-		for (const auto& [extensionName, _] : availableExtensions) {
+		for (const auto& [extensionName, _]: availableExtensions) {
 			requiredExtensions.erase(extensionName);
 		}
 		return requiredExtensions.empty();
@@ -173,7 +177,7 @@ void Device::PickPhysicalDevice(
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-	for (const auto& device : devices) {
+	for (const auto& device: devices) {
 		if (DeviceCheck::DoesRequiresSuit(device, surface)) {
 			physicalDevice = device;
 			break;
@@ -202,7 +206,7 @@ void Device::CreateLogicalDevice(
 	for (const std::set uniqueQueueFamilies = {
 		     graphicsFamily.has_value() ? graphicsFamily.value() : 0,
 		     presentFamily.has_value() ? presentFamily.value() : 0
-	     }; const auto queueFamily : uniqueQueueFamilies) {
+	     }; const auto queueFamily: uniqueQueueFamilies) {
 		queueCreateInfos.push_back(
 			{
 				.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -226,7 +230,9 @@ void Device::CreateLogicalDevice(
 		                                                     GetLayers().size());
 		createInfo.ppEnabledLayerNames = validation.GetLayers().data();
 	}
-	else { createInfo.enabledLayerCount = 0; }
+	else {
+		createInfo.enabledLayerCount = 0;
+	}
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) !=
 		VK_SUCCESS) {

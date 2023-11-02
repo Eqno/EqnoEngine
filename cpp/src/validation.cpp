@@ -16,7 +16,7 @@ VkBool32 VKAPI_CALL DebugCallback(
 }
 
 Validation::Validation() : enabled(Config::ENABLE_VALIDATION_LAYER),
-	layers({ "VK_LAYER_KHRONOS_validation" }),
+	layers({"VK_LAYER_KHRONOS_validation"}),
 	messengerCreateInfo(
 		{
 			.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -72,16 +72,18 @@ bool Validation::CheckLayerSupport() const {
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const auto& layerName : layers) {
+	for (const auto& layerName: layers) {
 		auto layerFound = false;
 		for (const auto& [availableLayerName, specVersion, implementationVersion
-			     , description] : availableLayers) {
+			     , description]: availableLayers) {
 			if (strcmp(layerName, availableLayerName) == 0) {
 				layerFound = true;
 				break;
 			}
 		}
-		if (!layerFound) { return false; }
+		if (!layerFound) {
+			return false;
+		}
 	}
 	return true;
 }

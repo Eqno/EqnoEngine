@@ -26,7 +26,7 @@ class Shader {
 	const std::unordered_map<std::string, ShaderTypeInfo> types {
 		{
 			"vert",
-			{ shaderc_glsl_vertex_shader, VK_SHADER_STAGE_VERTEX_BIT, "main" }
+			{shaderc_glsl_vertex_shader, VK_SHADER_STAGE_VERTEX_BIT, "main"}
 		},
 		{
 			"frag",

@@ -29,13 +29,18 @@ public:
 		const PresentModes& availablePresentModes
 	);
 
-	[[nodiscard]] VkExtent2D ChooseSwapExtent(
+	[[nodiscard]] static VkExtent2D ChooseSwapExtent(
 		const VkSurfaceCapabilitiesKHR& capabilities,
 		const Window& window
-	) const;
+	);
 
-	[[nodiscard]] const VkSwapchainKHR& Get() const { return chain; }
-	[[nodiscard]] const VkExtent2D& GetExtent() const { return extent; }
+	[[nodiscard]] const VkSwapchainKHR& Get() const {
+		return chain;
+	}
+
+	[[nodiscard]] const VkExtent2D& GetExtent() const {
+		return extent;
+	}
 
 	[[nodiscard]] const VkFormat& GetImageFormat() const {
 		return imageFormat;

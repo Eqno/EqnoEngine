@@ -9,5 +9,5 @@ namespace Config {
 	constexpr uint32_t DEFAULT_WINDOW_WIDTH = 800;
 	constexpr uint32_t DEFAULT_WINDOW_HEIGHT = 600;
 
-	const std::vector DEVICE_EXTENSIONS { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	const std::vector DEVICE_EXTENSIONS {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 }

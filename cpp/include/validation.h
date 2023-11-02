@@ -26,8 +26,13 @@ class Validation {
 	) const;
 
 public:
-	[[nodiscard]] const bool& GetEnabled() const { return enabled; }
-	[[nodiscard]] const CStrings& GetLayers() const { return layers; }
+	[[nodiscard]] const bool& GetEnabled() const {
+		return enabled;
+	}
+
+	[[nodiscard]] const CStrings& GetLayers() const {
+		return layers;
+	}
 
 	Validation();
 	Validation(

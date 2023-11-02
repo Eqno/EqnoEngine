@@ -35,9 +35,19 @@ public:
 	void CreateIndexBuffer(const Device& device, const Render& render);
 	void CleanupBuffers(const VkDevice& device) const;
 
-	[[nodiscard]] const VkBuffer& GetVertexBuffer() const { return vertexBuffer; }
-	[[nodiscard]] const VkDeviceMemory& GetVertexBufferMemory() const { return vertexBufferMemory; }
+	[[nodiscard]] const VkBuffer& GetVertexBuffer() const {
+		return vertexBuffer;
+	}
 
-	[[nodiscard]] const VkBuffer& GetIndexBuffer() const { return indexBuffer; }
-	[[nodiscard]] const VkDeviceMemory& GetIndexBufferMemory() const { return indexBufferMemory; }
+	[[nodiscard]] const VkDeviceMemory& GetVertexBufferMemory() const {
+		return vertexBufferMemory;
+	}
+
+	[[nodiscard]] const VkBuffer& GetIndexBuffer() const {
+		return indexBuffer;
+	}
+
+	[[nodiscard]] const VkDeviceMemory& GetIndexBufferMemory() const {
+		return indexBufferMemory;
+	}
 };

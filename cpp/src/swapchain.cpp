@@ -10,9 +10,11 @@
 VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
 	const SurfaceFormats& availableFormats
 ) {
-	for (const auto& format : availableFormats) {
+	for (const auto& format: availableFormats) {
 		if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace ==
-			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) { return format; }
+			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+			return format;
+		}
 	}
 	return availableFormats[0];
 }
@@ -20,8 +22,10 @@ VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
 VkPresentModeKHR SwapChain::ChoosePresentMode(
 	const PresentModes& availablePresentModes
 ) {
-	for (const auto& mode : availablePresentModes) {
-		if (mode == VK_PRESENT_MODE_MAILBOX_KHR) { return mode; }
+	for (const auto& mode: availablePresentModes) {
+		if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+			return mode;
+		}
 	}
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
@@ -29,9 +33,11 @@ VkPresentModeKHR SwapChain::ChoosePresentMode(
 VkExtent2D SwapChain::ChooseSwapExtent(
 	const VkSurfaceCapabilitiesKHR& capabilities,
 	const Window& window
-) const {
+) {
 	if (capabilities.currentExtent.width != std::numeric_limits<
-		uint32_t>::max()) { return capabilities.currentExtent; }
+		uint32_t>::max()) {
+		return capabilities.currentExtent;
+	}
 
 	auto [width, height] = window.GetFrameBufferSize();
 	return {
@@ -57,7 +63,9 @@ void SwapChain::Create(const Device& device, const Window& window) {
 
 	auto imageCount = capabilities.minImageCount + 1;
 	if (capabilities.maxImageCount > 0 && imageCount > capabilities.
-		maxImageCount) { imageCount = capabilities.maxImageCount; }
+		maxImageCount) {
+		imageCount = capabilities.maxImageCount;
+	}
 
 	VkSwapchainCreateInfoKHR createInfo {
 		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -86,7 +94,9 @@ void SwapChain::Create(const Device& device, const Window& window) {
 		createInfo.queueFamilyIndexCount = 2;
 		createInfo.pQueueFamilyIndices = queueFamilyIndices;
 	}
-	else { createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; }
+	else {
+		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	}
 
 	if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain) !=
 		VK_SUCCESS) {
@@ -130,10 +140,10 @@ void SwapChain::CreateImageViews(const VkDevice& device) {
 }
 
 void SwapChain::CleanupSwapChain(const VkDevice& device) const {
-	for (const auto& frameBuffer : frameBuffers) {
+	for (const auto& frameBuffer: frameBuffers) {
 		vkDestroyFramebuffer(device, frameBuffer, nullptr);
 	}
-	for (const auto& imageView : imageViews) {
+	for (const auto& imageView: imageViews) {
 		vkDestroyImageView(device, imageView, nullptr);
 	}
 	vkDestroySwapchainKHR(device, chain, nullptr);
@@ -145,7 +155,7 @@ void SwapChain::CreateFrameBuffers(
 ) {
 	frameBuffers.resize(imageViews.size());
 	for (size_t i = 0; i < imageViews.size(); i++) {
-		VkImageView attachments[] = { imageViews[i] };
+		VkImageView attachments[] = {imageViews[i]};
 
 		VkFramebufferCreateInfo frameBufferInfo {
 			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,

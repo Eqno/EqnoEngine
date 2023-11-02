@@ -22,7 +22,7 @@ void Pipeline::CreateRenderPass(
 		.attachment = 0,
 		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 	};
-	constexpr VkSubpassDescription subPass {
+	VkSubpassDescription subPass {
 		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
 		.colorAttachmentCount = 1,
 		.pColorAttachments = &colorAttachmentRef,
@@ -50,11 +50,11 @@ void Pipeline::CreateRenderPass(
 	}
 }
 
-auto Pipeline::CreateGraphicsPipeline(
-	const Shader&                shader,
-	const VkDevice&              device,
+void Pipeline::CreateGraphicsPipeline(
+	const Shader& shader,
+	const VkDevice& device,
 	const VkDescriptorSetLayout& descriptorSetLayout
-) -> void {
+) {
 	auto shaderStages(shader.AutoCreateStages(device));
 	auto bindingDescription = Vertex::GetBindingDescription();
 	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -102,7 +102,7 @@ auto Pipeline::CreateGraphicsPipeline(
 		.logicOp = VK_LOGIC_OP_COPY,
 		.attachmentCount = 1,
 		.pAttachments = &colorBlendAttachment,
-		.blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f, },
+		.blendConstants = {0.0f, 0.0f, 0.0f, 0.0f,},
 	};
 	const std::vector dynamicStates = {
 		VK_DYNAMIC_STATE_VIEWPORT,
@@ -155,7 +155,7 @@ auto Pipeline::CreateGraphicsPipeline(
 	shader.DestroyModules(device);
 }
 
-auto Pipeline::DestroyGraphicsPipeline(const VkDevice& device) const -> void {
+void Pipeline::DestroyGraphicsPipeline(const VkDevice& device) const {
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
