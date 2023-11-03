@@ -146,24 +146,31 @@ void Render::CopyCommandBuffer(
 	const VkBuffer& dstBuffer,
 	const VkDeviceSize& size
 ) const {
+	const VkCommandBuffer commandBuffer = BeginSingleTimeCommands(device.GetLogical());
+	const VkBufferCopy copyRegion {.size = size,};
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+	EndSingleTimeCommands(device, commandBuffer);
+}
+
+VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
 	const VkCommandBufferAllocateInfo allocInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.commandPool = commandPool,
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1,
 	};
-
 	VkCommandBuffer commandBuffer {};
-	vkAllocateCommandBuffers(device.GetLogical(), &allocInfo, &commandBuffer);
+	vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
 
 	constexpr VkCommandBufferBeginInfo beginInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 		.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
 	};
 	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	return commandBuffer;
+}
 
-	const VkBufferCopy copyRegion {.size = size,};
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+void Render::EndSingleTimeCommands(const Device& device, VkCommandBuffer commandBuffer) const {
 	vkEndCommandBuffer(commandBuffer);
 
 	const VkSubmitInfo submitInfo {

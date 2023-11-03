@@ -33,6 +33,8 @@ public:
 		const VkBuffer& dstBuffer,
 		const VkDeviceSize& size
 	) const;
+	[[nodiscard]] VkCommandBuffer BeginSingleTimeCommands(const VkDevice& device) const;
+	void EndSingleTimeCommands(const Device& device, VkCommandBuffer commandBuffer) const;
 	void DrawFrame(
 		const VkBuffer& indexBuffer,
 		const VkBuffer& vertexBuffer,

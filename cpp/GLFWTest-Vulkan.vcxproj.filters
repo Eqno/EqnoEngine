@@ -51,6 +51,9 @@
     <ClCompile Include="src\instance.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\shader.h">
@@ -90,6 +93,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\instance.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\texture.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

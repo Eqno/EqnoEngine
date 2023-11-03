@@ -13,14 +13,14 @@ class Buffer {
 	VkBuffer indexBuffer {};
 	VkDeviceMemory indexBufferMemory {};
 
+public:
+	Buffer() = default;
+
 	static uint32_t MemoryType(
 		const VkPhysicalDevice& physicalDevice,
 		const glm::uint32_t& typeFilter,
 		const VkMemoryPropertyFlags& properties
 	);
-
-public:
-	Buffer() = default;
 
 	static void CreateBuffer(
 		const Device& device,

@@ -7,9 +7,9 @@
 #include "render.h"
 #include "shader.h"
 #include "swapchain.h"
+#include "texture.h"
 #include "uniform.h"
 #include "validation.h"
-#include "vertex.h"
 #include "window.h"
 
 
@@ -19,6 +19,7 @@ class HelloTriangleApplication {
 	Window window;
 	Buffer buffer;
 	Render render;
+	Texture texture;
 	Instance instance;
 	Pipeline pipeline;
 	SwapChain swapChain;
@@ -72,6 +73,8 @@ private:
 		swapChain.CreateFrameBuffers(device.GetLogical(), pipeline.GetRenderPass());
 
 		render.CreateCommandPool(device, window.GetSurface());
+		texture.CreateTextureImage(device, render);
+
 		buffer.CreateVertexBuffer(device, render);
 		buffer.CreateIndexBuffer(device, render);
 
@@ -86,7 +89,9 @@ private:
 	void Cleanup() const {
 		swapChain.CleanupSwapChain(device.GetLogical());
 		pipeline.DestroyGraphicsPipeline(device.GetLogical());
+
 		descriptor.Destroy(device.GetLogical());
+		texture.Destroy(device.GetLogical());
 
 		buffer.CleanupBuffers(device.GetLogical());
 		render.DestroySyncObjects(device.GetLogical());
@@ -97,7 +102,6 @@ private:
 		validation.DestroyMessenger(instance.GetVkInstance());
 		window.DestroySurface(instance.GetVkInstance());
 		instance.DestroyInstance();
-
 		window.DestroyWindow();
 	}
 };
