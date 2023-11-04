@@ -1,13 +1,11 @@
-#include "buffer.h"
+#include "../include/buffer.h"
 
 #include <stdexcept>
 
-#include "mesh.h"
-#include "pipeline.h"
-#include "render.h"
-#include "swapchain.h"
-#include "uniform.h"
-#include "vertex.h"
+#include "../include/mesh.h"
+#include "../include/pipeline.h"
+#include "../include/render.h"
+#include "../include/uniform.h"
 
 uint32_t Buffer::MemoryType(const VkPhysicalDevice& physicalDevice,
 	const glm::uint32_t& typeFilter,

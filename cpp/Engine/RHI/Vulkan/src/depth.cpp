@@ -1,10 +1,10 @@
-#include "depth.h"
+#include "../include/depth.h"
 
 #include <stdexcept>
 #include <vector>
 
-#include "swapchain.h"
-#include "texture.h"
+#include "../include/swapchain.h"
+#include "../include/texture.h"
 
 void Depth::CreateDepthResources(const Device& device,
 	const VkExtent2D& swapChainExtent) {

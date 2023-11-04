@@ -1,8 +1,8 @@
-#include "validation.h"
+#include "../include/validation.h"
 
 #include <iostream>
 
-#include "config.h"
+#include "../include/config.h"
 
 VkBool32 VKAPI_CALL DebugCallback(
 	[[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

@@ -1,8 +1,8 @@
-#include "window.h"
+#include "../include/window.h"
 
 #include <stdexcept>
 
-#include "config.h"
+#include "../include/config.h"
 
 void FrameBufferResizeCallback([[maybe_unused]] GLFWwindow* window,
 	[[maybe_unused]] int width,

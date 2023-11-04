@@ -1,10 +1,10 @@
-#include "instance.h"
+#include "../include/instance.h"
 
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
-#include "validation.h"
-#include "window.h"
+#include "../include/validation.h"
+#include "../include/window.h"
 
 std::vector<const char*> GetRequiredExtensions(const Validation& validation) {
 	const auto& [glfwExtensions, glfwExtensionCount] =

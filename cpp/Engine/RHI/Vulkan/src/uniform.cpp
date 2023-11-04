@@ -1,11 +1,11 @@
-#include "uniform.h"
+#include "../include/uniform.h"
 
 #include <chrono>
 #include <array>
 #include <stdexcept>
 
-#include "buffer.h"
-#include "texture.h"
+#include "../include/buffer.h"
+#include "../include/texture.h"
 
 void Descriptor::CreateDescriptorSetLayout(const VkDevice& device) {
 	constexpr VkDescriptorSetLayoutBinding uboLayoutBinding {
@@ -161,9 +161,7 @@ void UniformBuffer::UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
 	const uint32_t currentImage) const {
 	static auto startTime = std::chrono::high_resolution_clock::now();
 	const auto currentTime = std::chrono::high_resolution_clock::now();
-
-	const auto time = std::chrono::duration<float,
-		std::chrono::seconds::period>(currentTime - startTime).count();
+	const auto time = std::chrono::duration<float>(currentTime - startTime).count();
 
 	UniformBufferObject ubo {
 		.model =

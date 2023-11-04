@@ -21,6 +21,10 @@ class Mesh {
 public:
 	Mesh() = default;
 
+	Mesh(const std::vector<uint32_t>& indices,
+		const std::vector<Vertex>& vertices) : indices(indices),
+	vertices(vertices) {}
+
 	[[nodiscard]] const std::vector<uint32_t>& GetIndices() const {
 		return indices;
 	}

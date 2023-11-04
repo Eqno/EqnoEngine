@@ -1,8 +1,8 @@
-#include "device.h"
+#include "../include/device.h"
 
 #include <stdexcept>
 
-#include "config.h"
+#include "../include/config.h"
 
 /**
  * 设备检查相关函数
@@ -115,14 +115,14 @@ namespace DeviceCheck {
 	bool DoesRequiresSuit(const VkPhysicalDevice& device,
 		const VkSurfaceKHR& surface) {
 		if (FindQueueFamilies(device, surface).IsComplete() &&
-			DoesExtensionsSupport(device)) {
+		    DoesExtensionsSupport(device)) {
 			const auto& [_, formats, presentModes] = QuerySwapChainSupport(
 				device,
 				surface);
 			VkPhysicalDeviceFeatures supportedFeatures;
 			vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 			return !formats.empty() && !presentModes.empty() &&
-				supportedFeatures.samplerAnisotropy;
+			       supportedFeatures.samplerAnisotropy;
 		}
 		return false;
 	}
@@ -142,7 +142,7 @@ void Device::PickPhysicalDevice(const VkInstance& instance,
 	const VkSurfaceKHR& surface) {
 	uint32_t deviceCount = 0;
 	if (vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr) !=
-		VK_SUCCESS || deviceCount == 0) {
+	    VK_SUCCESS || deviceCount == 0) {
 		throw std::runtime_error("failed to find GPUs with Vulkan support!");
 	}
 	std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -202,7 +202,7 @@ void Device::CreateLogicalDevice(const VkSurfaceKHR& surface,
 	}
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) !=
-		VK_SUCCESS) {
+	    VK_SUCCESS) {
 		throw std::runtime_error("failed to create logical logicalDevice!");
 	}
 	vkGetDeviceQueue(logicalDevice,

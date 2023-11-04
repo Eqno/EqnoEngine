@@ -1,4 +1,4 @@
-#include "vertex.h"
+#include "../include/vertex.h"
 
 VkVertexInputBindingDescription Vertex::GetBindingDescription() {
 	return {

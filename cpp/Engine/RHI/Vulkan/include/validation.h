@@ -7,9 +7,9 @@
 using MessengerCreateInfo = VkDebugUtilsMessengerCreateInfoEXT;
 
 class Validation {
-	const bool enabled;
-	const CStrings layers;
-	const MessengerCreateInfo messengerCreateInfo;
+	bool enabled;
+	CStrings layers;
+	MessengerCreateInfo messengerCreateInfo;
 
 	VkDebugUtilsMessengerEXT debugMessenger {};
 

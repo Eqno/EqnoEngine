@@ -1,10 +1,10 @@
-#include "pipeline.h"
+#include "../include/pipeline.h"
 
 #include <stdexcept>
 
-#include "depth.h"
-#include "device.h"
-#include "vertex.h"
+#include "../include/depth.h"
+#include "../include/device.h"
+#include "../include/vertex.h"
 
 void Pipeline::CreateRenderPass(const VkFormat& imageFormat,
 	const Device& device) {

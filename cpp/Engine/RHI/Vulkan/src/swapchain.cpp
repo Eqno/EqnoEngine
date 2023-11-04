@@ -1,14 +1,14 @@
-#include "swapchain.h"
+#include "../include/swapchain.h"
 
 #include <algorithm>
 #include <stdexcept>
 #include <array>
 
-#include "depth.h"
-#include "device.h"
-#include "pipeline.h"
-#include "texture.h"
-#include "window.h"
+#include "../include/depth.h"
+#include "../include/device.h"
+#include "../include/pipeline.h"
+#include "../include/texture.h"
+#include "../include/window.h"
 
 VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
 	const SurfaceFormats& availableFormats) {

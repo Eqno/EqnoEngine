@@ -1,12 +1,12 @@
-#include "texture.h"
+#include "../include/texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <stdexcept>
 
-#include "buffer.h"
-#include "render.h"
-#include "device.h"
+#include "../include/buffer.h"
+#include "../include/render.h"
+#include "../include/device.h"
 
 void Texture::CreateTextureImage(const Device& device,
 	const Mesh& mesh,
@@ -147,7 +147,7 @@ void Texture::CreateImage(const Device& device,
 	const VkFormat format,
 	const VkImageTiling tiling,
 	const VkImageUsageFlags usage,
-	VkMemoryPropertyFlags properties,
+	const VkMemoryPropertyFlags properties,
 	VkImage& image,
 	VkDeviceMemory& imageMemory) {
 	const VkImageCreateInfo imageInfo {

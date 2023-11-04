@@ -1,9 +1,14 @@
-#include <vulkan.h>
+#include "Engine/RHI/Vulkan/include/vulkan.h"
+
 #include <iostream>
 #include <ostream>
 
+#include "Engine/Model/include/model.h"
+
 int main() {
 	try {
+		Model model;
+
 		Vulkan app;
 		app.Run();
 	}

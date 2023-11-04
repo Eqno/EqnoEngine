@@ -1,12 +1,12 @@
-#include "render.h"
+#include "../include/render.h"
 
 #include <stdexcept>
 
-#include "buffer.h"
-#include "device.h"
-#include "swapchain.h"
-#include "uniform.h"
-#include "vertex.h"
+#include "../include/buffer.h"
+#include "../include/device.h"
+#include "../include/swapchain.h"
+#include "../include/uniform.h"
+#include "../include/vertex.h"
 
 void Render::CreateCommandPool(const Device& device,
 	const VkSurfaceKHR& surface) {
@@ -155,7 +155,8 @@ VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
 	return commandBuffer;
 }
 
-void Render::EndSingleTimeCommands(const Device& device, const Mesh& mesh,
+void Render::EndSingleTimeCommands(const Device& device,
+	const Mesh& mesh,
 	VkCommandBuffer commandBuffer) const {
 	vkEndCommandBuffer(commandBuffer);
 
@@ -203,9 +204,7 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 	}
 
 	descriptor.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
-
 	vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
-
 	vkResetCommandBuffer(commandBuffers[currentFrame],
 		/*VkCommandBufferResetFlagBits*/
 		0);

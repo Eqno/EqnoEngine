@@ -82,6 +82,12 @@
     <Filter Include="Games\Test\Assets\Materials">
       <UniqueIdentifier>{8139a39c-a08e-49b0-b57e-b5682651c9ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Model\include">
+      <UniqueIdentifier>{647d2e59-0ccf-4941-8dc1-20bb1c60aaaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Model\src">
+      <UniqueIdentifier>{04a71557-714d-424f-9feb-2053a8473e1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
@@ -121,9 +127,6 @@
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
     <ClInclude Include="Engine\RHI\Vulkan\include\instance.h">
-      <Filter>Engine\RHI\Vulkan\include</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\RHI\Vulkan\include\mesh.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
     <ClInclude Include="Engine\RHI\Vulkan\include\pipeline.h">
@@ -273,11 +276,17 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Model\include\model.h">
+      <Filter>Engine\Model\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Model\include\material.h">
+      <Filter>Engine\Model\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Model\include\mesh.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\RHI\Vulkan\src\mesh.cpp">
-      <Filter>Engine\RHI\Vulkan\src</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
       <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
@@ -328,6 +337,15 @@
     </ClCompile>
     <ClCompile Include="Games\Test\main.cpp">
       <Filter>Games\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Model\src\model.cpp">
+      <Filter>Engine\Model\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Model\src\material.cpp">
+      <Filter>Engine\Model\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Model\src\mesh.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
