@@ -21,9 +21,9 @@ void Render::CreateCommandPool(const Device& device,
 	};
 
 	if (vkCreateCommandPool(device.GetLogical(),
-		&poolInfo,
-		nullptr,
-		&commandPool) != VK_SUCCESS) {
+		    &poolInfo,
+		    nullptr,
+		    &commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics command pool!");
 	}
 }
@@ -44,7 +44,7 @@ void Render::CreateCommandBuffers(const VkDevice& device,
 	};
 
 	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) !=
-		VK_SUCCESS) {
+	    VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
 }
@@ -63,14 +63,16 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
-
-	constexpr VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+	constexpr std::array clearValues {
+		VkClearValue {.color = {{0.0f, 0.0f, 0.0f, 1.0f}}},
+		VkClearValue {.depthStencil = {1.0f, 0}},
+	};
 	VkRenderPassBeginInfo renderPassInfo {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
 		.renderPass = pipeline.GetRenderPass(),
 		.framebuffer = swapChain.GetFrameBuffers()[imageIndex],
-		.clearValueCount = 1,
-		.pClearValues = &clearColor,
+		.clearValueCount = static_cast<uint32_t>(clearValues.size()),
+		.pClearValues = clearValues.data(),
 	};
 	renderPassInfo.renderArea.offset = {0, 0};
 	renderPassInfo.renderArea.extent = swapChain.GetExtent();
@@ -101,7 +103,6 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
 	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
 	vkCmdBindDescriptorSets(commandBuffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		pipeline.GetPipelineLayout(),
@@ -117,9 +118,7 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 		0,
 		0,
 		0);
-
 	vkCmdEndRenderPass(commandBuffer);
-
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to record command buffer!");
 	}
@@ -173,6 +172,7 @@ void Render::EndSingleTimeCommands(const Device& device,
 void Render::DrawFrame(const VkBuffer& indexBuffer,
 	const VkBuffer& vertexBuffer,
 	const Device& device,
+	Depth& depth,
 	Window& window,
 	const Pipeline& pipeline,
 	SwapChain& swapChain,
@@ -192,7 +192,7 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 		&imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		swapChain.RecreateSwapChain(device, window, pipeline);
+		swapChain.RecreateSwapChain(device, depth, window, pipeline);
 		return;
 	}
 	if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -236,9 +236,9 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 	};
 
 	if (vkQueueSubmit(device.GetGraphicsQueue(),
-		1,
-		&submitInfo,
-		inFlightFences[currentFrame]) != VK_SUCCESS) {
+		    1,
+		    &submitInfo,
+		    inFlightFences[currentFrame]) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
@@ -254,15 +254,15 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 	result = vkQueuePresentKHR(device.GetPresentQueue(), &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-		window.GetFrameBufferResized()) {
+	    window.GetFrameBufferResized()) {
 		window.SetFrameBufferResized(false);
-		swapChain.RecreateSwapChain(device, window, pipeline);
+		swapChain.RecreateSwapChain(device, depth, window, pipeline);
 	}
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
 	}
 	currentFrame = (currentFrame + 1) % descriptor.GetUniformBuffer().
-		GetMaxFramesInFlight();
+	               GetMaxFramesInFlight();
 }
 
 void Render::CreateSyncObjects(const VkDevice& device,
@@ -282,16 +282,17 @@ void Render::CreateSyncObjects(const VkDevice& device,
 
 	for (size_t i = 0; i < maxFramesInFlight; i++) {
 		if (vkCreateSemaphore(device,
-			&semaphoreInfo,
-			nullptr,
-			&imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(
-			device,
-			&semaphoreInfo,
-			nullptr,
-			&renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(device,
-			&fenceInfo,
-			nullptr,
-			&inFlightFences[i]) != VK_SUCCESS) {
+			    &semaphoreInfo,
+			    nullptr,
+			    &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+		    vkCreateSemaphore(device,
+			    &semaphoreInfo,
+			    nullptr,
+			    &renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(
+			    device,
+			    &fenceInfo,
+			    nullptr,
+			    &inFlightFences[i]) != VK_SUCCESS) {
 			throw std::runtime_error(
 				"failed to create synchronization objects for a frame!");
 		}

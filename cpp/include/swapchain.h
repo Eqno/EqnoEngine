@@ -8,6 +8,7 @@
 using PresentModes = std::vector<VkPresentModeKHR>;
 using SurfaceFormats = std::vector<VkSurfaceFormatKHR>;
 
+class Depth;
 class Window;
 class Device;
 
@@ -58,11 +59,11 @@ public:
 
 	void Create(const Device& device, const Window& window);
 	void CreateImageViews(const VkDevice& device);
-	void CreateFrameBuffers(
-		const VkDevice& device,
-		const VkRenderPass& renderPass
-	);
+	void CreateFrameBuffers(const VkDevice& device, const Depth& depth, const VkRenderPass& renderPass);
+	void RecreateSwapChain(const Device& device,
+		Depth& depth,
+		const Window& window,
+		const Pipeline& pipeline);
 
-	void CleanupSwapChain(const VkDevice& device) const;
-	void RecreateSwapChain(const Device& device, const Window& window, const Pipeline& pipeline);
+	void CleanupSwapChain(const VkDevice& device, const Depth& depth) const;
 };

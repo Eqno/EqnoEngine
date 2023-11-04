@@ -38,8 +38,9 @@ public:
 	void CreateTextureSampler(const Device& device);
 
 	static VkImageView CreateImageView(const VkDevice& device,
-		VkImage image,
-		VkFormat format);
+		const VkImage image,
+		const VkFormat format,
+		VkImageAspectFlags aspectFlags);
 	static void CreateImage(const Device& device,
 		uint32_t width,
 		uint32_t height,

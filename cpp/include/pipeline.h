@@ -4,6 +4,8 @@
 
 #include "shader.h"
 
+class Device;
+
 class Pipeline {
 	VkRenderPass renderPass {};
 	VkPipelineLayout pipelineLayout {};
@@ -14,7 +16,7 @@ public:
 	/**
 	 * 创建渲染流程
 	 */
-	void CreateRenderPass(const VkFormat& imageFormat, const VkDevice& device);
+	void CreateRenderPass(const VkFormat& imageFormat, const Device& device);
 	/**
 	 * 创建图形管线
 	 */

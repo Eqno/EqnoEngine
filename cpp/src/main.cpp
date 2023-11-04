@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "buffer.h"
+#include "depth.h"
 #include "device.h"
 #include "instance.h"
 #include "pipeline.h"
@@ -14,6 +15,7 @@
 
 
 class HelloTriangleApplication {
+	Depth depth;
 	Shader shader;
 	Device device;
 	Window window;
@@ -40,6 +42,7 @@ public:
 			render.DrawFrame(buffer.GetIndexBuffer(),
 				buffer.GetVertexBuffer(),
 				device,
+				depth,
 				window,
 				pipeline,
 				swapChain,
@@ -61,17 +64,19 @@ private:
 		swapChain.Create(device, window);
 		swapChain.CreateImageViews(device.GetLogical());
 
-		pipeline.CreateRenderPass(swapChain.GetImageFormat(),
-			device.GetLogical());
+		pipeline.CreateRenderPass(swapChain.GetImageFormat(), device);
 		descriptor.CreateDescriptorSetLayout(device.GetLogical());
 
 		pipeline.CreateGraphicsPipeline(shader,
 			device.GetLogical(),
 			descriptor.GetSetLayout());
-		swapChain.CreateFrameBuffers(device.GetLogical(),
-			pipeline.GetRenderPass());
 
 		render.CreateCommandPool(device, window.GetSurface());
+		depth.CreateDepthResources(device, swapChain.GetExtent());
+		swapChain.CreateFrameBuffers(device.GetLogical(),
+			depth,
+			pipeline.GetRenderPass());
+
 		texture.CreateTextureImage(device, render);
 		texture.CreateTextureImageView(device.GetLogical());
 		texture.CreateTextureSampler(device);
@@ -90,7 +95,7 @@ private:
 	}
 
 	void Cleanup() const {
-		swapChain.CleanupSwapChain(device.GetLogical());
+		swapChain.CleanupSwapChain(device.GetLogical(), depth);
 		pipeline.DestroyGraphicsPipeline(device.GetLogical());
 
 		descriptor.Destroy(device.GetLogical());

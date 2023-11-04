@@ -37,6 +37,7 @@ public:
 	void DrawFrame(const VkBuffer& indexBuffer,
 		const VkBuffer& vertexBuffer,
 		const Device& device,
+		Depth& depth,
 		Window& window,
 		const Pipeline& pipeline,
 		SwapChain& swapChain,

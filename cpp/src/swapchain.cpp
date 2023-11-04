@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <array>
 
+#include "depth.h"
 #include "device.h"
 #include "pipeline.h"
 #include "texture.h"
@@ -12,7 +14,7 @@ VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
 	const SurfaceFormats& availableFormats) {
 	for (const auto& format: availableFormats) {
 		if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace ==
-			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+		    VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 			return format;
 		}
 	}
@@ -33,7 +35,7 @@ VkExtent2D SwapChain::ChooseSwapExtent(
 	const VkSurfaceCapabilitiesKHR& capabilities,
 	const Window& window) {
 	if (capabilities.currentExtent.width != std::numeric_limits<
-		uint32_t>::max()) {
+		    uint32_t>::max()) {
 		return capabilities.currentExtent;
 	}
 
@@ -57,7 +59,7 @@ void SwapChain::Create(const Device& device, const Window& window) {
 
 	auto imageCount = capabilities.minImageCount + 1;
 	if (capabilities.maxImageCount > 0 && imageCount > capabilities.
-		maxImageCount) {
+	    maxImageCount) {
 		imageCount = capabilities.maxImageCount;
 	}
 
@@ -92,7 +94,7 @@ void SwapChain::Create(const Device& device, const Window& window) {
 	}
 
 	if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain)
-		!= VK_SUCCESS) {
+	    != VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain!");
 	}
 	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, nullptr);
@@ -109,12 +111,16 @@ void SwapChain::Create(const Device& device, const Window& window) {
 void SwapChain::CreateImageViews(const VkDevice& device) {
 	imageViews.resize(images.size());
 	for (size_t i = 0; i < images.size(); i++) {
-		imageViews[i] =
-			Texture::CreateImageView(device, images[i], imageFormat);
+		imageViews[i] = Texture::CreateImageView(device,
+			images[i],
+			imageFormat,
+			VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
 
-void SwapChain::CleanupSwapChain(const VkDevice& device) const {
+void SwapChain::CleanupSwapChain(const VkDevice& device,
+	const Depth& depth) const {
+	depth.Destroy(device);
 	for (const auto& frameBuffer: frameBuffers) {
 		vkDestroyFramebuffer(device, frameBuffer, nullptr);
 	}
@@ -125,38 +131,43 @@ void SwapChain::CleanupSwapChain(const VkDevice& device) const {
 }
 
 void SwapChain::CreateFrameBuffers(const VkDevice& device,
+	const Depth& depth,
 	const VkRenderPass& renderPass) {
 	frameBuffers.resize(imageViews.size());
 	for (size_t i = 0; i < imageViews.size(); i++) {
-		VkImageView attachments[] = {imageViews[i]};
+		std::array<VkImageView, 2> attachments = {
+			imageViews[i],
+			depth.GetDepthImageView()
+		};
 
 		VkFramebufferCreateInfo frameBufferInfo {
 			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
 			.renderPass = renderPass,
-			.attachmentCount = 1,
-			.pAttachments = attachments,
+			.attachmentCount = static_cast<uint32_t>(attachments.size()),
+			.pAttachments = attachments.data(),
 			.width = extent.width,
 			.height = extent.height,
 			.layers = 1,
 		};
 		if (vkCreateFramebuffer(device,
-			&frameBufferInfo,
-			nullptr,
-			&frameBuffers[i]) != VK_SUCCESS) {
+			    &frameBufferInfo,
+			    nullptr,
+			    &frameBuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create frame buffer!");
 		}
 	}
 }
 
 void SwapChain::RecreateSwapChain(const Device& device,
+	Depth& depth,
 	const Window& window,
 	const Pipeline& pipeline) {
 	window.OnRecreateSwapChain();
 	device.WaitIdle();
-
-	CleanupSwapChain(device.GetLogical());
+	CleanupSwapChain(device.GetLogical(), depth);
 
 	Create(device, window);
 	CreateImageViews(device.GetLogical());
-	CreateFrameBuffers(device.GetLogical(), pipeline.GetRenderPass());
+	depth.CreateDepthResources(device, extent);
+	CreateFrameBuffers(device.GetLogical(), depth, pipeline.GetRenderPass());
 }

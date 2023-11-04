@@ -79,7 +79,8 @@ void Texture::CreateTextureImage(const Device& device, const Render& render) {
 void Texture::CreateTextureImageView(const VkDevice& device) {
 	textureImageView = CreateImageView(device,
 		textureImage,
-		VK_FORMAT_R8G8B8A8_SRGB);
+		VK_FORMAT_R8G8B8A8_SRGB,
+		VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void Texture::CreateTextureSampler(const Device& device) {
@@ -112,21 +113,21 @@ void Texture::CreateTextureSampler(const Device& device) {
 
 VkImageView Texture::CreateImageView(const VkDevice& device,
 	const VkImage image,
-	const VkFormat format) {
+	const VkFormat format,
+	const VkImageAspectFlags aspectFlags) {
 	const VkImageViewCreateInfo viewInfo {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 		.image = image,
 		.viewType = VK_IMAGE_VIEW_TYPE_2D,
 		.format = format,
 		.subresourceRange = {
-			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.aspectMask = aspectFlags,
 			.baseMipLevel = 0,
 			.levelCount = 1,
 			.baseArrayLayer = 0,
 			.layerCount = 1,
 		},
 	};
-
 	VkImageView imageView;
 	if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) !=
 		VK_SUCCESS) {
