@@ -1,7 +1,6 @@
 #include "validation.h"
 
 #include <iostream>
-#include <vulkan/vulkan_core.h>
 
 #include "config.h"
 

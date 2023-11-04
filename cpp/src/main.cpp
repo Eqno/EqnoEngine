@@ -4,6 +4,7 @@
 #include "depth.h"
 #include "device.h"
 #include "instance.h"
+#include "mesh.h"
 #include "pipeline.h"
 #include "render.h"
 #include "shader.h"
@@ -15,6 +16,7 @@
 
 
 class HelloTriangleApplication {
+	Mesh mesh;
 	Depth depth;
 	Shader shader;
 	Device device;
@@ -42,6 +44,7 @@ public:
 			render.DrawFrame(buffer.GetIndexBuffer(),
 				buffer.GetVertexBuffer(),
 				device,
+				mesh,
 				depth,
 				window,
 				pipeline,
@@ -77,12 +80,12 @@ private:
 			depth,
 			pipeline.GetRenderPass());
 
-		texture.CreateTextureImage(device, render);
+		texture.CreateTextureImage(device, mesh, render);
 		texture.CreateTextureImageView(device.GetLogical());
 		texture.CreateTextureSampler(device);
 
-		buffer.CreateVertexBuffer(device, render);
-		buffer.CreateIndexBuffer(device, render);
+		buffer.CreateVertexBuffer(device, mesh, render);
+		buffer.CreateIndexBuffer(device, mesh, render);
 
 		descriptor.CreateUniformBuffers(device);
 		descriptor.CreateDescriptorPool(device.GetLogical());

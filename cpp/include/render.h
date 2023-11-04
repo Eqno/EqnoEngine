@@ -1,5 +1,6 @@
 #pragma once
 
+#include "mesh.h"
 #include "pipeline.h"
 #include "swapchain.h"
 #include "uniform.h"
@@ -22,21 +23,23 @@ public:
 	void CreateCommandBuffers(const VkDevice& device, int maxFramesInFlight);
 	void RecordCommandBuffer(const VkBuffer& indexBuffer,
 		const VkBuffer& vertexBuffer,
+		const Mesh& mesh,
 		const Pipeline& pipeline,
 		const SwapChain& swapChain,
 		const Descriptor& descriptor,
-		uint32_t imageIndex) const;
+		const uint32_t imageIndex) const;
 	void CopyCommandBuffer(const Device& device,
+		const Mesh& mesh,
 		const VkBuffer& srcBuffer,
 		const VkBuffer& dstBuffer,
 		const VkDeviceSize& size) const;
 	[[nodiscard]] VkCommandBuffer BeginSingleTimeCommands(
 		const VkDevice& device) const;
-	void EndSingleTimeCommands(const Device& device,
-		VkCommandBuffer commandBuffer) const;
+	void EndSingleTimeCommands(const Device& device, const Mesh& mesh, VkCommandBuffer commandBuffer) const;
 	void DrawFrame(const VkBuffer& indexBuffer,
 		const VkBuffer& vertexBuffer,
 		const Device& device,
+		const Mesh& mesh,
 		Depth& depth,
 		Window& window,
 		const Pipeline& pipeline,

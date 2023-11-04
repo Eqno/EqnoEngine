@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "mesh.h"
 #include "pipeline.h"
 #include "render.h"
 #include "swapchain.h"
@@ -16,7 +17,8 @@ uint32_t Buffer::MemoryType(const VkPhysicalDevice& physicalDevice,
 
 	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].
-			propertyFlags & properties) == properties) {
+		                                propertyFlags & properties) ==
+		    properties) {
 			return i;
 		}
 	}
@@ -36,7 +38,7 @@ void Buffer::CreateBuffer(const Device& device,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 	};
 	if (vkCreateBuffer(device.GetLogical(), &bufferInfo, nullptr, &buffer) !=
-		VK_SUCCESS) {
+	    VK_SUCCESS) {
 		throw std::runtime_error("Failed to create buffer!");
 	}
 
@@ -53,17 +55,19 @@ void Buffer::CreateBuffer(const Device& device,
 			properties),
 	};
 	if (vkAllocateMemory(device.GetLogical(),
-		&allocInfo,
-		nullptr,
-		&bufferMemory) != VK_SUCCESS) {
+		    &allocInfo,
+		    nullptr,
+		    &bufferMemory) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to allocate buffer memory!");
 	}
 	vkBindBufferMemory(device.GetLogical(), buffer, bufferMemory, 0);
 }
 
-
-void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
-	const auto bufferSize = sizeof(VERTICES[0]) * VERTICES.size();
+void Buffer::CreateVertexBuffer(const Device& device,
+	const Mesh& mesh,
+	const Render& render) {
+	const auto bufferSize = sizeof(mesh.GetVertexByIndex(0)) * mesh.
+	                        GetVertices().size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -82,7 +86,7 @@ void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
 		bufferSize,
 		0,
 		&data);
-	memcpy(data, VERTICES.data(), bufferSize);
+	memcpy(data, mesh.GetVertices().data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(device,
@@ -91,15 +95,21 @@ void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		vertexBuffer,
 		vertexBufferMemory);
-
-	render.CopyCommandBuffer(device, stagingBuffer, vertexBuffer, bufferSize);
+	render.CopyCommandBuffer(device,
+		mesh,
+		stagingBuffer,
+		vertexBuffer,
+		bufferSize);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 }
 
-void Buffer::CreateIndexBuffer(const Device& device, const Render& render) {
-	const auto bufferSize = sizeof(INDICES[0]) * INDICES.size();
+void Buffer::CreateIndexBuffer(const Device& device,
+	const Mesh& mesh,
+	const Render& render) {
+	const auto bufferSize = sizeof(mesh.GetIndexByIndex(0)) * mesh.GetIndices().
+	                        size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -118,7 +128,7 @@ void Buffer::CreateIndexBuffer(const Device& device, const Render& render) {
 		bufferSize,
 		0,
 		&data);
-	memcpy(data, INDICES.data(), bufferSize);
+	memcpy(data, mesh.GetIndices().data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(device,
@@ -128,7 +138,11 @@ void Buffer::CreateIndexBuffer(const Device& device, const Render& render) {
 		indexBuffer,
 		indexBufferMemory);
 
-	render.CopyCommandBuffer(device, stagingBuffer, indexBuffer, bufferSize);
+	render.CopyCommandBuffer(device,
+		mesh,
+		stagingBuffer,
+		indexBuffer,
+		bufferSize);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);

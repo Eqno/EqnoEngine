@@ -8,15 +8,17 @@
 #include "render.h"
 #include "device.h"
 
-void Texture::CreateTextureImage(const Device& device, const Render& render) {
+void Texture::CreateTextureImage(const Device& device,
+	const Mesh& mesh,
+	const Render& render) {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load("textures/texture.jpg",
+	stbi_uc* pixels = stbi_load(Config::TEXTURE_PATH.c_str(),
 		&texWidth,
 		&texHeight,
 		&texChannels,
 		STBI_rgb_alpha);
 	const VkDeviceSize imageSize = static_cast<VkDeviceSize>(texWidth) *
-		texHeight * 4;
+	                               texHeight * 4;
 
 	if (!pixels) {
 		throw std::runtime_error("failed to load texture image!");
@@ -57,9 +59,11 @@ void Texture::CreateTextureImage(const Device& device, const Render& render) {
 		render,
 		textureImage,
 		VK_FORMAT_R8G8B8A8_SRGB,
+		mesh,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	CopyBufferToImage(device,
+		mesh,
 		render,
 		stagingBuffer,
 		textureImage,
@@ -69,6 +73,7 @@ void Texture::CreateTextureImage(const Device& device, const Render& render) {
 		render,
 		textureImage,
 		VK_FORMAT_R8G8B8A8_SRGB,
+		mesh,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -104,9 +109,9 @@ void Texture::CreateTextureSampler(const Device& device) {
 	};
 
 	if (vkCreateSampler(device.GetLogical(),
-		&samplerInfo,
-		nullptr,
-		&textureSampler) != VK_SUCCESS) {
+		    &samplerInfo,
+		    nullptr,
+		    &textureSampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 }
@@ -130,7 +135,7 @@ VkImageView Texture::CreateImageView(const VkDevice& device,
 	};
 	VkImageView imageView;
 	if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) !=
-		VK_SUCCESS) {
+	    VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture image view!");
 	}
 	return imageView;
@@ -160,7 +165,7 @@ void Texture::CreateImage(const Device& device,
 	};
 
 	if (vkCreateImage(device.GetLogical(), &imageInfo, nullptr, &image) !=
-		VK_SUCCESS) {
+	    VK_SUCCESS) {
 		throw std::runtime_error("failed to create image!");
 	}
 
@@ -176,7 +181,7 @@ void Texture::CreateImage(const Device& device,
 	};
 
 	if (vkAllocateMemory(device.GetLogical(), &allocInfo, nullptr, &imageMemory)
-		!= VK_SUCCESS) {
+	    != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 	vkBindImageMemory(device.GetLogical(), image, imageMemory, 0);
@@ -185,7 +190,8 @@ void Texture::CreateImage(const Device& device,
 void Texture::TransitionImageLayout(const Device& device,
 	const Render& render,
 	const VkImage image,
-	VkFormat format,
+	const VkFormat format,
+	const Mesh& mesh,
 	const VkImageLayout oldLayout,
 	const VkImageLayout newLayout) {
 	const VkCommandBuffer commandBuffer = render.BeginSingleTimeCommands(
@@ -211,7 +217,7 @@ void Texture::TransitionImageLayout(const Device& device,
 	VkPipelineStageFlags destinationStage;
 
 	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout ==
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+	    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
@@ -219,7 +225,7 @@ void Texture::TransitionImageLayout(const Device& device,
 		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout ==
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+	         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
@@ -240,10 +246,11 @@ void Texture::TransitionImageLayout(const Device& device,
 		nullptr,
 		1,
 		&barrier);
-	render.EndSingleTimeCommands(device, commandBuffer);
+	render.EndSingleTimeCommands(device, mesh, commandBuffer);
 }
 
 void Texture::CopyBufferToImage(const Device& device,
+	const Mesh& mesh,
 	const Render& render,
 	const VkBuffer buffer,
 	const VkImage image,
@@ -272,7 +279,7 @@ void Texture::CopyBufferToImage(const Device& device,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1,
 		&region);
-	render.EndSingleTimeCommands(device, commandBuffer);
+	render.EndSingleTimeCommands(device, mesh, commandBuffer);
 }
 
 void Texture::Destroy(const VkDevice& device) const {

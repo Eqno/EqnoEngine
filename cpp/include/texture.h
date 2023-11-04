@@ -2,6 +2,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "device.h"
+#include "mesh.h"
 
 class Render;
 
@@ -33,7 +34,7 @@ public:
 		return textureSampler;
 	}
 
-	void CreateTextureImage(const Device& device, const Render& render);
+	void CreateTextureImage(const Device& device, const Mesh& mesh, const Render& render);
 	void CreateTextureImageView(const VkDevice& device);
 	void CreateTextureSampler(const Device& device);
 
@@ -53,15 +54,17 @@ public:
 
 	static void TransitionImageLayout(const Device& device,
 		const Render& render,
-		VkImage image,
-		VkFormat format,
-		VkImageLayout oldLayout,
-		VkImageLayout newLayout);
+		const VkImage image,
+		const VkFormat format,
+		const Mesh& mesh,
+		const VkImageLayout oldLayout,
+		const VkImageLayout newLayout);
 	static void CopyBufferToImage(const Device& device,
+		const Mesh& mesh,
 		const Render& render,
-		VkBuffer buffer,
-		VkImage image,
-		uint32_t width,
-		uint32_t height);
+		const VkBuffer buffer,
+		const VkImage image,
+		const uint32_t width,
+		const uint32_t height);
 	void Destroy(const VkDevice& device) const;
 };

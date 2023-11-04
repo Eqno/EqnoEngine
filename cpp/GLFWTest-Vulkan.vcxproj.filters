@@ -57,6 +57,9 @@
     <ClCompile Include="src\depth.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\mesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\shader.h">
@@ -102,6 +105,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\depth.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mesh.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

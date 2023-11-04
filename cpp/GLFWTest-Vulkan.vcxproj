@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./deps/stb;./include;./deps/glfw/include;./deps/glm;C:\VulkanSDK\1.3.236.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./deps/tinyobjloader;./deps/stb;./include;./deps/glfw/include;./deps/glm;C:\VulkanSDK\1.3.236.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -140,6 +140,7 @@
     <ClCompile Include="src\buffer.cpp" />
     <ClCompile Include="src\depth.cpp" />
     <ClCompile Include="src\instance.cpp" />
+    <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\uniform.cpp" />
     <ClCompile Include="src\device.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="include\config.h" />
     <ClInclude Include="include\depth.h" />
     <ClInclude Include="include\instance.h" />
+    <ClInclude Include="include\mesh.h" />
     <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\uniform.h" />
     <ClInclude Include="include\device.h" />

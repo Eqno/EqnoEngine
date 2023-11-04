@@ -51,6 +51,7 @@ void Render::CreateCommandBuffers(const VkDevice& device,
 
 void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 	const VkBuffer& vertexBuffer,
+	const Mesh& mesh,
 	const Pipeline& pipeline,
 	const SwapChain& swapChain,
 	const Descriptor& descriptor,
@@ -102,7 +103,7 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 	constexpr VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	vkCmdBindDescriptorSets(commandBuffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		pipeline.GetPipelineLayout(),
@@ -113,7 +114,7 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 		nullptr);
 
 	vkCmdDrawIndexed(commandBuffer,
-		static_cast<uint32_t>(INDICES.size()),
+		static_cast<uint32_t>(mesh.GetIndices().size()),
 		1,
 		0,
 		0,
@@ -125,6 +126,7 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 }
 
 void Render::CopyCommandBuffer(const Device& device,
+	const Mesh& mesh,
 	const VkBuffer& srcBuffer,
 	const VkBuffer& dstBuffer,
 	const VkDeviceSize& size) const {
@@ -132,7 +134,7 @@ void Render::CopyCommandBuffer(const Device& device,
 		device.GetLogical());
 	const VkBufferCopy copyRegion {.size = size,};
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-	EndSingleTimeCommands(device, commandBuffer);
+	EndSingleTimeCommands(device, mesh, commandBuffer);
 }
 
 VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
@@ -153,7 +155,7 @@ VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
 	return commandBuffer;
 }
 
-void Render::EndSingleTimeCommands(const Device& device,
+void Render::EndSingleTimeCommands(const Device& device, const Mesh& mesh,
 	VkCommandBuffer commandBuffer) const {
 	vkEndCommandBuffer(commandBuffer);
 
@@ -172,6 +174,7 @@ void Render::EndSingleTimeCommands(const Device& device,
 void Render::DrawFrame(const VkBuffer& indexBuffer,
 	const VkBuffer& vertexBuffer,
 	const Device& device,
+	const Mesh& mesh,
 	Depth& depth,
 	Window& window,
 	const Pipeline& pipeline,
@@ -209,6 +212,7 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 
 	RecordCommandBuffer(indexBuffer,
 		vertexBuffer,
+		mesh,
 		pipeline,
 		swapChain,
 		descriptor,
