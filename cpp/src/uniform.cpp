@@ -1,9 +1,11 @@
 #include "uniform.h"
 
 #include <chrono>
+#include <array>
 #include <stdexcept>
 
 #include "buffer.h"
+#include "texture.h"
 
 void Descriptor::CreateDescriptorSetLayout(const VkDevice& device) {
 	constexpr VkDescriptorSetLayoutBinding uboLayoutBinding {
@@ -14,32 +16,40 @@ void Descriptor::CreateDescriptorSetLayout(const VkDevice& device) {
 		.pImmutableSamplers = nullptr,
 	};
 
-	VkDescriptorSetLayoutCreateInfo layoutInfo {
-		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		.bindingCount = 1,
-		.pBindings = &uboLayoutBinding,
+	constexpr VkDescriptorSetLayoutBinding samplerLayoutBinding {
+		.binding = 1,
+		.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		.descriptorCount = 1,
+		.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+		.pImmutableSamplers = nullptr,
 	};
 
-	if (vkCreateDescriptorSetLayout(
-		device,
+	std::array bindings = {uboLayoutBinding, samplerLayoutBinding};
+
+	constexpr VkDescriptorSetLayoutCreateInfo layoutInfo {
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.bindingCount = static_cast<uint32_t>(bindings.size()),
+		.pBindings = bindings.data(),
+	};
+
+	if (vkCreateDescriptorSetLayout(device,
 		&layoutInfo,
 		nullptr,
-		&descriptorSetLayout
-	) != VK_SUCCESS) {
+		&descriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create descriptor set layout!");
 	}
 }
 
-void Descriptor::CreateDescriptorSets(const VkDevice& device) {
-	const std::vector layouts(
-		uniformBuffer.GetMaxFramesInFlight(),
-		descriptorSetLayout
-	);
+void Descriptor::CreateDescriptorSets(const VkDevice& device,
+	const Texture& texture) {
+	const std::vector layouts(uniformBuffer.GetMaxFramesInFlight(),
+		descriptorSetLayout);
 
 	const VkDescriptorSetAllocateInfo allocInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
 		.descriptorPool = descriptorPool,
-		.descriptorSetCount = static_cast<uint32_t>(uniformBuffer.GetMaxFramesInFlight()),
+		.descriptorSetCount = static_cast<uint32_t>(uniformBuffer.
+			GetMaxFramesInFlight()),
 		.pSetLayouts = layouts.data(),
 	};
 
@@ -56,31 +66,60 @@ void Descriptor::CreateDescriptorSets(const VkDevice& device) {
 			.range = sizeof(UniformBufferObject),
 		};
 
-		VkWriteDescriptorSet descriptorWrite {
-			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.dstSet = descriptorSets[i],
-			.dstBinding = 0,
-			.dstArrayElement = 0,
-			.descriptorCount = 1,
-			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.pBufferInfo = &bufferInfo,
+		VkDescriptorImageInfo imageInfo {
+			.sampler = texture.GetTextureSampler(),
+			.imageView = texture.GetTextureImageView(),
+			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		};
 
-		vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+		std::array descriptorWrites {
+			VkWriteDescriptorSet {
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = descriptorSets[i],
+				.dstBinding = 0,
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				.pBufferInfo = &bufferInfo,
+			},
+			VkWriteDescriptorSet {
+				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+				.dstSet = descriptorSets[i],
+				.dstBinding = 1,
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				.pImageInfo = &imageInfo,
+			},
+		};
+
+		vkUpdateDescriptorSets(device,
+			descriptorWrites.size(),
+			descriptorWrites.data(),
+			0,
+			nullptr);
 	}
 }
 
 void Descriptor::CreateDescriptorPool(const VkDevice& device) {
-	constexpr VkDescriptorPoolSize poolSize {
-		.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-		.descriptorCount = static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT),
+	std::array poolSizes {
+		VkDescriptorPoolSize {
+			.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.descriptorCount = static_cast<uint32_t>(uniformBuffer.
+				GetMaxFramesInFlight()),
+		},
+		VkDescriptorPoolSize {
+			.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.descriptorCount = static_cast<uint32_t>(uniformBuffer.
+				GetMaxFramesInFlight()),
+		},
 	};
 
 	VkDescriptorPoolCreateInfo poolInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.maxSets = static_cast<uint32_t>(Config::MAX_FRAMES_IN_FLIGHT),
-		.poolSizeCount = 1,
-		.pPoolSizes = &poolSize,
+		.maxSets = static_cast<uint32_t>(uniformBuffer.GetMaxFramesInFlight()),
+		.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+		.pPoolSizes = poolSizes.data(),
 	};
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) !=
@@ -96,60 +135,49 @@ void Descriptor::Destroy(const VkDevice& device) const {
 }
 
 void UniformBuffer::CreateUniformBuffers(const Device& device) {
-	uniformBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
-	uniformBuffersMemory.resize(Config::MAX_FRAMES_IN_FLIGHT);
-	uniformBuffersMapped.resize(Config::MAX_FRAMES_IN_FLIGHT);
+	uniformBuffers.resize(maxFramesInFlight);
+	uniformBuffersMemory.resize(maxFramesInFlight);
+	uniformBuffersMapped.resize(maxFramesInFlight);
 
-	for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
-		Buffer::CreateBuffer(
-			device,
+	for (size_t i = 0; i < maxFramesInFlight; i++) {
+		Buffer::CreateBuffer(device,
 			sizeof(UniformBufferObject),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			uniformBuffers[i],
-			uniformBuffersMemory[i]
-		);
+			uniformBuffersMemory[i]);
 
-		vkMapMemory(
-			device.GetLogical(),
+		vkMapMemory(device.GetLogical(),
 			uniformBuffersMemory[i],
 			0,
 			sizeof(UniformBufferObject),
 			0,
-			&uniformBuffersMapped[i]
-		);
+			&uniformBuffersMapped[i]);
 	}
 }
 
-void UniformBuffer::UpdateUniformBuffer(
-	const VkExtent2D& swapChainExtent,
+void UniformBuffer::UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
 	const uint32_t currentImage) const {
 	static auto startTime = std::chrono::high_resolution_clock::now();
 	const auto currentTime = std::chrono::high_resolution_clock::now();
 
-	const auto time = std::chrono::duration<float, std::chrono::seconds::period>(
-		currentTime - startTime
-	).count();
+	const auto time = std::chrono::duration<float,
+		std::chrono::seconds::period>(currentTime - startTime).count();
 
 	UniformBufferObject ubo {
-		.model = rotate(
-			glm::mat4(1.0f),
+		.model =
+		rotate(glm::mat4(1.0f),
 			time * glm::radians(90.0f),
-			glm::vec3(0.0f, 0.0f, 1.0f)
-		),
-		.view = lookAt(
-			glm::vec3(2.0f, 2.0f, 2.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f)),
+		.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
 			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 1.0f)
-		),
-		.proj = glm::perspective(
-			glm::radians(45.0f),
-			static_cast<float>(swapChainExtent.width)
-			/ static_cast<float>(swapChainExtent.height),
+			glm::vec3(0.0f, 0.0f, 1.0f)),
+		.proj = glm::perspective(glm::radians(45.0f),
+			static_cast<float>(swapChainExtent.width) / static_cast<float>(
+				swapChainExtent.height),
 			0.1f,
-			10.0f
-		),
+			10.0f),
 	};
 	ubo.proj[1][1] *= -1;
 	memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));

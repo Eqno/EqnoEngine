@@ -1,6 +1,7 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS // NOLINT(clang-diagnostic-unused-macros)
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -9,6 +10,8 @@
 
 #include "config.h"
 #include "device.h"
+
+class Texture;
 
 using UniformMapped = std::vector<void*>;
 using UniformBuffers = std::vector<VkBuffer>;
@@ -22,16 +25,17 @@ struct UniformBufferObject {
 };
 
 class UniformBuffer {
-	const int maxFramesInFlight;
+	int maxFramesInFlight;
 	UniformBuffers uniformBuffers;
 	UniformMemories uniformBuffersMemory;
 	UniformMapped uniformBuffersMapped;
 
 public:
-	explicit UniformBuffer() : maxFramesInFlight(Config::MAX_FRAMES_IN_FLIGHT) {}
+	explicit UniformBuffer() : maxFramesInFlight(Config::MAX_FRAMES_IN_FLIGHT) {
+	}
 
-	explicit
-	UniformBuffer(const int maxFrames) : maxFramesInFlight(maxFrames) {}
+	explicit UniformBuffer(const int maxFrames) : maxFramesInFlight(maxFrames) {
+	}
 
 	[[nodiscard]] const int& GetMaxFramesInFlight() const {
 		return maxFramesInFlight;
@@ -43,10 +47,8 @@ public:
 
 	void CreateUniformBuffers(const Device& device);
 
-	void UpdateUniformBuffer(
-		const VkExtent2D& swapChainExtent,
-		uint32_t currentImage
-	) const;
+	void UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
+		uint32_t currentImage) const;
 
 	void Destroy(const VkDevice& device) const;
 };
@@ -58,6 +60,10 @@ class Descriptor {
 	DescriptorSets descriptorSets {};
 
 public:
+	[[nodiscard]] const UniformBuffer& GetUniformBuffer() const {
+		return uniformBuffer;
+	}
+
 	[[nodiscard]] const VkDescriptorSetLayout& GetSetLayout() const {
 		return descriptorSetLayout;
 	}
@@ -67,17 +73,15 @@ public:
 	}
 
 	void CreateDescriptorSetLayout(const VkDevice& device);
-	void CreateDescriptorSets(const VkDevice& device);
+	void CreateDescriptorSets(const VkDevice& device, const Texture& texture);
 	void CreateDescriptorPool(const VkDevice& device);
 
 	void CreateUniformBuffers(const Device& device) {
 		uniformBuffer.CreateUniformBuffers(device);
 	}
 
-	void UpdateUniformBuffers(
-		const VkExtent2D& swapChainExtent,
-		const uint32_t currentImage
-	) const {
+	void UpdateUniformBuffers(const VkExtent2D& swapChainExtent,
+		const uint32_t currentImage) const {
 		uniformBuffer.UpdateUniformBuffer(swapChainExtent, currentImage);
 	}
 

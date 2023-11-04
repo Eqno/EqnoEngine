@@ -5,11 +5,11 @@
 
 #include "device.h"
 #include "pipeline.h"
+#include "texture.h"
 #include "window.h"
 
 VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
-	const SurfaceFormats& availableFormats
-) {
+	const SurfaceFormats& availableFormats) {
 	for (const auto& format: availableFormats) {
 		if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace ==
 			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -20,8 +20,7 @@ VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
 }
 
 VkPresentModeKHR SwapChain::ChoosePresentMode(
-	const PresentModes& availablePresentModes
-) {
+	const PresentModes& availablePresentModes) {
 	for (const auto& mode: availablePresentModes) {
 		if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
 			return mode;
@@ -32,8 +31,7 @@ VkPresentModeKHR SwapChain::ChoosePresentMode(
 
 VkExtent2D SwapChain::ChooseSwapExtent(
 	const VkSurfaceCapabilitiesKHR& capabilities,
-	const Window& window
-) {
+	const Window& window) {
 	if (capabilities.currentExtent.width != std::numeric_limits<
 		uint32_t>::max()) {
 		return capabilities.currentExtent;
@@ -41,16 +39,12 @@ VkExtent2D SwapChain::ChooseSwapExtent(
 
 	auto [width, height] = window.GetFrameBufferSize();
 	return {
-		std::clamp(
-			static_cast<uint32_t>(width),
+		std::clamp(static_cast<uint32_t>(width),
 			capabilities.minImageExtent.width,
-			capabilities.maxImageExtent.width
-		),
-		std::clamp(
-			static_cast<uint32_t>(height),
+			capabilities.maxImageExtent.width),
+		std::clamp(static_cast<uint32_t>(height),
 			capabilities.minImageExtent.height,
-			capabilities.maxImageExtent.height
-		)
+			capabilities.maxImageExtent.height)
 	};
 }
 
@@ -82,8 +76,7 @@ void SwapChain::Create(const Device& device, const Window& window) {
 		.clipped = VK_TRUE,
 	};
 	const auto [graphicsFamily, presentFamily] = device.FindQueueFamilies(
-		window.GetSurface()
-	);
+		window.GetSurface());
 
 	const uint32_t queueFamilyIndices[] = {
 		graphicsFamily.has_value() ? graphicsFamily.value() : 0,
@@ -98,13 +91,16 @@ void SwapChain::Create(const Device& device, const Window& window) {
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	}
 
-	if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain) !=
-		VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain)
+		!= VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain!");
 	}
 	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, nullptr);
 	images.resize(imageCount);
-	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, images.data());
+	vkGetSwapchainImagesKHR(device.GetLogical(),
+		chain,
+		&imageCount,
+		images.data());
 
 	imageFormat = format;
 	extent = newExtent;
@@ -113,29 +109,8 @@ void SwapChain::Create(const Device& device, const Window& window) {
 void SwapChain::CreateImageViews(const VkDevice& device) {
 	imageViews.resize(images.size());
 	for (size_t i = 0; i < images.size(); i++) {
-		VkImageViewCreateInfo createInfo {
-			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image = images[i],
-			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = imageFormat,
-			.components = {
-				.r = VK_COMPONENT_SWIZZLE_IDENTITY,
-				.g = VK_COMPONENT_SWIZZLE_IDENTITY,
-				.b = VK_COMPONENT_SWIZZLE_IDENTITY,
-				.a = VK_COMPONENT_SWIZZLE_IDENTITY,
-			},
-			.subresourceRange = {
-				.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-				.baseMipLevel = 0,
-				.levelCount = 1,
-				.baseArrayLayer = 0,
-				.layerCount = 1,
-			},
-		};
-		if (vkCreateImageView(device, &createInfo, nullptr, &imageViews[i]) !=
-			VK_SUCCESS) {
-			throw std::runtime_error("failed to create image views!");
-		}
+		imageViews[i] =
+			Texture::CreateImageView(device, images[i], imageFormat);
 	}
 }
 
@@ -149,10 +124,8 @@ void SwapChain::CleanupSwapChain(const VkDevice& device) const {
 	vkDestroySwapchainKHR(device, chain, nullptr);
 }
 
-void SwapChain::CreateFrameBuffers(
-	const VkDevice& device,
-	const VkRenderPass& renderPass
-) {
+void SwapChain::CreateFrameBuffers(const VkDevice& device,
+	const VkRenderPass& renderPass) {
 	frameBuffers.resize(imageViews.size());
 	for (size_t i = 0; i < imageViews.size(); i++) {
 		VkImageView attachments[] = {imageViews[i]};
@@ -166,18 +139,18 @@ void SwapChain::CreateFrameBuffers(
 			.height = extent.height,
 			.layers = 1,
 		};
-		if (vkCreateFramebuffer(
-			device,
+		if (vkCreateFramebuffer(device,
 			&frameBufferInfo,
 			nullptr,
-			&frameBuffers[i]
-		) != VK_SUCCESS) {
+			&frameBuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create frame buffer!");
 		}
 	}
 }
 
-void SwapChain::RecreateSwapChain(const Device& device, const Window& window, const Pipeline& pipeline) {
+void SwapChain::RecreateSwapChain(const Device& device,
+	const Window& window,
+	const Pipeline& pipeline) {
 	window.OnRecreateSwapChain();
 	device.WaitIdle();
 

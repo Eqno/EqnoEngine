@@ -8,17 +8,22 @@
 #include "uniform.h"
 #include "vertex.h"
 
-void Render::CreateCommandPool(const Device& device, const VkSurfaceKHR& surface) {
-	const auto [graphicsFamily, presentFamily] = device.FindQueueFamilies(surface);
+void Render::CreateCommandPool(const Device& device,
+	const VkSurfaceKHR& surface) {
+	const auto [graphicsFamily, presentFamily] = device.
+		FindQueueFamilies(surface);
 
 	const VkCommandPoolCreateInfo poolInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-		.queueFamilyIndex = graphicsFamily.has_value() ? graphicsFamily.value() : 0,
+		.queueFamilyIndex = graphicsFamily.has_value() ? graphicsFamily.value()
+		: 0,
 	};
 
-	if (vkCreateCommandPool(device.GetLogical(), &poolInfo, nullptr, &commandPool)
-		!= VK_SUCCESS) {
+	if (vkCreateCommandPool(device.GetLogical(),
+		&poolInfo,
+		nullptr,
+		&commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics command pool!");
 	}
 }
@@ -27,8 +32,9 @@ void Render::DestroyCommandPool(const VkDevice& device) const {
 	vkDestroyCommandPool(device, commandPool, nullptr);
 }
 
-void Render::CreateCommandBuffers(const VkDevice& device) {
-	commandBuffers.resize(Config::MAX_FRAMES_IN_FLIGHT);
+void Render::CreateCommandBuffers(const VkDevice& device,
+	int maxFramesInFlight) {
+	commandBuffers.resize(maxFramesInFlight);
 
 	const VkCommandBufferAllocateInfo allocInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -37,30 +43,25 @@ void Render::CreateCommandBuffers(const VkDevice& device) {
 		.commandBufferCount = static_cast<uint32_t>(commandBuffers.size()),
 	};
 
-	if (vkAllocateCommandBuffers(
-		device,
-		&allocInfo,
-		commandBuffers.data()
-	) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) !=
+		VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
 }
 
-void Render::RecordCommandBuffer(
-	const VkBuffer& indexBuffer,
+void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 	const VkBuffer& vertexBuffer,
 	const Pipeline& pipeline,
 	const SwapChain& swapChain,
 	const Descriptor& descriptor,
-	const uint32_t imageIndex
-) const {
+	const uint32_t imageIndex) const {
 	const VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
 
-	constexpr VkCommandBufferBeginInfo beginInfo {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,};
+	constexpr VkCommandBufferBeginInfo beginInfo {
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+	};
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-		throw std::runtime_error(
-			"failed to begin recording command buffer!"
-		);
+		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
 	constexpr VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
@@ -74,17 +75,13 @@ void Render::RecordCommandBuffer(
 	renderPassInfo.renderArea.offset = {0, 0};
 	renderPassInfo.renderArea.extent = swapChain.GetExtent();
 
-	vkCmdBeginRenderPass(
-		commandBuffer,
+	vkCmdBeginRenderPass(commandBuffer,
 		&renderPassInfo,
-		VK_SUBPASS_CONTENTS_INLINE
-	);
+		VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(
-		commandBuffer,
+	vkCmdBindPipeline(commandBuffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline.GetGraphicsPipeline()
-	);
+		pipeline.GetGraphicsPipeline());
 
 	const VkViewport viewport {
 		.x = 0.0f,
@@ -96,42 +93,30 @@ void Render::RecordCommandBuffer(
 	};
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-	const VkRect2D scissor {
-		.offset = {0, 0},
-		.extent = swapChain.GetExtent(),
-	};
+	const VkRect2D scissor {.offset = {0, 0}, .extent = swapChain.GetExtent(),};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	const VkBuffer vertexBuffers[] = {vertexBuffer};
 	constexpr VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-	vkCmdBindIndexBuffer(
-		commandBuffer,
-		indexBuffer,
-		0,
-		VK_INDEX_TYPE_UINT16
-	);
+	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-	vkCmdBindDescriptorSets(
-		commandBuffer,
+	vkCmdBindDescriptorSets(commandBuffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		pipeline.GetPipelineLayout(),
 		0,
 		1,
 		&descriptor.GetDescriptorSets()[currentFrame],
 		0,
-		nullptr
-	);
+		nullptr);
 
-	vkCmdDrawIndexed(
-		commandBuffer,
+	vkCmdDrawIndexed(commandBuffer,
 		static_cast<uint32_t>(INDICES.size()),
 		1,
 		0,
 		0,
-		0
-	);
+		0);
 
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -140,13 +125,12 @@ void Render::RecordCommandBuffer(
 	}
 }
 
-void Render::CopyCommandBuffer(
-	const Device& device,
+void Render::CopyCommandBuffer(const Device& device,
 	const VkBuffer& srcBuffer,
 	const VkBuffer& dstBuffer,
-	const VkDeviceSize& size
-) const {
-	const VkCommandBuffer commandBuffer = BeginSingleTimeCommands(device.GetLogical());
+	const VkDeviceSize& size) const {
+	const VkCommandBuffer commandBuffer = BeginSingleTimeCommands(
+		device.GetLogical());
 	const VkBufferCopy copyRegion {.size = size,};
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 	EndSingleTimeCommands(device, commandBuffer);
@@ -170,7 +154,8 @@ VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
 	return commandBuffer;
 }
 
-void Render::EndSingleTimeCommands(const Device& device, VkCommandBuffer commandBuffer) const {
+void Render::EndSingleTimeCommands(const Device& device,
+	VkCommandBuffer commandBuffer) const {
 	vkEndCommandBuffer(commandBuffer);
 
 	const VkSubmitInfo submitInfo {
@@ -185,32 +170,26 @@ void Render::EndSingleTimeCommands(const Device& device, VkCommandBuffer command
 	vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, &commandBuffer);
 }
 
-void Render::DrawFrame(
-	const VkBuffer& indexBuffer,
+void Render::DrawFrame(const VkBuffer& indexBuffer,
 	const VkBuffer& vertexBuffer,
 	const Device& device,
 	Window& window,
 	const Pipeline& pipeline,
 	SwapChain& swapChain,
-	const Descriptor& descriptor
-) {
-	vkWaitForFences(
-		device.GetLogical(),
+	const Descriptor& descriptor) {
+	vkWaitForFences(device.GetLogical(),
 		1,
 		&inFlightFences[currentFrame],
 		VK_TRUE,
-		UINT64_MAX
-	);
+		UINT64_MAX);
 
 	uint32_t imageIndex;
-	auto result = vkAcquireNextImageKHR(
-		device.GetLogical(),
+	auto result = vkAcquireNextImageKHR(device.GetLogical(),
 		swapChain.Get(),
 		UINT64_MAX,
 		imageAvailableSemaphores[currentFrame],
 		VK_NULL_HANDLE,
-		&imageIndex
-	);
+		&imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		swapChain.RecreateSwapChain(device, window, pipeline);
@@ -224,13 +203,16 @@ void Render::DrawFrame(
 
 	vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
 
-	vkResetCommandBuffer(
-		commandBuffers[currentFrame],
+	vkResetCommandBuffer(commandBuffers[currentFrame],
 		/*VkCommandBufferResetFlagBits*/
-		0
-	);
+		0);
 
-	RecordCommandBuffer(indexBuffer, vertexBuffer, pipeline, swapChain, descriptor, imageIndex);
+	RecordCommandBuffer(indexBuffer,
+		vertexBuffer,
+		pipeline,
+		swapChain,
+		descriptor,
+		imageIndex);
 
 	const VkSemaphore waitSemaphores[] = {
 		imageAvailableSemaphores[currentFrame]
@@ -253,12 +235,10 @@ void Render::DrawFrame(
 		.pSignalSemaphores = signalSemaphores,
 	};
 
-	if (vkQueueSubmit(
-		device.GetGraphicsQueue(),
+	if (vkQueueSubmit(device.GetGraphicsQueue(),
 		1,
 		&submitInfo,
-		inFlightFences[currentFrame]
-	) != VK_SUCCESS) {
+		inFlightFences[currentFrame]) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
@@ -281,13 +261,15 @@ void Render::DrawFrame(
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
 	}
-	currentFrame = (currentFrame + 1) % Config::MAX_FRAMES_IN_FLIGHT;
+	currentFrame = (currentFrame + 1) % descriptor.GetUniformBuffer().
+		GetMaxFramesInFlight();
 }
 
-void Render::CreateSyncObjects(const VkDevice& device) {
-	imageAvailableSemaphores.resize(Config::MAX_FRAMES_IN_FLIGHT);
-	renderFinishedSemaphores.resize(Config::MAX_FRAMES_IN_FLIGHT);
-	inFlightFences.resize(Config::MAX_FRAMES_IN_FLIGHT);
+void Render::CreateSyncObjects(const VkDevice& device,
+	const int maxFramesInFlight) {
+	imageAvailableSemaphores.resize(maxFramesInFlight);
+	renderFinishedSemaphores.resize(maxFramesInFlight);
+	inFlightFences.resize(maxFramesInFlight);
 
 	constexpr VkSemaphoreCreateInfo semaphoreInfo {
 		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -298,42 +280,29 @@ void Render::CreateSyncObjects(const VkDevice& device) {
 		.flags = VK_FENCE_CREATE_SIGNALED_BIT,
 	};
 
-	for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
-		if (vkCreateSemaphore(
+	for (size_t i = 0; i < maxFramesInFlight; i++) {
+		if (vkCreateSemaphore(device,
+			&semaphoreInfo,
+			nullptr,
+			&imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(
 			device,
 			&semaphoreInfo,
 			nullptr,
-			&imageAvailableSemaphores[i]
-		) != VK_SUCCESS || vkCreateSemaphore(
-			device,
-			&semaphoreInfo,
-			nullptr,
-			&renderFinishedSemaphores[i]
-		) != VK_SUCCESS || vkCreateFence(
-			device,
+			&renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(device,
 			&fenceInfo,
 			nullptr,
-			&inFlightFences[i]
-		) != VK_SUCCESS) {
+			&inFlightFences[i]) != VK_SUCCESS) {
 			throw std::runtime_error(
-				"failed to create synchronization objects for a frame!"
-			);
+				"failed to create synchronization objects for a frame!");
 		}
 	}
 }
 
-void Render::DestroySyncObjects(const VkDevice& device) const {
-	for (size_t i = 0; i < Config::MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroySemaphore(
-			device,
-			renderFinishedSemaphores[i],
-			nullptr
-		);
-		vkDestroySemaphore(
-			device,
-			imageAvailableSemaphores[i],
-			nullptr
-		);
+void Render::DestroySyncObjects(const VkDevice& device,
+	const int maxFramesInFlight) const {
+	for (size_t i = 0; i < maxFramesInFlight; i++) {
+		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
 }

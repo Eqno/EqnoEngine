@@ -30,11 +30,7 @@ class Shader {
 		},
 		{
 			"frag",
-			{
-				shaderc_glsl_fragment_shader,
-				VK_SHADER_STAGE_FRAGMENT_BIT,
-				"main"
-			}
+			{shaderc_glsl_fragment_shader, VK_SHADER_STAGE_FRAGMENT_BIT, "main"}
 		},
 	};
 
@@ -42,28 +38,20 @@ public:
 	explicit Shader() = default;
 	explicit Shader(const Definitions& definitions);
 
-	const ShaderTypeInfo& GetTypeByName(
-		const std::string& glslPath
-	) const;
+	const ShaderTypeInfo& GetTypeByName(const std::string& glslPath) const;
 
 	void CompileFromGLSLToSPV(const std::string& glslPath) const;
 
 	[[nodiscard]] static UIntegers ReadSPVFileAsBinary(
-		const std::string& spvPath
-	);
+		const std::string& spvPath);
 
 	[[nodiscard]] UIntegers ReadGLSLFileAsBinary(
-		const std::string& glslPath
-	) const;
+		const std::string& glslPath) const;
 
-	static VkShaderModule CreateModule(
-		const UIntegers& code,
-		const VkDevice& device
-	);
+	static VkShaderModule CreateModule(const UIntegers& code,
+		const VkDevice& device);
 
 	void DestroyModules(const VkDevice& device) const;
 
-	[[nodiscard]] ShaderStages AutoCreateStages(
-		const VkDevice& device
-	) const;
+	[[nodiscard]] ShaderStages AutoCreateStages(const VkDevice& device) const;
 };

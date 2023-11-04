@@ -8,11 +8,9 @@
 #include "uniform.h"
 #include "vertex.h"
 
-uint32_t Buffer::MemoryType(
-	const VkPhysicalDevice& physicalDevice,
+uint32_t Buffer::MemoryType(const VkPhysicalDevice& physicalDevice,
 	const glm::uint32_t& typeFilter,
-	const VkMemoryPropertyFlags& properties
-) {
+	const VkMemoryPropertyFlags& properties) {
 	VkPhysicalDeviceMemoryProperties memProperties {};
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
@@ -25,14 +23,12 @@ uint32_t Buffer::MemoryType(
 	throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-void Buffer::CreateBuffer(
-	const Device& device,
+void Buffer::CreateBuffer(const Device& device,
 	const VkDeviceSize& size,
 	const VkBufferUsageFlags& usage,
 	const VkMemoryPropertyFlags& properties,
 	VkBuffer& buffer,
-	VkDeviceMemory& bufferMemory
-) {
+	VkDeviceMemory& bufferMemory) {
 	const VkBufferCreateInfo bufferInfo {
 		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 		.size = size,
@@ -45,19 +41,21 @@ void Buffer::CreateBuffer(
 	}
 
 	VkMemoryRequirements memRequirements {};
-	vkGetBufferMemoryRequirements(device.GetLogical(), buffer, &memRequirements);
+	vkGetBufferMemoryRequirements(device.GetLogical(),
+		buffer,
+		&memRequirements);
 
 	const VkMemoryAllocateInfo allocInfo {
 		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 		.allocationSize = memRequirements.size,
-		.memoryTypeIndex = MemoryType(
-			device.GetPhysical(),
+		.memoryTypeIndex = MemoryType(device.GetPhysical(),
 			memRequirements.memoryTypeBits,
-			properties
-		),
+			properties),
 	};
-	if (vkAllocateMemory(device.GetLogical(), &allocInfo, nullptr, &bufferMemory) !=
-		VK_SUCCESS) {
+	if (vkAllocateMemory(device.GetLogical(),
+		&allocInfo,
+		nullptr,
+		&bufferMemory) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to allocate buffer memory!");
 	}
 	vkBindBufferMemory(device.GetLogical(), buffer, bufferMemory, 0);
@@ -69,37 +67,32 @@ void Buffer::CreateVertexBuffer(const Device& device, const Render& render) {
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	CreateBuffer(
-		device,
+	CreateBuffer(device,
 		bufferSize,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		stagingBuffer,
-		stagingBufferMemory
-	);
+		stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, bufferSize, 0, &data);
+	vkMapMemory(device.GetLogical(),
+		stagingBufferMemory,
+		0,
+		bufferSize,
+		0,
+		&data);
 	memcpy(data, VERTICES.data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
-	CreateBuffer(
-		device,
+	CreateBuffer(device,
 		bufferSize,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		vertexBuffer,
-		vertexBufferMemory
-	);
+		vertexBufferMemory);
 
-	render.CopyCommandBuffer(
-		device,
-		stagingBuffer,
-		vertexBuffer,
-		bufferSize
-	);
+	render.CopyCommandBuffer(device, stagingBuffer, vertexBuffer, bufferSize);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
@@ -110,36 +103,32 @@ void Buffer::CreateIndexBuffer(const Device& device, const Render& render) {
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	CreateBuffer(
-		device,
+	CreateBuffer(device,
 		bufferSize,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		stagingBuffer,
-		stagingBufferMemory
-	);
+		stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, bufferSize, 0, &data);
+	vkMapMemory(device.GetLogical(),
+		stagingBufferMemory,
+		0,
+		bufferSize,
+		0,
+		&data);
 	memcpy(data, INDICES.data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
-	CreateBuffer(
-		device,
+	CreateBuffer(device,
 		bufferSize,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		indexBuffer,
-		indexBufferMemory
-	);
+		indexBufferMemory);
 
-	render.CopyCommandBuffer(
-		device,
-		stagingBuffer,
-		indexBuffer,
-		bufferSize
-	);
+	render.CopyCommandBuffer(device, stagingBuffer, indexBuffer, bufferSize);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);

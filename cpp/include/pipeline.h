@@ -14,18 +14,13 @@ public:
 	/**
 	 * 创建渲染流程
 	 */
-	void CreateRenderPass(
-		const VkFormat& imageFormat,
-		const VkDevice& device
-	);
+	void CreateRenderPass(const VkFormat& imageFormat, const VkDevice& device);
 	/**
 	 * 创建图形管线
 	 */
-	void CreateGraphicsPipeline(
-		const Shader& shader,
+	void CreateGraphicsPipeline(const Shader& shader,
 		const VkDevice& device,
-		const VkDescriptorSetLayout& descriptorSetLayout
-	);
+		const VkDescriptorSetLayout& descriptorSetLayout);
 
 	/** Destructor And Cleaners **/
 	/**

@@ -9,10 +9,7 @@
 std::vector<const char*> GetRequiredExtensions(const Validation& validation) {
 	const auto& [glfwExtensions, glfwExtensionCount] =
 		Window::GetRequiredExtensions();
-	std::vector extensions(
-		glfwExtensions,
-		glfwExtensions + glfwExtensionCount
-	);
+	std::vector extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 	if (validation.GetEnabled()) {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
@@ -22,8 +19,7 @@ std::vector<const char*> GetRequiredExtensions(const Validation& validation) {
 void Instance::CreateInstance(const Validation& validation) {
 	if (validation.GetEnabled() && !validation.CheckLayerSupport()) {
 		throw std::runtime_error(
-			"validation layers requested, but not available!"
-		);
+			"validation layers requested, but not available!");
 	}
 	const auto extensions = GetRequiredExtensions(validation);
 
@@ -45,7 +41,8 @@ void Instance::CreateInstance(const Validation& validation) {
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 	if (validation.GetEnabled()) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validation.GetLayers().size());
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validation.
+			GetLayers().size());
 		createInfo.ppEnabledLayerNames = validation.GetLayers().data();
 
 		debugCreateInfo = validation.GetMessengerCreateInfo();

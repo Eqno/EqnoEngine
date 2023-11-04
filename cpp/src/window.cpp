@@ -4,11 +4,9 @@
 
 #include "config.h"
 
-void FrameBufferResizeCallback(
-	[[maybe_unused]] GLFWwindow* window,
+void FrameBufferResizeCallback([[maybe_unused]] GLFWwindow* window,
 	[[maybe_unused]] int width,
-	[[maybe_unused]] int height
-) {
+	[[maybe_unused]] int height) {
 	static_cast<Window*>(glfwGetWindowUserPointer(window))->
 		SetFrameBufferResized(true);
 }
@@ -21,9 +19,8 @@ std::pair<int, int> Window::GetFrameBufferSize() const {
 
 std::pair<const char**, uint32_t> Window::GetRequiredExtensions() {
 	uint32_t glfwExtensionCount = 0;
-	auto glfwExtensions = glfwGetRequiredInstanceExtensions(
-		&glfwExtensionCount
-	);
+	auto glfwExtensions =
+		glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 	return std::make_pair(glfwExtensions, glfwExtensionCount);
 }
 

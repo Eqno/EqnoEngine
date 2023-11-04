@@ -16,20 +16,16 @@ class Buffer {
 public:
 	Buffer() = default;
 
-	static uint32_t MemoryType(
-		const VkPhysicalDevice& physicalDevice,
+	static uint32_t MemoryType(const VkPhysicalDevice& physicalDevice,
 		const glm::uint32_t& typeFilter,
-		const VkMemoryPropertyFlags& properties
-	);
+		const VkMemoryPropertyFlags& properties);
 
-	static void CreateBuffer(
-		const Device& device,
+	static void CreateBuffer(const Device& device,
 		const VkDeviceSize& size,
 		const VkBufferUsageFlags& usage,
 		const VkMemoryPropertyFlags& properties,
 		VkBuffer& buffer,
-		VkDeviceMemory& bufferMemory
-	);
+		VkDeviceMemory& bufferMemory);
 
 	void CreateVertexBuffer(const Device& device, const Render& render);
 	void CreateIndexBuffer(const Device& device, const Render& render);

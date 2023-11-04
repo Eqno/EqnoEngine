@@ -4,10 +4,8 @@
 
 #include "vertex.h"
 
-void Pipeline::CreateRenderPass(
-	const VkFormat& imageFormat,
-	const VkDevice& device
-) {
+void Pipeline::CreateRenderPass(const VkFormat& imageFormat,
+	const VkDevice& device) {
 	const VkAttachmentDescription colorAttachment {
 		.format = imageFormat,
 		.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -50,11 +48,9 @@ void Pipeline::CreateRenderPass(
 	}
 }
 
-void Pipeline::CreateGraphicsPipeline(
-	const Shader& shader,
+void Pipeline::CreateGraphicsPipeline(const Shader& shader,
 	const VkDevice& device,
-	const VkDescriptorSetLayout& descriptorSetLayout
-) {
+	const VkDescriptorSetLayout& descriptorSetLayout) {
 	auto shaderStages(shader.AutoCreateStages(device));
 	auto bindingDescription = Vertex::GetBindingDescription();
 	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -118,12 +114,10 @@ void Pipeline::CreateGraphicsPipeline(
 		.setLayoutCount = 1,
 		.pSetLayouts = &descriptorSetLayout,
 	};
-	if (vkCreatePipelineLayout(
-		device,
+	if (vkCreatePipelineLayout(device,
 		&pipelineLayoutInfo,
 		nullptr,
-		&pipelineLayout
-	) != VK_SUCCESS) {
+		&pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 	const VkGraphicsPipelineCreateInfo pipelineInfo {
@@ -142,14 +136,12 @@ void Pipeline::CreateGraphicsPipeline(
 		.subpass = 0,
 		.basePipelineHandle = VK_NULL_HANDLE,
 	};
-	if (vkCreateGraphicsPipelines(
-		device,
+	if (vkCreateGraphicsPipelines(device,
 		VK_NULL_HANDLE,
 		1,
 		&pipelineInfo,
 		nullptr,
-		&graphicsPipeline
-	) != VK_SUCCESS) {
+		&graphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 	shader.DestroyModules(device);

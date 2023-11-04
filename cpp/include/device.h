@@ -45,30 +45,24 @@ public:
 	 * 查找当前物理设备的队列族
 	 */
 	[[nodiscard]] QueueFamilyIndices FindQueueFamilies(
-		const VkSurfaceKHR& surface
-	) const;
+		const VkSurfaceKHR& surface) const;
 	/**
 	 * 查询当前物理设备的交换链支持
 	 */
 	[[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport(
-		const VkSurfaceKHR& surface
-	) const;
+		const VkSurfaceKHR& surface) const;
 
 	/** Pickers And Creators **/
 	/**
 	 * 创建逻辑设备的实例
 	 */
-	void CreateLogicalDevice(
-		const VkSurfaceKHR& surface,
-		const Validation& validation
-	);
+	void CreateLogicalDevice(const VkSurfaceKHR& surface,
+		const Validation& validation);
 	/**
 	 * 拾取物理设备的实例
 	 */
-	void PickPhysicalDevice(
-		const VkInstance& instance,
-		const VkSurfaceKHR& surface
-	);
+	void PickPhysicalDevice(const VkInstance& instance,
+		const VkSurfaceKHR& surface);
 	void DestroyLogicalDevice() const;
 
 	/** Getters And Setters **/

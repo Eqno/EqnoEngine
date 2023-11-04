@@ -13,17 +13,13 @@ class Validation {
 
 	VkDebugUtilsMessengerEXT debugMessenger {};
 
-	static void DestroyMessengerEXT(
-		const VkInstance& instance,
+	static void DestroyMessengerEXT(const VkInstance& instance,
 		const VkDebugUtilsMessengerEXT& debugMessenger,
-		const VkAllocationCallbacks* pAllocator
-	);
+		const VkAllocationCallbacks* pAllocator);
 
-	VkResult CreateMessengerEXT(
-		const VkInstance& instance,
+	VkResult CreateMessengerEXT(const VkInstance& instance,
 		const VkAllocationCallbacks* pAllocator,
-		VkDebugUtilsMessengerEXT* pDebugMessenger
-	) const;
+		VkDebugUtilsMessengerEXT* pDebugMessenger) const;
 
 public:
 	[[nodiscard]] const bool& GetEnabled() const {
@@ -35,11 +31,9 @@ public:
 	}
 
 	Validation();
-	Validation(
-		bool enabled,
+	Validation(bool enabled,
 		CStrings layers,
-		const MessengerCreateInfo& messengerInfo
-	);
+		const MessengerCreateInfo& messengerInfo);
 
 	[[nodiscard]] const MessengerCreateInfo& GetMessengerCreateInfo() const {
 		return messengerCreateInfo;

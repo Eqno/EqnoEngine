@@ -37,15 +37,13 @@ public:
 	void MainLoop() {
 		while (!glfwWindowShouldClose(window.window)) {
 			glfwPollEvents();
-			render.DrawFrame(
-				buffer.GetIndexBuffer(),
+			render.DrawFrame(buffer.GetIndexBuffer(),
 				buffer.GetVertexBuffer(),
 				device,
 				window,
 				pipeline,
 				swapChain,
-				descriptor
-			);
+				descriptor);
 		}
 		device.WaitIdle();
 	}
@@ -56,34 +54,39 @@ private:
 		validation.SetupMessenger(instance.GetVkInstance());
 		window.CreateSurface(instance.GetVkInstance());
 
-		device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
+		device.PickPhysicalDevice(instance.GetVkInstance(),
+			window.GetSurface());
 		device.CreateLogicalDevice(window.GetSurface(), validation);
 
 		swapChain.Create(device, window);
 		swapChain.CreateImageViews(device.GetLogical());
 
-		pipeline.CreateRenderPass(swapChain.GetImageFormat(), device.GetLogical());
+		pipeline.CreateRenderPass(swapChain.GetImageFormat(),
+			device.GetLogical());
 		descriptor.CreateDescriptorSetLayout(device.GetLogical());
 
-		pipeline.CreateGraphicsPipeline(
-			shader,
+		pipeline.CreateGraphicsPipeline(shader,
 			device.GetLogical(),
-			descriptor.GetSetLayout()
-		);
-		swapChain.CreateFrameBuffers(device.GetLogical(), pipeline.GetRenderPass());
+			descriptor.GetSetLayout());
+		swapChain.CreateFrameBuffers(device.GetLogical(),
+			pipeline.GetRenderPass());
 
 		render.CreateCommandPool(device, window.GetSurface());
 		texture.CreateTextureImage(device, render);
+		texture.CreateTextureImageView(device.GetLogical());
+		texture.CreateTextureSampler(device);
 
 		buffer.CreateVertexBuffer(device, render);
 		buffer.CreateIndexBuffer(device, render);
 
 		descriptor.CreateUniformBuffers(device);
 		descriptor.CreateDescriptorPool(device.GetLogical());
-		descriptor.CreateDescriptorSets(device.GetLogical());
+		descriptor.CreateDescriptorSets(device.GetLogical(), texture);
 
-		render.CreateCommandBuffers(device.GetLogical());
-		render.CreateSyncObjects(device.GetLogical());
+		render.CreateCommandBuffers(device.GetLogical(),
+			descriptor.GetUniformBuffer().GetMaxFramesInFlight());
+		render.CreateSyncObjects(device.GetLogical(),
+			descriptor.GetUniformBuffer().GetMaxFramesInFlight());
 	}
 
 	void Cleanup() const {
@@ -94,7 +97,8 @@ private:
 		texture.Destroy(device.GetLogical());
 
 		buffer.CleanupBuffers(device.GetLogical());
-		render.DestroySyncObjects(device.GetLogical());
+		render.DestroySyncObjects(device.GetLogical(),
+			descriptor.GetUniformBuffer().GetMaxFramesInFlight());
 		render.DestroyCommandPool(device.GetLogical());
 
 		device.DestroyLogicalDevice();
