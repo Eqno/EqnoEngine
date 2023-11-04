@@ -1,114 +1,349 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{753a9775-3229-4495-be41-a71c5cda702c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Engine\Camera">
+      <UniqueIdentifier>{83ed42d2-6111-490b-a288-c1f046cb4177}</UniqueIdentifier>
     </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Engine\Scene">
+      <UniqueIdentifier>{597e02d1-26fd-4791-9edb-a252ddf9426d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Model">
+      <UniqueIdentifier>{e5e8966c-82af-4cf4-8b3a-77c1659fe1c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI">
+      <UniqueIdentifier>{ca9d8c76-de59-43f6-9066-90b7526fcf73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan">
+      <UniqueIdentifier>{3334faa6-4362-4ec6-a3ad-9a2c027f8e7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Physics">
+      <UniqueIdentifier>{290d53c5-0d94-4554-ba2f-fde6ddccb4b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Sound">
+      <UniqueIdentifier>{59464d1c-6630-4af5-9908-f6d6f55ed1cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\include">
+      <UniqueIdentifier>{5f22eafc-d485-4c07-9b50-f9630cb661d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\src">
+      <UniqueIdentifier>{5eb5dac3-9bcb-4419-9a3d-9c844f52c599}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps">
+      <UniqueIdentifier>{a83056bd-5e72-45b6-8c61-220976c3bad1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\glfw">
+      <UniqueIdentifier>{ffb0ab2e-331f-4c24-aa70-bbd03c38f35d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\glm">
+      <UniqueIdentifier>{d0145df7-682b-4a72-8caf-2625f524f401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\stb">
+      <UniqueIdentifier>{7e425176-8fe4-4b4d-aa1d-97ec98d4d330}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\tinyobjloader">
+      <UniqueIdentifier>{7210ce7b-2e81-437a-9c2c-5d2f705df6ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\glfw\include">
+      <UniqueIdentifier>{397eb96c-e2d3-4b25-9c8f-d257634c92d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW">
+      <UniqueIdentifier>{59fca9fb-4ae4-452a-b407-4633a07ff570}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\glm\glm">
+      <UniqueIdentifier>{1973d35a-7861-48e5-a11f-402c734f05ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games">
+      <UniqueIdentifier>{5b452c55-5389-4fce-9bed-0c25f09829ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test">
+      <UniqueIdentifier>{fbedd343-932b-48e6-91cd-2cb1283f89ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets">
+      <UniqueIdentifier>{5c89b7d2-4c2a-4477-8fc6-387cc2770135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Shaders">
+      <UniqueIdentifier>{7718082b-f4d3-40ac-b108-ec4cee7ecc7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Shaders\glsl">
+      <UniqueIdentifier>{c3c0a518-5b5d-4669-862d-2bdc396b0973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Shaders\spv">
+      <UniqueIdentifier>{c170acec-ce42-4f08-bf16-08a789dc0bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Models">
+      <UniqueIdentifier>{1d216de4-95f7-40c2-8ffd-5be1ffa0b467}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Textures">
+      <UniqueIdentifier>{d4aa36fb-9f02-490b-a0f3-1777d88f050c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Materials">
+      <UniqueIdentifier>{8139a39c-a08e-49b0-b57e-b5682651c9ee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
-      <Filter>源文件</Filter>
+    <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\swapchain.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\texture.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\uniform.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\utils.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\validation.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\vertex.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\window.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\buffer.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\config.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\depth.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\device.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\instance.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\mesh.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\pipeline.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\render.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3.h">
+      <Filter>Engine\RHI\Vulkan\deps\glfw\include\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3native.h">
+      <Filter>Engine\RHI\Vulkan\deps\glfw\include\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat2x2.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat2x3.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat2x4.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat3x2.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat3x3.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat3x4.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat4x2.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat4x3.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat4x4.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\matrix.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\packing.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\trigonometric.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec2.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec3.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec4.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vector_relational.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\common.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\exponential.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\ext.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\fwd.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\geometric.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\glm.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\integer.hpp">
+      <Filter>Engine\RHI\Vulkan\deps\glm\glm</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_leakcheck.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_perlin.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_rect_pack.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_sprintf.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_textedit.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_tilemap_editor.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_truetype.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_voxel_render.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_c_lexer.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_connected_components.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_divide.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_ds.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_dxt.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_easy_font.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_herringbone_wang_tile.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_hexwave.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_image.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_image_resize2.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_image_write.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_include.h">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.h">
+      <Filter>Engine\RHI\Vulkan\deps\tinyobjloader</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Engine\RHI\Vulkan\src\mesh.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\shader.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\validation.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\render.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\device.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\shader.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\window.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\swapchain.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\render.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\texture.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\swapchain.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\uniform.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\pipeline.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\validation.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\uniform.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\vertex.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\vertex.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\window.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\buffer.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\buffer.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\instance.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\depth.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\texture.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\device.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\depth.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\instance.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\mesh.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Engine\RHI\Vulkan\src\vulkan.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c">
+      <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc">
+      <Filter>Engine\RHI\Vulkan\deps\tinyobjloader</Filter>
+    </ClCompile>
+    <ClCompile Include="Games\Test\main.cpp">
+      <Filter>Games\Test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\shader.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\validation.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\utils.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\device.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\window.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\render.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\config.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\swapchain.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\pipeline.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\uniform.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vertex.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\buffer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\instance.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\texture.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\depth.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\mesh.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    <None Include="Games\Test\Assets\Shaders\glsl\hello_triangle.frag">
+      <Filter>Games\Test\Assets\Shaders\glsl</Filter>
+    </None>
+    <None Include="Games\Test\Assets\Shaders\glsl\hello_triangle.vert">
+      <Filter>Games\Test\Assets\Shaders\glsl</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Games\Test\Assets\Textures\texture.jpg">
+      <Filter>Games\Test\Assets\Textures</Filter>
+    </Image>
+    <Image Include="Games\Test\Assets\Textures\viking_room.png">
+      <Filter>Games\Test\Assets\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

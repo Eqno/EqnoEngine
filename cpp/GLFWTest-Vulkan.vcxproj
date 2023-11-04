@@ -18,6 +18,99 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3native.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\common.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\exponential.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\ext.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\fwd.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\geometric.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\glm.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\integer.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat2x2.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat2x3.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat2x4.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat3x2.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat3x3.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat3x4.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat4x2.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat4x3.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\mat4x4.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\matrix.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\packing.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\trigonometric.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec2.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec3.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec4.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_connected_components.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_c_lexer.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_divide.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_ds.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_dxt.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_easy_font.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_herringbone_wang_tile.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_hexwave.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_image.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_image_resize2.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_image_write.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_include.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_leakcheck.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_perlin.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_rect_pack.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_sprintf.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_textedit.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_tilemap_editor.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_truetype.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_voxel_render.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\buffer.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\config.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\depth.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\device.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\instance.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\mesh.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\pipeline.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\render.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\shader.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\swapchain.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\texture.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\uniform.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\utils.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\validation.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\vertex.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c" />
+    <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\buffer.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\depth.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\device.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\instance.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\vulkan.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\mesh.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\render.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\shader.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\swapchain.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\texture.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\uniform.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\validation.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\vertex.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\window.cpp" />
+    <ClCompile Include="Games\Test\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Games\Test\Assets\Shaders\glsl\hello_triangle.frag" />
+    <None Include="Games\Test\Assets\Shaders\glsl\hello_triangle.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Games\Test\Assets\Textures\texture.jpg" />
+    <Image Include="Games\Test\Assets\Textures\viking_room.png" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -104,14 +197,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./deps/tinyobjloader;./deps/stb;./include;./deps/glfw/include;./deps/glm;C:\VulkanSDK\1.3.236.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.236.0\Include;./Engine/RHI/Vulkan/include;./Engine/RHI/Vulkan/deps/stb;./Engine/RHI/Vulkan/deps/glm;./Engine/RHI/Vulkan/deps/glfw/include;./Engine/RHI/Vulkan/deps/tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.236.0\Lib;./deps/glfw/lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.236.0\Lib;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;shaderc_shared.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -136,41 +229,6 @@
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;shaderc_shared.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="src\buffer.cpp" />
-    <ClCompile Include="src\depth.cpp" />
-    <ClCompile Include="src\instance.cpp" />
-    <ClCompile Include="src\mesh.cpp" />
-    <ClCompile Include="src\texture.cpp" />
-    <ClCompile Include="src\uniform.cpp" />
-    <ClCompile Include="src\device.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\pipeline.cpp" />
-    <ClCompile Include="src\render.cpp" />
-    <ClCompile Include="src\shader.cpp" />
-    <ClCompile Include="src\swapchain.cpp" />
-    <ClCompile Include="src\vertex.cpp" />
-    <ClCompile Include="src\window.cpp" />
-    <ClCompile Include="src\validation.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\buffer.h" />
-    <ClInclude Include="include\config.h" />
-    <ClInclude Include="include\depth.h" />
-    <ClInclude Include="include\instance.h" />
-    <ClInclude Include="include\mesh.h" />
-    <ClInclude Include="include\texture.h" />
-    <ClInclude Include="include\uniform.h" />
-    <ClInclude Include="include\device.h" />
-    <ClInclude Include="include\pipeline.h" />
-    <ClInclude Include="include\render.h" />
-    <ClInclude Include="include\shader.h" />
-    <ClInclude Include="include\swapchain.h" />
-    <ClInclude Include="include\vertex.h" />
-    <ClInclude Include="include\window.h" />
-    <ClInclude Include="include\utils.h" />
-    <ClInclude Include="include\validation.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

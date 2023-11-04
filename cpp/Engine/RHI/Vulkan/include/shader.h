@@ -23,7 +23,7 @@ class Shader {
 	shaderc::CompileOptions options;
 	mutable std::vector<VkShaderModule> shaderModules;
 
-	const std::unordered_map<std::string, ShaderTypeInfo> types {
+	std::unordered_map<std::string, ShaderTypeInfo> types {
 		{
 			"vert",
 			{shaderc_glsl_vertex_shader, VK_SHADER_STAGE_VERTEX_BIT, "main"}

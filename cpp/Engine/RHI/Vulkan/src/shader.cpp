@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "config.h"
+
 Shader::Shader(const Definitions& definitions) {
 	for (const auto& [name, value]: definitions) {
 		options.AddMacroDefinition(name, value);
@@ -16,11 +18,14 @@ const ShaderTypeInfo& Shader::GetTypeByName(const std::string& glslPath) const {
 }
 
 void Shader::CompileFromGLSLToSPV(const std::string& glslPath) const {
-	if (std::ifstream glslFile("shaders/glsl/" + glslPath); glslFile.
+	if (std::ifstream glslFile(Config::SHADER_PATH + glslPath); glslFile.
 		is_open()) {
+
 		std::stringstream buffer;
 		buffer << glslFile.rdbuf();
 		auto glslCode(buffer.str());
+
+		const char* tmp = glslCode.c_str();
 
 		auto module = compiler.CompileGlslToSpv(glslCode.c_str(),
 			glslCode.size(),
@@ -29,15 +34,14 @@ void Shader::CompileFromGLSLToSPV(const std::string& glslPath) const {
 			options);
 
 		if (module.GetCompilationStatus() !=
-			shaderc_compilation_status_success) {
+		    shaderc_compilation_status_success) {
 			std::cerr << module.GetErrorMessage();
 		}
 		std::vector spvCode(module.cbegin(), module.cend());
 
-		std::ofstream spvFile("shaders/spv/" + glslPath, std::ios::binary);
+		std::ofstream spvFile(Config::SHADER_PATH + "../spv/" + glslPath, std::ios::binary);
 		spvFile.write(reinterpret_cast<const char*>(spvCode.data()),
-			static_cast<std::streamsize>(sizeof(uint32_t) / sizeof(char) *
-				spvCode.size()));
+			sizeof(uint32_t) / sizeof(char) * spvCode.size());
 
 		spvFile.close();
 		glslFile.close();
@@ -48,7 +52,7 @@ void Shader::CompileFromGLSLToSPV(const std::string& glslPath) const {
 }
 
 UIntegers Shader::ReadSPVFileAsBinary(const std::string& spvPath) {
-	if (std::ifstream file("shaders/spv/" + spvPath,
+	if (std::ifstream file(Config::SHADER_PATH + "../spv/" + spvPath,
 		std::ios::ate | std::ios::binary); file.is_open()) {
 		const size_t fileSize = file.tellg();
 		UIntegers buffer(fileSize);
@@ -74,9 +78,9 @@ VkShaderModule Shader::CreateModule(const UIntegers& code,
 		.pCode = code.data(),
 	};
 	if (VkShaderModule shaderModule; vkCreateShaderModule(device,
-		&createInfo,
-		nullptr,
-		&shaderModule) == VK_SUCCESS) {
+		                                 &createInfo,
+		                                 nullptr,
+		                                 &shaderModule) == VK_SUCCESS) {
 		return shaderModule;
 	}
 	throw std::runtime_error("failed to create shader module!");
@@ -85,7 +89,7 @@ VkShaderModule Shader::CreateModule(const UIntegers& code,
 ShaderStages Shader::AutoCreateStages(const VkDevice& device) const {
 	ShaderStages shaderStages;
 	for (const auto& fileInfo: std::filesystem::directory_iterator(
-		     "shaders/glsl/")) {
+		     Config::SHADER_PATH)) {
 		const auto glslPath = fileInfo.path().filename().string();
 		shaderModules.emplace_back(CreateModule(ReadGLSLFileAsBinary(glslPath),
 			device));
