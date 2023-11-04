@@ -10,7 +10,7 @@
 
 void Descriptor::CreateDescriptorSets(const VkDevice& device,
 	const VkDescriptorSetLayout& descriptorSetLayout,
-	const Texture& texture) {
+	const std::vector<Texture>& textures) {
 	const std::vector layouts(uniformBuffer.GetMaxFramesInFlight(),
 		descriptorSetLayout);
 
@@ -29,62 +29,67 @@ void Descriptor::CreateDescriptorSets(const VkDevice& device,
 	}
 
 	for (auto i = 0; i < uniformBuffer.GetMaxFramesInFlight(); i++) {
+		std::vector<VkWriteDescriptorSet> descriptorWrites;
+		descriptorWrites.resize(textures.size() + 1);
+
 		VkDescriptorBufferInfo bufferInfo {
 			.buffer = uniformBuffer.GetUniformBuffers()[i],
 			.offset = 0,
 			.range = sizeof(UniformBufferObject),
 		};
-
-		VkDescriptorImageInfo imageInfo {
-			.sampler = texture.GetTextureSampler(),
-			.imageView = texture.GetTextureImageView(),
-			.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		descriptorWrites[0] = VkWriteDescriptorSet {
+			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+			.dstSet = descriptorSets[i],
+			.dstBinding = 0,
+			.dstArrayElement = 0,
+			.descriptorCount = 1,
+			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.pBufferInfo = &bufferInfo,
 		};
 
-		std::array descriptorWrites {
-			VkWriteDescriptorSet {
+		std::vector<VkDescriptorImageInfo> imageInfos;
+		imageInfos.resize(textures.size());
+
+		for (size_t j = 0; j < textures.size(); j++) {
+			imageInfos[j] = {
+				.sampler = textures[j].GetTextureSampler(),
+				.imageView = textures[j].GetTextureImageView(),
+				.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			};
+			descriptorWrites[j + 1] = {
 				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 				.dstSet = descriptorSets[i],
-				.dstBinding = 0,
-				.dstArrayElement = 0,
-				.descriptorCount = 1,
-				.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-				.pBufferInfo = &bufferInfo,
-			},
-			VkWriteDescriptorSet {
-				.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-				.dstSet = descriptorSets[i],
-				.dstBinding = 1,
+				.dstBinding = static_cast<uint32_t>(j + 1),
 				.dstArrayElement = 0,
 				.descriptorCount = 1,
 				.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-				.pImageInfo = &imageInfo,
-			},
-		};
-
+				.pImageInfo = &imageInfos[j],
+			};
+		}
 		vkUpdateDescriptorSets(device,
-			descriptorWrites.size(),
+			static_cast<uint32_t>(descriptorWrites.size()),
 			descriptorWrites.data(),
 			0,
 			nullptr);
 	}
 }
 
-void Descriptor::CreateDescriptorPool(const VkDevice& device) {
-	std::array poolSizes {
-		VkDescriptorPoolSize {
-			.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.descriptorCount = static_cast<uint32_t>(uniformBuffer.
-				GetMaxFramesInFlight()),
-		},
-		VkDescriptorPoolSize {
-			.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			.descriptorCount = static_cast<uint32_t>(uniformBuffer.
-				GetMaxFramesInFlight()),
-		},
-	};
+void Descriptor::CreateDescriptorPool(const VkDevice& device,
+	const size_t textureNum) {
+	std::vector<VkDescriptorPoolSize> poolSizes;
+	poolSizes.resize(textureNum + 1);
 
-	VkDescriptorPoolCreateInfo poolInfo {
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(uniformBuffer.
+		GetMaxFramesInFlight());
+
+	for (size_t i = 0; i < textureNum; i++) {
+		poolSizes[i + 1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[i + 1].descriptorCount = static_cast<uint32_t>(uniformBuffer.
+			GetMaxFramesInFlight());
+	}
+
+	const VkDescriptorPoolCreateInfo poolInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 		.maxSets = static_cast<uint32_t>(uniformBuffer.GetMaxFramesInFlight()),
 		.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
@@ -95,6 +100,14 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device) {
 	    VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
+}
+
+void Descriptor::Create(const Device& device,
+	const VkDescriptorSetLayout& descriptorSetLayout,
+	const std::vector<Texture>& textures) {
+	CreateUniformBuffers(device);
+	CreateDescriptorPool(device.GetLogical(), textures.size());
+	CreateDescriptorSets(device.GetLogical(), descriptorSetLayout, textures);
 }
 
 void Descriptor::Destroy(const VkDevice& device) const {

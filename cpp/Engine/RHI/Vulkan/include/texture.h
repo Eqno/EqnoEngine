@@ -12,7 +12,35 @@ class Texture {
 	VkImageView textureImageView;
 	VkSampler textureSampler;
 
+	void CreateTextureImage(const Device& device,
+		const Render& render,
+		const char* texturePath);
+	void CreateTextureImageView(const VkDevice& device);
+	void CreateTextureSampler(const Device& device);
+
+	static void TransitionImageLayout(const Device& device,
+		const Render& render,
+		VkImage image,
+		VkFormat format,
+		VkImageLayout oldLayout,
+		VkImageLayout newLayout);
+	static void CopyBufferToImage(const Device& device,
+		const Render& render,
+		VkBuffer buffer,
+		VkImage image,
+		uint32_t width,
+		uint32_t height);
+
 public:
+	Texture(const Device& device,
+		const Render& render,
+		const char* texturePath) : textureImage(nullptr),
+	textureImageMemory(nullptr),
+	textureImageView(nullptr),
+	textureSampler(nullptr) {
+		Create(device, render, texturePath);
+	}
+
 	Texture() : textureImage(nullptr),
 	textureImageMemory(nullptr),
 	textureImageView(nullptr),
@@ -34,12 +62,6 @@ public:
 		return textureSampler;
 	}
 
-	void CreateTextureImage(const Device& device,
-		const Data& data,
-		const Render& render);
-	void CreateTextureImageView(const VkDevice& device);
-	void CreateTextureSampler(const Device& device);
-
 	static VkImageView CreateImageView(const VkDevice& device,
 		VkImage image,
 		VkFormat format,
@@ -54,19 +76,8 @@ public:
 		VkImage& image,
 		VkDeviceMemory& imageMemory);
 
-	static void TransitionImageLayout(const Device& device,
+	void Create(const Device& device,
 		const Render& render,
-		VkImage image,
-		VkFormat format,
-		const Data& data,
-		VkImageLayout oldLayout,
-		VkImageLayout newLayout);
-	static void CopyBufferToImage(const Device& device,
-		const Data& data,
-		const Render& render,
-		VkBuffer buffer,
-		VkImage image,
-		uint32_t width,
-		uint32_t height);
+		const char* texturePath);
 	void Destroy(const VkDevice& device) const;
 };

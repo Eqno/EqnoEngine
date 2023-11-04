@@ -61,10 +61,9 @@ void Buffer::CreateBuffer(const Device& device,
 }
 
 void Buffer::CreateVertexBuffer(const Device& device,
-	const Data& data,
+	const std::vector<Vertex>& vertices,
 	const Render& render) {
-	const auto bufferSize = sizeof(data.GetVertexByIndex(0)) * data.
-	                        GetVertices().size();
+	const auto bufferSize = sizeof(vertices[0]) * vertices.size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -83,7 +82,7 @@ void Buffer::CreateVertexBuffer(const Device& device,
 		bufferSize,
 		0,
 		&vertexData);
-	memcpy(vertexData, data.GetVertices().data(), bufferSize);
+	memcpy(vertexData, vertices.data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(device,
@@ -92,20 +91,16 @@ void Buffer::CreateVertexBuffer(const Device& device,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		vertexBuffer,
 		vertexBufferMemory);
-	render.CopyCommandBuffer(device,
-		stagingBuffer,
-		vertexBuffer,
-		bufferSize);
+	render.CopyCommandBuffer(device, stagingBuffer, vertexBuffer, bufferSize);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 }
 
 void Buffer::CreateIndexBuffer(const Device& device,
-	const Data& data,
+	const std::vector<uint32_t>& indices,
 	const Render& render) {
-	const auto bufferSize = sizeof(data.GetIndexByIndex(0)) * data.GetIndices().
-	                        size();
+	const auto bufferSize = sizeof(indices[0]) * indices.size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -124,7 +119,7 @@ void Buffer::CreateIndexBuffer(const Device& device,
 		bufferSize,
 		0,
 		&indexData);
-	memcpy(indexData, data.GetIndices().data(), bufferSize);
+	memcpy(indexData, indices.data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(device,
@@ -134,16 +129,22 @@ void Buffer::CreateIndexBuffer(const Device& device,
 		indexBuffer,
 		indexBufferMemory);
 
-	render.CopyCommandBuffer(device,
-		stagingBuffer,
-		indexBuffer,
-		bufferSize);
+	render.CopyCommandBuffer(device, stagingBuffer, indexBuffer, bufferSize);
 
 	vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 }
 
-void Buffer::CleanupBuffers(const VkDevice& device) const {
+void Buffer::Create(const Device& device,
+	const std::vector<Vertex>& vertices,
+	const std::vector<uint32_t>& indices,
+	const Render& render
+) {
+	CreateVertexBuffer(device, vertices, render);
+	CreateIndexBuffer(device, indices, render);
+}
+
+void Buffer::Destroy(const VkDevice& device) const {
 	vkDestroyBuffer(device, indexBuffer, nullptr);
 	vkFreeMemory(device, indexBufferMemory, nullptr);
 

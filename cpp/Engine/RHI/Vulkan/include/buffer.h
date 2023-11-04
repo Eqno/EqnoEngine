@@ -14,6 +14,13 @@ class Buffer {
 	VkBuffer indexBuffer {};
 	VkDeviceMemory indexBufferMemory {};
 
+	void CreateVertexBuffer(const Device& device,
+		const std::vector<Vertex>& vertices,
+		const Render& render);
+	void CreateIndexBuffer(const Device& device,
+		const std::vector<uint32_t>& indices,
+		const Render& render);
+
 public:
 	Buffer() = default;
 
@@ -28,13 +35,11 @@ public:
 		VkBuffer& buffer,
 		VkDeviceMemory& bufferMemory);
 
-	void CreateVertexBuffer(const Device& device,
-		const Data& data,
+	void Create(const Device& device,
+		const std::vector<Vertex>& vertices,
+		const std::vector<uint32_t>& indices,
 		const Render& render);
-	void CreateIndexBuffer(const Device& device,
-		const Data& data,
-		const Render& render);
-	void CleanupBuffers(const VkDevice& device) const;
+	void Destroy(const VkDevice& device) const;
 
 	[[nodiscard]] const VkBuffer& GetVertexBuffer() const {
 		return vertexBuffer;

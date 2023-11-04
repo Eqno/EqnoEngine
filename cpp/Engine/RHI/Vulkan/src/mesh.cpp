@@ -1,24 +1,17 @@
 #include "../include/mesh.h"
 
-void Mesh::InitMesh(const Device& device,
+void Mesh::Create(const Device& device,
 	const Render& render,
 	const Pipeline& pipeline) {
-	texture.CreateTextureImage(device, data, render);
-	texture.CreateTextureImageView(device.GetLogical());
-	texture.CreateTextureSampler(device);
-
-	buffer.CreateVertexBuffer(device, data, render);
-	buffer.CreateIndexBuffer(device, data, render);
-
-	descriptor.CreateUniformBuffers(device);
-	descriptor.CreateDescriptorPool(device.GetLogical());
-	descriptor.CreateDescriptorSets(device.GetLogical(),
-		pipeline.GetDescriptorSetLayout(),
-		texture);
+	textures.emplace_back(device, render, Config::TEXTURE_PATH.c_str());
+	buffer.Create(device, data.GetVertices(), data.GetIndices(), render);
+	descriptor.Create(device, pipeline.GetDescriptorSetLayout(), textures);
 }
 
-void Mesh::DestroyMesh(const VkDevice& device) const {
+void Mesh::Destroy(const VkDevice& device) const {
 	descriptor.Destroy(device);
-	texture.Destroy(device);
-	buffer.CleanupBuffers(device);
+	buffer.Destroy(device);
+	for (const Texture& texture: textures) {
+		texture.Destroy(device);
+	}
 }

@@ -8,8 +8,8 @@
 class Mesh {
 	Data data;
 	Buffer buffer;
-	Texture texture;
 	Descriptor descriptor;
+	std::vector<Texture> textures;
 
 public:
 	[[nodiscard]] const VkBuffer& GetIndexBuffer() const {
@@ -46,9 +46,9 @@ public:
 		descriptor.UpdateUniformBuffers(swapChainExtent, currentImage);
 	}
 
-	void InitMesh(const Device& device,
+	void Create(const Device& device,
 		const Render& render,
 		const Pipeline& pipeline);
 
-	void DestroyMesh(const VkDevice& device) const;
+	void Destroy(const VkDevice& device) const;
 };

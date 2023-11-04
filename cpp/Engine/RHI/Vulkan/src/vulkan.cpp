@@ -36,7 +36,7 @@ void Vulkan::InitVulkan() {
 		depth,
 		pipeline.GetRenderPass());
 
-	mesh.InitMesh(device, render, pipeline);
+	mesh.Create(device, render, pipeline);
 
 	render.CreateCommandBuffers(device.GetLogical(),
 		mesh.GetUniformBuffer().GetMaxFramesInFlight());
@@ -48,7 +48,7 @@ void Vulkan::Cleanup() const {
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
 	pipeline.DestroyGraphicsPipeline(device.GetLogical());
 
-	mesh.DestroyMesh(device.GetLogical());
+	mesh.Destroy(device.GetLogical());
 	render.DestroySyncObjects(device.GetLogical(),
 		mesh.GetUniformBuffer().GetMaxFramesInFlight());
 	render.DestroyCommandPool(device.GetLogical());

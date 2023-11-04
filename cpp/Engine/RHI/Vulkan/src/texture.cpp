@@ -10,10 +10,10 @@
 #include "../include/config.h"
 
 void Texture::CreateTextureImage(const Device& device,
-	const Data& data,
-	const Render& render) {
+	const Render& render,
+	const char* texturePath) {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load(Config::TEXTURE_PATH.c_str(),
+	stbi_uc* pixels = stbi_load(texturePath,
 		&texWidth,
 		&texHeight,
 		&texChannels,
@@ -60,11 +60,9 @@ void Texture::CreateTextureImage(const Device& device,
 		render,
 		textureImage,
 		VK_FORMAT_R8G8B8A8_SRGB,
-		data,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	CopyBufferToImage(device,
-		data,
 		render,
 		stagingBuffer,
 		textureImage,
@@ -74,7 +72,6 @@ void Texture::CreateTextureImage(const Device& device,
 		render,
 		textureImage,
 		VK_FORMAT_R8G8B8A8_SRGB,
-		data,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -192,7 +189,6 @@ void Texture::TransitionImageLayout(const Device& device,
 	const Render& render,
 	const VkImage image,
 	const VkFormat format,
-	const Data& data,
 	const VkImageLayout oldLayout,
 	const VkImageLayout newLayout) {
 	const VkCommandBuffer commandBuffer = render.BeginSingleTimeCommands(
@@ -251,7 +247,6 @@ void Texture::TransitionImageLayout(const Device& device,
 }
 
 void Texture::CopyBufferToImage(const Device& device,
-	const Data& data,
 	const Render& render,
 	const VkBuffer buffer,
 	const VkImage image,
@@ -281,6 +276,14 @@ void Texture::CopyBufferToImage(const Device& device,
 		1,
 		&region);
 	render.EndSingleTimeCommands(device, commandBuffer);
+}
+
+void Texture::Create(const Device& device,
+	const Render& render,
+	const char* texturePath) {
+	CreateTextureImage(device, render, texturePath);
+	CreateTextureImageView(device.GetLogical());
+	CreateTextureSampler(device);
 }
 
 void Texture::Destroy(const VkDevice& device) const {
