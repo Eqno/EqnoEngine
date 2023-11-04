@@ -4,6 +4,7 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=GLFW/@EntryIndexedValue">GLFW</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=GLSL/@EntryIndexedValue">GLSL</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=SPV/@EntryIndexedValue">SPV</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=attrib/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Coord/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=GLFW/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=GLSL/@EntryIndexedValue">True</s:Boolean>
@@ -11,6 +12,8 @@
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=KHRONOS/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=rasterizer/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=shaders/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=texcoord/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=TINYOBJLOADER/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=vert/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=VULKAN/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Wwindow/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

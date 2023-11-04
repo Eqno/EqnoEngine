@@ -50,5 +50,5 @@ public:
 		const Render& render,
 		const Pipeline& pipeline);
 
-	void Destroy(const VkDevice& device) const;
+	void Destroy(const VkDevice& device, const Render& render) const;
 };

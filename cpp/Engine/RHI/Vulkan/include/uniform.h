@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "device.h"
+#include "render.h"
 
 class Texture;
 
@@ -23,32 +24,23 @@ struct UniformBufferObject {
 };
 
 class UniformBuffer {
-	int maxFramesInFlight;
 	UniformBuffers uniformBuffers;
 	UniformMemories uniformBuffersMemory;
 	UniformMapped uniformBuffersMapped;
 
 public:
-	explicit UniformBuffer() : maxFramesInFlight(Config::MAX_FRAMES_IN_FLIGHT) {
-	}
-
-	explicit UniformBuffer(const int maxFrames) : maxFramesInFlight(maxFrames) {
-	}
-
-	[[nodiscard]] const int& GetMaxFramesInFlight() const {
-		return maxFramesInFlight;
-	}
+	explicit UniformBuffer() = default;
 
 	[[nodiscard]] const UniformBuffers& GetUniformBuffers() const {
 		return uniformBuffers;
 	}
 
-	void CreateUniformBuffers(const Device& device);
+	void CreateUniformBuffers(const Device& device, const Render& render);
 
 	void UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
 		uint32_t currentImage) const;
 
-	void Destroy(const VkDevice& device) const;
+	void Destroy(const VkDevice& device, const Render& render) const;
 };
 
 class Descriptor {
@@ -57,13 +49,16 @@ class Descriptor {
 	DescriptorSets descriptorSets {};
 
 	void CreateDescriptorSets(const VkDevice& device,
+		const Render& render,
 		const VkDescriptorSetLayout& descriptorSetLayout,
 		const std::vector<Texture>& textures);
 
-	void CreateDescriptorPool(const VkDevice& device, const size_t textureNum);
+	void CreateDescriptorPool(const VkDevice& device,
+		const Render& render,
+		const size_t textureNum);
 
-	void CreateUniformBuffers(const Device& device) {
-		uniformBuffer.CreateUniformBuffers(device);
+	void CreateUniformBuffers(const Device& device, const Render& render) {
+		uniformBuffer.CreateUniformBuffers(device, render);
 	}
 
 public:
@@ -86,7 +81,8 @@ public:
 	}
 
 	void Create(const Device& device,
+		const Render& render,
 		const VkDescriptorSetLayout& descriptorSetLayout,
 		const std::vector<Texture>& textures);
-	void Destroy(const VkDevice& device) const;
+	void Destroy(const VkDevice& device, const Render& render) const;
 };

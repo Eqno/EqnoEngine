@@ -9,26 +9,27 @@
 
 
 void Descriptor::CreateDescriptorSets(const VkDevice& device,
+	const Render& render,
 	const VkDescriptorSetLayout& descriptorSetLayout,
 	const std::vector<Texture>& textures) {
-	const std::vector layouts(uniformBuffer.GetMaxFramesInFlight(),
+	const std::vector layouts(render.GetMaxFramesInFlight(),
 		descriptorSetLayout);
 
 	const VkDescriptorSetAllocateInfo allocInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
 		.descriptorPool = descriptorPool,
-		.descriptorSetCount = static_cast<uint32_t>(uniformBuffer.
+		.descriptorSetCount = static_cast<uint32_t>(render.
 			GetMaxFramesInFlight()),
 		.pSetLayouts = layouts.data(),
 	};
 
-	descriptorSets.resize(uniformBuffer.GetMaxFramesInFlight());
+	descriptorSets.resize(render.GetMaxFramesInFlight());
 	if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) !=
 	    VK_SUCCESS) {
 		throw std::runtime_error("Failed to allocate descriptor sets!");
 	}
 
-	for (auto i = 0; i < uniformBuffer.GetMaxFramesInFlight(); i++) {
+	for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
 		std::vector<VkWriteDescriptorSet> descriptorWrites;
 		descriptorWrites.resize(textures.size() + 1);
 
@@ -75,23 +76,24 @@ void Descriptor::CreateDescriptorSets(const VkDevice& device,
 }
 
 void Descriptor::CreateDescriptorPool(const VkDevice& device,
+	const Render& render,
 	const size_t textureNum) {
 	std::vector<VkDescriptorPoolSize> poolSizes;
 	poolSizes.resize(textureNum + 1);
 
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(uniformBuffer.
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(render.
 		GetMaxFramesInFlight());
 
 	for (size_t i = 0; i < textureNum; i++) {
 		poolSizes[i + 1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[i + 1].descriptorCount = static_cast<uint32_t>(uniformBuffer.
+		poolSizes[i + 1].descriptorCount = static_cast<uint32_t>(render.
 			GetMaxFramesInFlight());
 	}
 
 	const VkDescriptorPoolCreateInfo poolInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		.maxSets = static_cast<uint32_t>(uniformBuffer.GetMaxFramesInFlight()),
+		.maxSets = static_cast<uint32_t>(render.GetMaxFramesInFlight()),
 		.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
 		.pPoolSizes = poolSizes.data(),
 	};
@@ -103,24 +105,29 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
 }
 
 void Descriptor::Create(const Device& device,
+	const Render& render,
 	const VkDescriptorSetLayout& descriptorSetLayout,
 	const std::vector<Texture>& textures) {
-	CreateUniformBuffers(device);
-	CreateDescriptorPool(device.GetLogical(), textures.size());
-	CreateDescriptorSets(device.GetLogical(), descriptorSetLayout, textures);
+	CreateUniformBuffers(device, render);
+	CreateDescriptorPool(device.GetLogical(), render, textures.size());
+	CreateDescriptorSets(device.GetLogical(),
+		render,
+		descriptorSetLayout,
+		textures);
 }
 
-void Descriptor::Destroy(const VkDevice& device) const {
+void Descriptor::Destroy(const VkDevice& device, const Render& render) const {
 	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-	uniformBuffer.Destroy(device);
+	uniformBuffer.Destroy(device, render);
 }
 
-void UniformBuffer::CreateUniformBuffers(const Device& device) {
-	uniformBuffers.resize(maxFramesInFlight);
-	uniformBuffersMemory.resize(maxFramesInFlight);
-	uniformBuffersMapped.resize(maxFramesInFlight);
+void UniformBuffer::CreateUniformBuffers(const Device& device,
+	const Render& render) {
+	uniformBuffers.resize(render.GetMaxFramesInFlight());
+	uniformBuffersMemory.resize(render.GetMaxFramesInFlight());
+	uniformBuffersMapped.resize(render.GetMaxFramesInFlight());
 
-	for (size_t i = 0; i < maxFramesInFlight; i++) {
+	for (size_t i = 0; i < render.GetMaxFramesInFlight(); i++) {
 		Buffer::CreateBuffer(device,
 			sizeof(UniformBufferObject),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -163,8 +170,9 @@ void UniformBuffer::UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
 	memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
 
-void UniformBuffer::Destroy(const VkDevice& device) const {
-	for (auto i = 0; i < maxFramesInFlight; i++) {
+void UniformBuffer::Destroy(const VkDevice& device,
+	const Render& render) const {
+	for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
 		vkDestroyBuffer(device, uniformBuffers[i], nullptr);
 		vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
 	}

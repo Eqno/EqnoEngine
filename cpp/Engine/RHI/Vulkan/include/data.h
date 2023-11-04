@@ -40,4 +40,6 @@ public:
 	[[nodiscard]] const Vertex& GetVertexByIndex(const uint32_t index) const {
 		return vertices[index];
 	}
+
+	void Create(const char* dataPath);
 };

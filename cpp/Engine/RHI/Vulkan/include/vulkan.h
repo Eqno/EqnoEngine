@@ -19,9 +19,9 @@ class Vulkan {
 	SwapChain swapChain;
 	Validation validation;
 
-	Mesh mesh;
 	Shader shader;
 	Pipeline pipeline;
+	std::vector<Mesh> meshes;
 
 public:
 	void Run();

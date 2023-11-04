@@ -33,8 +33,7 @@ void Render::DestroyCommandPool(const VkDevice& device) const {
 	vkDestroyCommandPool(device, commandPool, nullptr);
 }
 
-void Render::CreateCommandBuffers(const VkDevice& device,
-	const int maxFramesInFlight) {
+void Render::CreateCommandBuffers(const VkDevice& device) {
 	commandBuffers.resize(maxFramesInFlight);
 
 	const VkCommandBufferAllocateInfo allocInfo {
@@ -50,7 +49,7 @@ void Render::CreateCommandBuffers(const VkDevice& device,
 	}
 }
 
-void Render::RecordCommandBuffer(const Mesh& mesh,
+void Render::RecordCommandBuffer(const std::vector<Mesh>& meshes,
 	const Pipeline& pipeline,
 	const SwapChain& swapChain,
 	const uint32_t imageIndex) const {
@@ -80,10 +79,6 @@ void Render::RecordCommandBuffer(const Mesh& mesh,
 		&renderPassInfo,
 		VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(commandBuffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline.GetGraphicsPipeline());
-
 	const VkViewport viewport {
 		.x = 0.0f,
 		.y = 0.0f,
@@ -97,29 +92,36 @@ void Render::RecordCommandBuffer(const Mesh& mesh,
 	const VkRect2D scissor {.offset = {0, 0}, .extent = swapChain.GetExtent(),};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	const VkBuffer vertexBuffers[] = {mesh.GetVertexBuffer()};
-	constexpr VkDeviceSize offsets[] = {0};
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+	for (const auto& mesh: meshes) {
+		vkCmdBindPipeline(commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipeline.GetGraphicsPipeline());
 
-	vkCmdBindIndexBuffer(commandBuffer,
-		mesh.GetIndexBuffer(),
-		0,
-		VK_INDEX_TYPE_UINT32);
-	vkCmdBindDescriptorSets(commandBuffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline.GetPipelineLayout(),
-		0,
-		1,
-		&mesh.GetDescriptorSetByIndex(currentFrame),
-		0,
-		nullptr);
+		const VkBuffer vertexBuffers[] = {mesh.GetVertexBuffer()};
+		constexpr VkDeviceSize offsets[] = {0};
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-	vkCmdDrawIndexed(commandBuffer,
-		static_cast<uint32_t>(mesh.GetIndices().size()),
-		1,
-		0,
-		0,
-		0);
+		vkCmdBindIndexBuffer(commandBuffer,
+			mesh.GetIndexBuffer(),
+			0,
+			VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindDescriptorSets(commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipeline.GetPipelineLayout(),
+			0,
+			1,
+			&mesh.GetDescriptorSetByIndex(currentFrame),
+			0,
+			nullptr);
+
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(mesh.GetIndices().size()),
+			1,
+			0,
+			0,
+			0);
+	}
 	vkCmdEndRenderPass(commandBuffer);
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to record command buffer!");
@@ -171,7 +173,7 @@ void Render::EndSingleTimeCommands(const Device& device,
 	vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, &commandBuffer);
 }
 
-void Render::DrawFrame(const Mesh& mesh,
+void Render::DrawFrame(const std::vector<Mesh>& meshes,
 	const Device& device,
 	Depth& depth,
 	Window& window,
@@ -199,13 +201,15 @@ void Render::DrawFrame(const Mesh& mesh,
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	mesh.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
+	for (const Mesh& mesh: meshes) {
+		mesh.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
+	}
 	vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
 	vkResetCommandBuffer(commandBuffers[currentFrame],
 		/*VkCommandBufferResetFlagBits*/
 		0);
 
-	RecordCommandBuffer(mesh, pipeline, swapChain, imageIndex);
+	RecordCommandBuffer(meshes, pipeline, swapChain, imageIndex);
 
 	const VkSemaphore waitSemaphores[] = {
 		imageAvailableSemaphores[currentFrame]
@@ -254,12 +258,10 @@ void Render::DrawFrame(const Mesh& mesh,
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
 	}
-	currentFrame = (currentFrame + 1) % mesh.GetUniformBuffer().
-	               GetMaxFramesInFlight();
+	currentFrame = (currentFrame + 1) % maxFramesInFlight;
 }
 
-void Render::CreateSyncObjects(const VkDevice& device,
-	const int maxFramesInFlight) {
+void Render::CreateSyncObjects(const VkDevice& device) {
 	imageAvailableSemaphores.resize(maxFramesInFlight);
 	renderFinishedSemaphores.resize(maxFramesInFlight);
 	inFlightFences.resize(maxFramesInFlight);
@@ -292,8 +294,7 @@ void Render::CreateSyncObjects(const VkDevice& device,
 	}
 }
 
-void Render::DestroySyncObjects(const VkDevice& device,
-	const int maxFramesInFlight) const {
+void Render::DestroySyncObjects(const VkDevice& device) const {
 	for (size_t i = 0; i < maxFramesInFlight; i++) {
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);

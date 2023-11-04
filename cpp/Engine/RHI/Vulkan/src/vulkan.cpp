@@ -10,7 +10,7 @@ void Vulkan::Run() {
 void Vulkan::MainLoop() {
 	while (!glfwWindowShouldClose(window.window)) {
 		glfwPollEvents();
-		render.DrawFrame(mesh, device, depth, window, pipeline, swapChain);
+		render.DrawFrame(meshes, device, depth, window, pipeline, swapChain);
 	}
 	device.WaitIdle();
 }
@@ -36,21 +36,24 @@ void Vulkan::InitVulkan() {
 		depth,
 		pipeline.GetRenderPass());
 
-	mesh.Create(device, render, pipeline);
+	// for (Mesh& mesh: meshes) {
+	// 	mesh.Create(device, render, pipeline);
+	// }
+	meshes.resize(1);
+	meshes[0].Create(device, render, pipeline);
 
-	render.CreateCommandBuffers(device.GetLogical(),
-		mesh.GetUniformBuffer().GetMaxFramesInFlight());
-	render.CreateSyncObjects(device.GetLogical(),
-		mesh.GetUniformBuffer().GetMaxFramesInFlight());
+	render.CreateCommandBuffers(device.GetLogical());
+	render.CreateSyncObjects(device.GetLogical());
 }
 
 void Vulkan::Cleanup() const {
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
 	pipeline.DestroyGraphicsPipeline(device.GetLogical());
 
-	mesh.Destroy(device.GetLogical());
-	render.DestroySyncObjects(device.GetLogical(),
-		mesh.GetUniformBuffer().GetMaxFramesInFlight());
+	for (const Mesh& mesh: meshes) {
+		mesh.Destroy(device.GetLogical(), render);
+	}
+	render.DestroySyncObjects(device.GetLogical());
 	render.DestroyCommandPool(device.GetLogical());
 
 	device.DestroyLogicalDevice();
