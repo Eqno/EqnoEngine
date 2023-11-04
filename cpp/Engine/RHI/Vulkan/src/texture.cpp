@@ -7,9 +7,10 @@
 #include "../include/buffer.h"
 #include "../include/render.h"
 #include "../include/device.h"
+#include "../include/config.h"
 
 void Texture::CreateTextureImage(const Device& device,
-	const Mesh& mesh,
+	const Data& data,
 	const Render& render) {
 	int texWidth, texHeight, texChannels;
 	stbi_uc* pixels = stbi_load(Config::TEXTURE_PATH.c_str(),
@@ -34,14 +35,14 @@ void Texture::CreateTextureImage(const Device& device,
 		stagingBuffer,
 		stagingBufferMemory);
 
-	void* data = nullptr;
+	void* imageData = nullptr;
 	vkMapMemory(device.GetLogical(),
 		stagingBufferMemory,
 		0,
 		imageSize,
 		0,
-		&data);
-	memcpy(data, pixels, imageSize);
+		&imageData);
+	memcpy(imageData, pixels, imageSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	stbi_image_free(pixels);
@@ -59,11 +60,11 @@ void Texture::CreateTextureImage(const Device& device,
 		render,
 		textureImage,
 		VK_FORMAT_R8G8B8A8_SRGB,
-		mesh,
+		data,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	CopyBufferToImage(device,
-		mesh,
+		data,
 		render,
 		stagingBuffer,
 		textureImage,
@@ -73,7 +74,7 @@ void Texture::CreateTextureImage(const Device& device,
 		render,
 		textureImage,
 		VK_FORMAT_R8G8B8A8_SRGB,
-		mesh,
+		data,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -191,7 +192,7 @@ void Texture::TransitionImageLayout(const Device& device,
 	const Render& render,
 	const VkImage image,
 	const VkFormat format,
-	const Mesh& mesh,
+	const Data& data,
 	const VkImageLayout oldLayout,
 	const VkImageLayout newLayout) {
 	const VkCommandBuffer commandBuffer = render.BeginSingleTimeCommands(
@@ -246,11 +247,11 @@ void Texture::TransitionImageLayout(const Device& device,
 		nullptr,
 		1,
 		&barrier);
-	render.EndSingleTimeCommands(device, mesh, commandBuffer);
+	render.EndSingleTimeCommands(device, commandBuffer);
 }
 
 void Texture::CopyBufferToImage(const Device& device,
-	const Mesh& mesh,
+	const Data& data,
 	const Render& render,
 	const VkBuffer buffer,
 	const VkImage image,
@@ -279,7 +280,7 @@ void Texture::CopyBufferToImage(const Device& device,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1,
 		&region);
-	render.EndSingleTimeCommands(device, mesh, commandBuffer);
+	render.EndSingleTimeCommands(device, commandBuffer);
 }
 
 void Texture::Destroy(const VkDevice& device) const {

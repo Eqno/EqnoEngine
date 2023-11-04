@@ -2,11 +2,12 @@
 
 #include <stdexcept>
 
-#include "../include/buffer.h"
 #include "../include/device.h"
 #include "../include/swapchain.h"
 #include "../include/uniform.h"
 #include "../include/vertex.h"
+#include "../include/data.h"
+#include "../include/mesh.h"
 
 void Render::CreateCommandPool(const Device& device,
 	const VkSurfaceKHR& surface) {
@@ -33,7 +34,7 @@ void Render::DestroyCommandPool(const VkDevice& device) const {
 }
 
 void Render::CreateCommandBuffers(const VkDevice& device,
-	int maxFramesInFlight) {
+	const int maxFramesInFlight) {
 	commandBuffers.resize(maxFramesInFlight);
 
 	const VkCommandBufferAllocateInfo allocInfo {
@@ -49,12 +50,9 @@ void Render::CreateCommandBuffers(const VkDevice& device,
 	}
 }
 
-void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
-	const VkBuffer& vertexBuffer,
-	const Mesh& mesh,
+void Render::RecordCommandBuffer(const Mesh& mesh,
 	const Pipeline& pipeline,
 	const SwapChain& swapChain,
-	const Descriptor& descriptor,
 	const uint32_t imageIndex) const {
 	const VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
 
@@ -99,17 +97,20 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 	const VkRect2D scissor {.offset = {0, 0}, .extent = swapChain.GetExtent(),};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	const VkBuffer vertexBuffers[] = {vertexBuffer};
+	const VkBuffer vertexBuffers[] = {mesh.GetVertexBuffer()};
 	constexpr VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(commandBuffer,
+		mesh.GetIndexBuffer(),
+		0,
+		VK_INDEX_TYPE_UINT32);
 	vkCmdBindDescriptorSets(commandBuffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
 		pipeline.GetPipelineLayout(),
 		0,
 		1,
-		&descriptor.GetDescriptorSets()[currentFrame],
+		&mesh.GetDescriptorSetByIndex(currentFrame),
 		0,
 		nullptr);
 
@@ -126,7 +127,6 @@ void Render::RecordCommandBuffer(const VkBuffer& indexBuffer,
 }
 
 void Render::CopyCommandBuffer(const Device& device,
-	const Mesh& mesh,
 	const VkBuffer& srcBuffer,
 	const VkBuffer& dstBuffer,
 	const VkDeviceSize& size) const {
@@ -134,7 +134,7 @@ void Render::CopyCommandBuffer(const Device& device,
 		device.GetLogical());
 	const VkBufferCopy copyRegion {.size = size,};
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-	EndSingleTimeCommands(device, mesh, commandBuffer);
+	EndSingleTimeCommands(device, commandBuffer);
 }
 
 VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
@@ -156,7 +156,6 @@ VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
 }
 
 void Render::EndSingleTimeCommands(const Device& device,
-	const Mesh& mesh,
 	VkCommandBuffer commandBuffer) const {
 	vkEndCommandBuffer(commandBuffer);
 
@@ -172,15 +171,12 @@ void Render::EndSingleTimeCommands(const Device& device,
 	vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, &commandBuffer);
 }
 
-void Render::DrawFrame(const VkBuffer& indexBuffer,
-	const VkBuffer& vertexBuffer,
+void Render::DrawFrame(const Mesh& mesh,
 	const Device& device,
-	const Mesh& mesh,
 	Depth& depth,
 	Window& window,
 	const Pipeline& pipeline,
-	SwapChain& swapChain,
-	const Descriptor& descriptor) {
+	SwapChain& swapChain) {
 	vkWaitForFences(device.GetLogical(),
 		1,
 		&inFlightFences[currentFrame],
@@ -203,19 +199,13 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	descriptor.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
+	mesh.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
 	vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
 	vkResetCommandBuffer(commandBuffers[currentFrame],
 		/*VkCommandBufferResetFlagBits*/
 		0);
 
-	RecordCommandBuffer(indexBuffer,
-		vertexBuffer,
-		mesh,
-		pipeline,
-		swapChain,
-		descriptor,
-		imageIndex);
+	RecordCommandBuffer(mesh, pipeline, swapChain, imageIndex);
 
 	const VkSemaphore waitSemaphores[] = {
 		imageAvailableSemaphores[currentFrame]
@@ -242,7 +232,7 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 		    1,
 		    &submitInfo,
 		    inFlightFences[currentFrame]) != VK_SUCCESS) {
-		throw std::runtime_error("failed to submit draw command buffer!");
+		throw std::runtime_error("failed to submit data command buffer!");
 	}
 
 	const VkSwapchainKHR swapChains[] = {swapChain.Get()};
@@ -264,7 +254,7 @@ void Render::DrawFrame(const VkBuffer& indexBuffer,
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
 	}
-	currentFrame = (currentFrame + 1) % descriptor.GetUniformBuffer().
+	currentFrame = (currentFrame + 1) % mesh.GetUniformBuffer().
 	               GetMaxFramesInFlight();
 }
 

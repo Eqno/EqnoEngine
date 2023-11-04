@@ -2,7 +2,6 @@
 
 #include <stdexcept>
 
-#include "../include/mesh.h"
 #include "../include/pipeline.h"
 #include "../include/render.h"
 #include "../include/uniform.h"
@@ -62,9 +61,9 @@ void Buffer::CreateBuffer(const Device& device,
 }
 
 void Buffer::CreateVertexBuffer(const Device& device,
-	const Mesh& mesh,
+	const Data& data,
 	const Render& render) {
-	const auto bufferSize = sizeof(mesh.GetVertexByIndex(0)) * mesh.
+	const auto bufferSize = sizeof(data.GetVertexByIndex(0)) * data.
 	                        GetVertices().size();
 
 	VkBuffer stagingBuffer;
@@ -77,14 +76,14 @@ void Buffer::CreateVertexBuffer(const Device& device,
 		stagingBuffer,
 		stagingBufferMemory);
 
-	void* data;
+	void* vertexData;
 	vkMapMemory(device.GetLogical(),
 		stagingBufferMemory,
 		0,
 		bufferSize,
 		0,
-		&data);
-	memcpy(data, mesh.GetVertices().data(), bufferSize);
+		&vertexData);
+	memcpy(vertexData, data.GetVertices().data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(device,
@@ -94,7 +93,6 @@ void Buffer::CreateVertexBuffer(const Device& device,
 		vertexBuffer,
 		vertexBufferMemory);
 	render.CopyCommandBuffer(device,
-		mesh,
 		stagingBuffer,
 		vertexBuffer,
 		bufferSize);
@@ -104,9 +102,9 @@ void Buffer::CreateVertexBuffer(const Device& device,
 }
 
 void Buffer::CreateIndexBuffer(const Device& device,
-	const Mesh& mesh,
+	const Data& data,
 	const Render& render) {
-	const auto bufferSize = sizeof(mesh.GetIndexByIndex(0)) * mesh.GetIndices().
+	const auto bufferSize = sizeof(data.GetIndexByIndex(0)) * data.GetIndices().
 	                        size();
 
 	VkBuffer stagingBuffer;
@@ -119,14 +117,14 @@ void Buffer::CreateIndexBuffer(const Device& device,
 		stagingBuffer,
 		stagingBufferMemory);
 
-	void* data;
+	void* indexData;
 	vkMapMemory(device.GetLogical(),
 		stagingBufferMemory,
 		0,
 		bufferSize,
 		0,
-		&data);
-	memcpy(data, mesh.GetIndices().data(), bufferSize);
+		&indexData);
+	memcpy(indexData, data.GetIndices().data(), bufferSize);
 	vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
 	CreateBuffer(device,
@@ -137,7 +135,6 @@ void Buffer::CreateIndexBuffer(const Device& device,
 		indexBufferMemory);
 
 	render.CopyCommandBuffer(device,
-		mesh,
 		stagingBuffer,
 		indexBuffer,
 		bufferSize);

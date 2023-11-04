@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Model\include\material.h" />
-    <ClInclude Include="Engine\Model\include\mesh.h" />
     <ClInclude Include="Engine\Model\include\model.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3native.h" />
@@ -70,9 +69,12 @@
     <ClInclude Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\buffer.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\config.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\data.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\depth.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\device.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\instance.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\draw.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\mesh.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\pipeline.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\render.h" />
@@ -87,14 +89,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Model\src\material.cpp" />
-    <ClCompile Include="Engine\Model\src\mesh.cpp" />
     <ClCompile Include="Engine\Model\src\model.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="Engine\RHI\Vulkan\src\buffer.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\data.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\depth.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\device.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\instance.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\draw.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\mesh.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\vulkan.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\render.cpp" />

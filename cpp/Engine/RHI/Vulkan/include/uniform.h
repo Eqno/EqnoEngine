@@ -54,7 +54,6 @@ public:
 class Descriptor {
 	UniformBuffer uniformBuffer {};
 	VkDescriptorPool descriptorPool {};
-	VkDescriptorSetLayout descriptorSetLayout {};
 	DescriptorSets descriptorSets {};
 
 public:
@@ -62,16 +61,17 @@ public:
 		return uniformBuffer;
 	}
 
-	[[nodiscard]] const VkDescriptorSetLayout& GetSetLayout() const {
-		return descriptorSetLayout;
-	}
-
 	[[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
 		return descriptorSets;
 	}
 
-	void CreateDescriptorSetLayout(const VkDevice& device);
-	void CreateDescriptorSets(const VkDevice& device, const Texture& texture);
+	[[nodiscard]] const VkDescriptorSet& GetDescriptorSetByIndex(const uint32_t index) const {
+		return descriptorSets[index];
+	}
+
+	void CreateDescriptorSets(const VkDevice& device,
+		const VkDescriptorSetLayout& descriptorSetLayout,
+		const Texture& texture);
 	void CreateDescriptorPool(const VkDevice& device);
 
 	void CreateUniformBuffers(const Device& device) {

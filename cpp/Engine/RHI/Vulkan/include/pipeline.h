@@ -8,47 +8,30 @@ class Device;
 
 class Pipeline {
 	VkRenderPass renderPass {};
+
+	VkDescriptorSetLayout descriptorSetLayout {};
 	VkPipelineLayout pipelineLayout {};
 	VkPipeline graphicsPipeline {};
 
 public:
-	/** Pickers And Creators **/
-	/**
-	 * 创建渲染流程
-	 */
 	void CreateRenderPass(const VkFormat& imageFormat, const Device& device);
-	/**
-	 * 创建图形管线
-	 */
-	void CreateGraphicsPipeline(const Shader& shader,
-		const VkDevice& device,
-		const VkDescriptorSetLayout& descriptorSetLayout);
-
-	/** Destructor And Cleaners **/
-	/**
-	 * 销毁渲染流程
-	 */
+	void CreateGraphicsPipeline(const Shader& shader, const VkDevice& device);
 	void DestroyGraphicsPipeline(const VkDevice& device) const;
+	void CreateDescriptorSetLayout(const VkDevice& device);
 
-	/** Getters And Setters **/
-	/**
-	 * 获取渲染流程
-	 */
 	[[nodiscard]] const VkRenderPass& GetRenderPass() const {
 		return renderPass;
 	}
 
-	/**
-	 * 获取图形管线
-	 */
 	[[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {
 		return graphicsPipeline;
 	}
 
-	/**
-	 * 获取管线布局
-	 */
 	[[nodiscard]] const VkPipelineLayout& GetPipelineLayout() const {
 		return pipelineLayout;
+	}
+
+	[[nodiscard]] const VkDescriptorSetLayout& GetDescriptorSetLayout() const {
+		return descriptorSetLayout;
 	}
 };

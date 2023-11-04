@@ -23,17 +23,14 @@ class SwapChain {
 
 public:
 	static VkSurfaceFormatKHR ChooseSurfaceFormat(
-		const SurfaceFormats& availableFormats
-	);
+		const SurfaceFormats& availableFormats);
 
 	static VkPresentModeKHR ChoosePresentMode(
-		const PresentModes& availablePresentModes
-	);
+		const PresentModes& availablePresentModes);
 
 	[[nodiscard]] static VkExtent2D ChooseSwapExtent(
 		const VkSurfaceCapabilitiesKHR& capabilities,
-		const Window& window
-	);
+		const Window& window);
 
 	[[nodiscard]] const VkSwapchainKHR& Get() const {
 		return chain;
@@ -47,19 +44,19 @@ public:
 		return imageFormat;
 	}
 
-	[[nodiscard]] const std::vector<VkImageView>
-	& GetImageViews() const {
+	[[nodiscard]] const std::vector<VkImageView>& GetImageViews() const {
 		return imageViews;
 	}
 
-	[[nodiscard]] const std::vector<VkFramebuffer>
-	& GetFrameBuffers() const {
+	[[nodiscard]] const std::vector<VkFramebuffer>& GetFrameBuffers() const {
 		return frameBuffers;
 	}
 
 	void Create(const Device& device, const Window& window);
 	void CreateImageViews(const VkDevice& device);
-	void CreateFrameBuffers(const VkDevice& device, const Depth& depth, const VkRenderPass& renderPass);
+	void CreateFrameBuffers(const VkDevice& device,
+		const Depth& depth,
+		const VkRenderPass& renderPass);
 	void RecreateSwapChain(const Device& device,
 		Depth& depth,
 		const Window& window,

@@ -4,7 +4,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "device.h"
-#include "mesh.h"
+#include "data.h"
 #include "render.h"
 
 class Buffer {
@@ -28,8 +28,12 @@ public:
 		VkBuffer& buffer,
 		VkDeviceMemory& bufferMemory);
 
-	void CreateVertexBuffer(const Device& device, const Mesh& mesh, const Render& render);
-	void CreateIndexBuffer(const Device& device, const Mesh& mesh, const Render& render);
+	void CreateVertexBuffer(const Device& device,
+		const Data& data,
+		const Render& render);
+	void CreateIndexBuffer(const Device& device,
+		const Data& data,
+		const Render& render);
 	void CleanupBuffers(const VkDevice& device) const;
 
 	[[nodiscard]] const VkBuffer& GetVertexBuffer() const {

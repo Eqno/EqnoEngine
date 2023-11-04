@@ -135,7 +135,7 @@ void SwapChain::CreateFrameBuffers(const VkDevice& device,
 	const VkRenderPass& renderPass) {
 	frameBuffers.resize(imageViews.size());
 	for (size_t i = 0; i < imageViews.size(); i++) {
-		std::array<VkImageView, 2> attachments = {
+		std::array attachments = {
 			imageViews[i],
 			depth.GetDepthImageView()
 		};

@@ -282,7 +282,13 @@
     <ClInclude Include="Engine\Model\include\material.h">
       <Filter>Engine\Model\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Model\include\mesh.h">
+    <ClInclude Include="Engine\RHI\Vulkan\include\draw.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\mesh.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\data.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -344,7 +350,13 @@
     <ClCompile Include="Engine\Model\src\material.cpp">
       <Filter>Engine\Model\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Model\src\mesh.cpp">
+    <ClCompile Include="Engine\RHI\Vulkan\src\draw.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\RHI\Vulkan\src\mesh.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\RHI\Vulkan\src\data.cpp">
       <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
   </ItemGroup>

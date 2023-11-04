@@ -72,8 +72,7 @@ void Pipeline::CreateRenderPass(const VkFormat& imageFormat,
 }
 
 void Pipeline::CreateGraphicsPipeline(const Shader& shader,
-	const VkDevice& device,
-	const VkDescriptorSetLayout& descriptorSetLayout) {
+	const VkDevice& device) {
 	auto shaderStages(shader.AutoCreateStages(device));
 	auto bindingDescription = Vertex::GetBindingDescription();
 	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -123,7 +122,7 @@ void Pipeline::CreateGraphicsPipeline(const Shader& shader,
 		.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
 		                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
 	};
-	const VkPipelineColorBlendStateCreateInfo colorBlending {
+	constexpr VkPipelineColorBlendStateCreateInfo colorBlending {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 		.logicOpEnable = VK_FALSE,
 		.logicOp = VK_LOGIC_OP_COPY,
@@ -181,6 +180,41 @@ void Pipeline::CreateGraphicsPipeline(const Shader& shader,
 
 void Pipeline::DestroyGraphicsPipeline(const VkDevice& device) const {
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
+
+	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
+}
+
+void Pipeline::CreateDescriptorSetLayout(const VkDevice& device) {
+	constexpr VkDescriptorSetLayoutBinding uboLayoutBinding{
+		.binding = 0,
+		.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		.descriptorCount = 1,
+		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+		.pImmutableSamplers = nullptr,
+	};
+
+	constexpr VkDescriptorSetLayoutBinding samplerLayoutBinding{
+		.binding = 1,
+		.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+		.descriptorCount = 1,
+		.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+		.pImmutableSamplers = nullptr,
+	};
+
+	std::array bindings = { uboLayoutBinding, samplerLayoutBinding };
+
+	constexpr VkDescriptorSetLayoutCreateInfo layoutInfo{
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.bindingCount = static_cast<uint32_t>(bindings.size()),
+		.pBindings = bindings.data(),
+	};
+
+	if (vkCreateDescriptorSetLayout(device,
+		&layoutInfo,
+		nullptr,
+		&descriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create descriptor set layout!");
+	}
 }

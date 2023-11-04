@@ -1,43 +1,54 @@
 #pragma once
 
-#include <cstdint>
-#include <vector>
-
-#include "vertex.h"
+#include "buffer.h"
+#include "data.h"
+#include "texture.h"
+#include "uniform.h"
 
 class Mesh {
-	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
-	std::vector<Vertex> vertices = {
-		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-		{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-	};
+	Data data;
+	Buffer buffer;
+	Texture texture;
+	Descriptor descriptor;
 
 public:
-	Mesh() = default;
+	[[nodiscard]] const VkBuffer& GetIndexBuffer() const {
+		return buffer.GetIndexBuffer();
+	}
 
-	Mesh(const std::vector<uint32_t>& indices,
-		const std::vector<Vertex>& vertices) : indices(indices),
-	vertices(vertices) {}
+	[[nodiscard]] const VkBuffer& GetVertexBuffer() const {
+		return buffer.GetVertexBuffer();
+	}
 
 	[[nodiscard]] const std::vector<uint32_t>& GetIndices() const {
-		return indices;
+		return data.GetIndices();
 	}
 
 	[[nodiscard]] const std::vector<Vertex>& GetVertices() const {
-		return vertices;
+		return data.GetVertices();
 	}
 
-	[[nodiscard]] const uint32_t& GetIndexByIndex(const uint32_t index) const {
-		return indices[index];
+	[[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
+		return descriptor.GetDescriptorSets();
 	}
 
-	[[nodiscard]] const Vertex& GetVertexByIndex(const uint32_t index) const {
-		return vertices[index];
+	[[nodiscard]] const VkDescriptorSet& GetDescriptorSetByIndex(
+		const uint32_t index) const {
+		return descriptor.GetDescriptorSetByIndex(index);
 	}
+
+	[[nodiscard]] const UniformBuffer& GetUniformBuffer() const {
+		return descriptor.GetUniformBuffer();
+	}
+
+	void UpdateUniformBuffers(const VkExtent2D& swapChainExtent,
+		const uint32_t currentImage) const {
+		descriptor.UpdateUniformBuffers(swapChainExtent, currentImage);
+	}
+
+	void InitMesh(const Device& device,
+		const Render& render,
+		const Pipeline& pipeline);
+
+	void DestroyMesh(const VkDevice& device) const;
 };

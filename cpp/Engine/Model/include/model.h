@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../RHI/Vulkan/include/mesh.h"
+#include "../../RHI/Vulkan/include/data.h"
 
 class Model {
-	std::vector<Mesh> meshes;
+	std::vector<Data> meshes;
 public:
 };
