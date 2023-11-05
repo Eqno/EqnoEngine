@@ -8,7 +8,6 @@
 #include "../include/buffer.h"
 #include "../include/texture.h"
 
-
 void Descriptor::CreateDescriptorSets(const VkDevice& device,
 	const Render& render,
 	const VkDescriptorSetLayout& descriptorSetLayout,
@@ -35,7 +34,7 @@ void Descriptor::CreateDescriptorSets(const VkDevice& device,
 		descriptorWrites.resize(textures.size() + 1);
 
 		VkDescriptorBufferInfo bufferInfo {
-			.buffer = uniformBuffer.GetUniformBuffers()[i],
+			.buffer = render.GetUniformBufferByIndex(i),
 			.offset = 0,
 			.range = sizeof(UniformBufferObject),
 		};
@@ -109,7 +108,7 @@ void Descriptor::Create(const Device& device,
 	const Render& render,
 	const VkDescriptorSetLayout& descriptorSetLayout,
 	const std::vector<Texture>& textures) {
-	CreateUniformBuffers(device, render);
+	
 	CreateDescriptorPool(device.GetLogical(), render, textures.size());
 	CreateDescriptorSets(device.GetLogical(),
 		render,
@@ -117,9 +116,8 @@ void Descriptor::Create(const Device& device,
 		textures);
 }
 
-void Descriptor::Destroy(const VkDevice& device, const Render& render) const {
+void Descriptor::Destroy(const VkDevice& device) const {
 	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-	uniformBuffer.Destroy(device, render);
 }
 
 void UniformBuffer::CreateUniformBuffers(const Device& device,

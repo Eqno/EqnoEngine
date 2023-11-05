@@ -39,15 +39,6 @@ public:
 		return descriptor.GetDescriptorSetByIndex(index);
 	}
 
-	[[nodiscard]] const UniformBuffer& GetUniformBuffer() const {
-		return descriptor.GetUniformBuffer();
-	}
-
-	void UpdateUniformBuffers(const VkExtent2D& swapChainExtent,
-		const uint32_t currentImage) const {
-		descriptor.UpdateUniformBuffers(swapChainExtent, currentImage);
-	}
-
 	Mesh(const Device& device,
 		const Render& render,
 		const std::string& dataPath,
@@ -62,5 +53,5 @@ public:
 		const std::vector<std::string>& texPaths,
 		const VkDescriptorSetLayout& descriptorSetLayout);
 
-	void Destroy(const VkDevice& device, const Render& render) const;
+	void Destroy(const VkDevice& device) const;
 };

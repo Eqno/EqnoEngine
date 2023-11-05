@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "uniform.h"
 #include "window.h"
 
 class Mesh;
@@ -19,10 +20,12 @@ class Render {
 
 	VkRenderPass renderPass {};
 	VkCommandPool commandPool {};
+	UniformBuffer uniformBuffer {};
 	std::vector<VkCommandBuffer> commandBuffers;
 
 	void DestroyRenderPass(const VkDevice& device) const;
 	void DestroyCommandPool(const VkDevice& device) const;
+	void DestroyUniformBuffers(const VkDevice& device) const;
 	void DestroySyncObjects(const VkDevice& device) const;
 
 public:
@@ -30,10 +33,19 @@ public:
 	void CreateCommandPool(const Device& device, const VkSurfaceKHR& surface);
 	void CreateSyncObjects(const VkDevice& device);
 
+	void CreateUniformBuffers(const Device& device) {
+		uniformBuffer.CreateUniformBuffers(device, *this);
+	}
+
+	void UpdateUniformBuffers(const VkExtent2D& swapChainExtent,
+		const uint32_t currentImage) const {
+		uniformBuffer.UpdateUniformBuffer(swapChainExtent, currentImage);
+	}
+
 	void CreateCommandBuffers(const VkDevice& device);
 	void RecordCommandBuffer(const std::vector<Draw>& draws,
 		const SwapChain& swapChain,
-		const uint32_t imageIndex) const;
+		uint32_t imageIndex) const;
 	void CopyCommandBuffer(const Device& device,
 		const VkBuffer& srcBuffer,
 		const VkBuffer& dstBuffer,
@@ -58,6 +70,19 @@ public:
 
 	[[nodiscard]] const VkCommandPool& GetCommandPool() const {
 		return commandPool;
+	}
+
+	[[nodiscard]] const UniformBuffer& GetUniformBuffer() const {
+		return uniformBuffer;
+	}
+
+	[[nodiscard]] const UniformBuffers& GetUniformBuffers() const {
+		return uniformBuffer.GetUniformBuffers();
+	}
+
+	[[nodiscard]] const VkBuffer& GetUniformBufferByIndex(
+		const size_t index) const {
+		return uniformBuffer.GetUniformBufferByIndex(index);
 	}
 
 	[[nodiscard]] const std::vector<VkCommandBuffer>&

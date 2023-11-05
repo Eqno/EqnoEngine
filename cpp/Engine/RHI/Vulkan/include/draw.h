@@ -43,5 +43,5 @@ public:
 		const Render& render,
 		const std::vector<std::pair<std::string, std::vector<std::string>>>&
 		meshDatas);
-	void Destroy(const VkDevice& device, const Render& render) const;
+	void Destroy(const VkDevice& device) const;
 };

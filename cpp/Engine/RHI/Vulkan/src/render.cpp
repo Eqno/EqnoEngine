@@ -262,11 +262,7 @@ void Render::DrawFrame(const Device& device,
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	for (const Draw& draw: draws) {
-		for (const Mesh& mesh: draw.GetMeshes()) {
-			mesh.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
-		}
-	}
+	UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
 	vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
 	vkResetCommandBuffer(commandBuffers[currentFrame],
 		/*VkCommandBufferResetFlagBits*/
@@ -364,6 +360,10 @@ void Render::DestroyCommandPool(const VkDevice& device) const {
 	vkDestroyCommandPool(device, commandPool, nullptr);
 }
 
+void Render::DestroyUniformBuffers(const VkDevice& device) const {
+	uniformBuffer.Destroy(device, *this);
+}
+
 void Render::DestroySyncObjects(const VkDevice& device) const {
 	for (int i = 0; i < maxFramesInFlight; i++) {
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -376,4 +376,5 @@ void Render::Destroy(const VkDevice& device) const {
 	DestroyRenderPass(device);
 	DestroySyncObjects(device);
 	DestroyCommandPool(device);
+	DestroyUniformBuffers(device);
 }

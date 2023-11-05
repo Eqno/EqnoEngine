@@ -13,8 +13,8 @@ void Mesh::Create(const Device& device,
 	descriptor.Create(device, render, descriptorSetLayout, textures);
 }
 
-void Mesh::Destroy(const VkDevice& device, const Render& render) const {
-	descriptor.Destroy(device, render);
+void Mesh::Destroy(const VkDevice& device) const {
+	descriptor.Destroy(device);
 	buffer.Destroy(device);
 	for (const Texture& texture: textures) {
 		texture.Destroy(device);

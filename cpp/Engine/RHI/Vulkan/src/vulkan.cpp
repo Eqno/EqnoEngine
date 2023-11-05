@@ -29,11 +29,13 @@ void Vulkan::InitVulkan() {
 	draws.emplace_back(device, Config::SHADER_PATH, render.GetRenderPass());
 
 	render.CreateCommandPool(device, window.GetSurface());
+	render.CreateUniformBuffers(device);
+
 	depth.CreateDepthResources(device, swapChain.GetExtent());
 	swapChain.CreateFrameBuffers(device.GetLogical(),
 		depth,
 		render.GetRenderPass());
-
+	
 	draws[0].Load(device,
 		render,
 		{{Config::MODEL_PATH, {Config::TEXTURE_PATH}}});
@@ -45,7 +47,7 @@ void Vulkan::InitVulkan() {
 void Vulkan::Cleanup() const {
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
 	for (const Draw& draw: draws) {
-		draw.Destroy(device.GetLogical(), render);
+		draw.Destroy(device.GetLogical());
 	}
 	render.Destroy(device.GetLogical());
 	device.DestroyLogicalDevice();

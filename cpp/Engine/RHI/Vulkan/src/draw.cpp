@@ -23,9 +23,9 @@ void Draw::Load(const Device& device,
 	}
 }
 
-void Draw::Destroy(const VkDevice& device, const Render& render) const {
+void Draw::Destroy(const VkDevice& device) const {
 	pipeline.Destroy(device);
 	for (const Mesh& mesh: meshes) {
-		mesh.Destroy(device, render);
+		mesh.Destroy(device);
 	}
 }

@@ -35,6 +35,11 @@ public:
 		return uniformBuffers;
 	}
 
+	[[nodiscard]] const VkBuffer& GetUniformBufferByIndex(
+		const size_t index) const {
+		return uniformBuffers[index];
+	}
+
 	void CreateUniformBuffers(const Device& device, const Render& render);
 
 	void UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
@@ -44,7 +49,6 @@ public:
 };
 
 class Descriptor {
-	UniformBuffer uniformBuffer {};
 	VkDescriptorPool descriptorPool {};
 	DescriptorSets descriptorSets {};
 
@@ -55,17 +59,9 @@ class Descriptor {
 
 	void CreateDescriptorPool(const VkDevice& device,
 		const Render& render,
-		const size_t textureNum);
-
-	void CreateUniformBuffers(const Device& device, const Render& render) {
-		uniformBuffer.CreateUniformBuffers(device, render);
-	}
+		size_t textureNum);
 
 public:
-	[[nodiscard]] const UniformBuffer& GetUniformBuffer() const {
-		return uniformBuffer;
-	}
-
 	[[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
 		return descriptorSets;
 	}
@@ -75,14 +71,9 @@ public:
 		return descriptorSets[index];
 	}
 
-	void UpdateUniformBuffers(const VkExtent2D& swapChainExtent,
-		const uint32_t currentImage) const {
-		uniformBuffer.UpdateUniformBuffer(swapChainExtent, currentImage);
-	}
-
 	void Create(const Device& device,
 		const Render& render,
 		const VkDescriptorSetLayout& descriptorSetLayout,
 		const std::vector<Texture>& textures);
-	void Destroy(const VkDevice& device, const Render& render) const;
+	void Destroy(const VkDevice& device) const;
 };
