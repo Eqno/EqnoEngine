@@ -1,25 +1,30 @@
 #pragma once
+
+#include <string>
 #include <vulkan/vulkan_core.h>
+
+#include "utils.h"
 
 class Device;
 class Render;
 
 class Texture {
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-	VkImageView textureImageView;
-	VkSampler textureSampler;
+	VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+
+	VkImage textureImage {};
+	VkDeviceMemory textureImageMemory {};
+	VkImageView textureImageView {};
+	VkSampler textureSampler {};
 
 	void CreateTextureImage(const Device& device,
 		const Render& render,
-		const char* texturePath);
+		const std::string& texturePath);
 	void CreateTextureImageView(const VkDevice& device);
 	void CreateTextureSampler(const Device& device);
 
 	static void TransitionImageLayout(const Device& device,
 		const Render& render,
 		VkImage image,
-		VkFormat format,
 		VkImageLayout oldLayout,
 		VkImageLayout newLayout);
 	static void CopyBufferToImage(const Device& device,
@@ -30,27 +35,24 @@ class Texture {
 		uint32_t height);
 
 public:
+	Texture() = default;
+
+	explicit Texture(const std::string& imageFormat) : imageFormat(
+		VulkanUtils::ParseImageFormat(imageFormat)) {}
+
 	Texture(const Device& device,
 		const Render& render,
-		const char* texturePath) : textureImage(nullptr),
-	textureImageMemory(nullptr),
-	textureImageView(nullptr),
-	textureSampler(nullptr) {
+		const char* texturePath) {
 		Create(device, render, texturePath);
 	}
 
-	Texture() : textureImage(nullptr),
-	textureImageMemory(nullptr),
-	textureImageView(nullptr),
-	textureSampler(nullptr) {}
-
-	Texture(const VkImage textureImage,
-		const VkDeviceMemory textureImageMemory,
-		const VkImageView textureImageView,
-		const VkSampler textureSampler) : textureImage(textureImage),
-	textureImageMemory(textureImageMemory),
-	textureImageView(textureImageView),
-	textureSampler(textureSampler) {}
+	Texture(const std::string& imageFormat,
+		const Device& device,
+		const Render& render,
+		const std::string& texturePath) : imageFormat(
+		VulkanUtils::ParseImageFormat(imageFormat)) {
+		Create(device, render, texturePath);
+	}
 
 	[[nodiscard]] const VkImageView& GetTextureImageView() const {
 		return textureImageView;
@@ -76,6 +78,6 @@ public:
 
 	void Create(const Device& device,
 		const Render& render,
-		const char* texturePath);
+		const std::string& texturePath);
 	void Destroy(const VkDevice& device) const;
 };

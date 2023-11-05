@@ -6,7 +6,7 @@ void Mesh::Create(const Device& device,
 	const std::vector<std::string>& texPaths,
 	const VkDescriptorSetLayout& descriptorSetLayout) {
 	for (const std::string& texPath: texPaths) {
-		textures.emplace_back(device, render, texPath.c_str());
+		textures.emplace_back("NOSRPGB", device, render, texPath.c_str());
 	}
 	data.Create(dataPath.c_str());
 	buffer.Create(device, data.GetVertices(), data.GetIndices(), render);

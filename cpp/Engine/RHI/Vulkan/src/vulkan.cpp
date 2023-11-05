@@ -23,7 +23,7 @@ void Vulkan::InitVulkan() {
 	device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
 	device.CreateLogicalDevice(window.GetSurface(), validation);
 
-	swapChain.Create(device, window);
+	swapChain.Create("NOSRGB", "NOSRGB", device, window);
 	swapChain.CreateImageViews(device.GetLogical());
 	render.CreateRenderPass(swapChain.GetImageFormat(), device);
 	draws.emplace_back(device, Config::SHADER_PATH, render.GetRenderPass());

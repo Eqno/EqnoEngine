@@ -1,7 +1,10 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
+
+#include "utils.h"
 
 using PresentModes = std::vector<VkPresentModeKHR>;
 using SurfaceFormats = std::vector<VkSurfaceFormatKHR>;
@@ -15,13 +18,16 @@ class SwapChain {
 	VkExtent2D extent {};
 	VkFormat imageFormat {};
 
+	VkFormat surfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
+	VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
 	std::vector<VkImage> images;
 	std::vector<VkImageView> imageViews;
 	std::vector<VkFramebuffer> frameBuffers;
 
 public:
-	static VkSurfaceFormatKHR ChooseSurfaceFormat(
-		const SurfaceFormats& availableFormats);
+	VkSurfaceFormatKHR ChooseSurfaceFormat(
+		const SurfaceFormats& availableFormats) const;
 
 	static VkPresentModeKHR ChoosePresentMode(
 		const PresentModes& availablePresentModes);
@@ -51,6 +57,23 @@ public:
 	}
 
 	void Create(const Device& device, const Window& window);
+
+	void Create(const std::string& format,
+		const Device& device,
+		const Window& window) {
+		surfaceFormat = VulkanUtils::ParseImageFormat(format);
+		Create(device, window);
+	}
+
+	void Create(const std::string& format,
+		const std::string& space,
+		const Device& device,
+		const Window& window) {
+		surfaceFormat = VulkanUtils::ParseImageFormat(format);
+		surfaceColorSpace = VulkanUtils::ParseColorSpace(space);
+		Create(device, window);
+	}
+
 	void CreateImageViews(const VkDevice& device);
 	void CreateFrameBuffers(const VkDevice& device,
 		const Depth& depth,

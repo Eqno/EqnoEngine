@@ -10,9 +10,9 @@
 
 void Texture::CreateTextureImage(const Device& device,
 	const Render& render,
-	const char* texturePath) {
+	const std::string& texturePath) {
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load(texturePath,
+	stbi_uc* pixels = stbi_load(texturePath.c_str(),
 		&texWidth,
 		&texHeight,
 		&texChannels,
@@ -48,7 +48,7 @@ void Texture::CreateTextureImage(const Device& device,
 	CreateImage(device,
 		texWidth,
 		texHeight,
-		VK_FORMAT_R8G8B8A8_SRGB,
+		imageFormat,
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -58,7 +58,6 @@ void Texture::CreateTextureImage(const Device& device,
 	TransitionImageLayout(device,
 		render,
 		textureImage,
-		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	CopyBufferToImage(device,
@@ -70,7 +69,6 @@ void Texture::CreateTextureImage(const Device& device,
 	TransitionImageLayout(device,
 		render,
 		textureImage,
-		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -81,7 +79,7 @@ void Texture::CreateTextureImage(const Device& device,
 void Texture::CreateTextureImageView(const VkDevice& device) {
 	textureImageView = CreateImageView(device,
 		textureImage,
-		VK_FORMAT_R8G8B8A8_SRGB,
+		imageFormat,
 		VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
@@ -187,7 +185,6 @@ void Texture::CreateImage(const Device& device,
 void Texture::TransitionImageLayout(const Device& device,
 	const Render& render,
 	const VkImage image,
-	const VkFormat format,
 	const VkImageLayout oldLayout,
 	const VkImageLayout newLayout) {
 	const VkCommandBuffer commandBuffer = render.BeginSingleTimeCommands(
@@ -279,7 +276,7 @@ void Texture::CopyBufferToImage(const Device& device,
 
 void Texture::Create(const Device& device,
 	const Render& render,
-	const char* texturePath) {
+	const std::string& texturePath) {
 	CreateTextureImage(device, render, texturePath);
 	CreateTextureImageView(device.GetLogical());
 	CreateTextureSampler(device);
