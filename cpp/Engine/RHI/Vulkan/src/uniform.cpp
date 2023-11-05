@@ -1,9 +1,10 @@
 #include "../include/uniform.h"
 
 #include <chrono>
-#include <array>
 #include <stdexcept>
 
+#include "../include/device.h"
+#include "../include/render.h"
 #include "../include/buffer.h"
 #include "../include/texture.h"
 

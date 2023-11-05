@@ -1,11 +1,13 @@
 #pragma once
 
+#include <vector>
 #include <glm/fwd.hpp>
 #include <vulkan/vulkan_core.h>
 
-#include "device.h"
-#include "data.h"
-#include "render.h"
+#include "vertex.h"
+
+class Device;
+class Render;
 
 class Buffer {
 	VkBuffer vertexBuffer {};

@@ -6,7 +6,6 @@
 
 #include "../include/depth.h"
 #include "../include/device.h"
-#include "../include/pipeline.h"
 #include "../include/texture.h"
 #include "../include/window.h"
 
@@ -135,10 +134,7 @@ void SwapChain::CreateFrameBuffers(const VkDevice& device,
 	const VkRenderPass& renderPass) {
 	frameBuffers.resize(imageViews.size());
 	for (size_t i = 0; i < imageViews.size(); i++) {
-		std::array attachments = {
-			imageViews[i],
-			depth.GetDepthImageView()
-		};
+		std::array attachments = {imageViews[i], depth.GetDepthImageView()};
 
 		VkFramebufferCreateInfo frameBufferInfo {
 			.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -161,7 +157,7 @@ void SwapChain::CreateFrameBuffers(const VkDevice& device,
 void SwapChain::RecreateSwapChain(const Device& device,
 	Depth& depth,
 	const Window& window,
-	const Pipeline& pipeline) {
+	const VkRenderPass& renderPass) {
 	window.OnRecreateSwapChain();
 	device.WaitIdle();
 	CleanupSwapChain(device.GetLogical(), depth);
@@ -169,5 +165,5 @@ void SwapChain::RecreateSwapChain(const Device& device,
 	Create(device, window);
 	CreateImageViews(device.GetLogical());
 	depth.CreateDepthResources(device, extent);
-	CreateFrameBuffers(device.GetLogical(), depth, pipeline.GetRenderPass());
+	CreateFrameBuffers(device.GetLogical(), depth, renderPass);
 }

@@ -41,5 +41,9 @@ public:
 		return vertices[index];
 	}
 
+	explicit Data(const char* dataPath) {
+		Create((dataPath));
+	}
+
 	void Create(const char* dataPath);
 };

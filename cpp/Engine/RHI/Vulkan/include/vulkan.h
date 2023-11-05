@@ -2,9 +2,8 @@
 
 #include "depth.h"
 #include "device.h"
+#include "draw.h"
 #include "instance.h"
-#include "mesh.h"
-#include "pipeline.h"
 #include "render.h"
 #include "swapchain.h"
 #include "validation.h"
@@ -19,9 +18,7 @@ class Vulkan {
 	SwapChain swapChain;
 	Validation validation;
 
-	Shader shader;
-	Pipeline pipeline;
-	std::vector<Mesh> meshes;
+	std::vector<Draw> draws;
 
 public:
 	void Run();

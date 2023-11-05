@@ -1,9 +1,11 @@
 #pragma once
 
+#include <string>
+
 #include "buffer.h"
 #include "data.h"
-#include "texture.h"
 #include "uniform.h"
+#include "texture.h"
 
 class Mesh {
 	Data data;
@@ -46,9 +48,19 @@ public:
 		descriptor.UpdateUniformBuffers(swapChainExtent, currentImage);
 	}
 
+	Mesh(const Device& device,
+		const Render& render,
+		const std::string& dataPath,
+		const std::vector<std::string>& texPaths,
+		const VkDescriptorSetLayout& descriptorSetLayout) {
+		Create(device, render, dataPath, texPaths, descriptorSetLayout);
+	}
+
 	void Create(const Device& device,
 		const Render& render,
-		const Pipeline& pipeline);
+		const std::string& dataPath,
+		const std::vector<std::string>& texPaths,
+		const VkDescriptorSetLayout& descriptorSetLayout);
 
 	void Destroy(const VkDevice& device, const Render& render) const;
 };

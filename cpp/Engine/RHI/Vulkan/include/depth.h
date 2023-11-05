@@ -3,8 +3,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-#include "device.h"
-
+class Device;
 class SwapChain;
 
 class Depth {

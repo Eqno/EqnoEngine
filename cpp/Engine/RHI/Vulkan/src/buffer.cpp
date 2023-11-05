@@ -5,6 +5,7 @@
 #include "../include/pipeline.h"
 #include "../include/render.h"
 #include "../include/uniform.h"
+#include "../include/device.h"
 
 uint32_t Buffer::MemoryType(const VkPhysicalDevice& physicalDevice,
 	const glm::uint32_t& typeFilter,

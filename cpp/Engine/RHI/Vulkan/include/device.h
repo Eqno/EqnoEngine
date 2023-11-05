@@ -4,7 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-#include "validation.h"
+class Validation;
 
 struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities {};

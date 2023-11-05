@@ -7,7 +7,6 @@
 #include "../include/buffer.h"
 #include "../include/render.h"
 #include "../include/device.h"
-#include "../include/config.h"
 
 void Texture::CreateTextureImage(const Device& device,
 	const Render& render,

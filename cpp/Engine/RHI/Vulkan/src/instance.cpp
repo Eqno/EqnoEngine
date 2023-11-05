@@ -1,7 +1,6 @@
 #include "../include/instance.h"
 
 #include <stdexcept>
-#include <vulkan/vulkan_core.h>
 
 #include "../include/validation.h"
 #include "../include/window.h"

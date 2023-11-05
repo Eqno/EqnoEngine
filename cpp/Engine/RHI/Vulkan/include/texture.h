@@ -1,9 +1,7 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
 
-#include "device.h"
-#include "data.h"
-
+class Device;
 class Render;
 
 class Texture {

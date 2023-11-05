@@ -1,5 +1,8 @@
 #pragma once
-#include "validation.h"
+
+#include <vulkan/vulkan_core.h>
+
+class Validation;
 
 class Instance {
 	VkInstance instance = nullptr;

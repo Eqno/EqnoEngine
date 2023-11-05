@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "../include/config.h"
+#include "../include/validation.h"
 
 /**
  * 设备检查相关函数

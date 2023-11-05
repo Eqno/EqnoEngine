@@ -4,10 +4,75 @@
 
 #include "../include/device.h"
 #include "../include/swapchain.h"
-#include "../include/uniform.h"
 #include "../include/vertex.h"
-#include "../include/data.h"
 #include "../include/mesh.h"
+#include "../include/draw.h"
+#include "../include/depth.h"
+
+void Render::CreateRenderPass(const VkFormat& imageFormat,
+	const Device& device) {
+	const VkAttachmentDescription colorAttachment {
+		.format = imageFormat,
+		.samples = VK_SAMPLE_COUNT_1_BIT,
+		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+	};
+	const VkAttachmentDescription depthAttachment {
+		.format = Depth::FindDepthFormat(device.GetPhysical()),
+		.samples = VK_SAMPLE_COUNT_1_BIT,
+		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+		.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	};
+	constexpr VkAttachmentReference colorAttachmentRef {
+		.attachment = 0,
+		.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	};
+	constexpr VkAttachmentReference depthAttachmentRef {
+		.attachment = 1,
+		.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	};
+	VkSubpassDescription subPass {
+		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+		.colorAttachmentCount = 1,
+		.pColorAttachments = &colorAttachmentRef,
+		.pDepthStencilAttachment = &depthAttachmentRef,
+	};
+	constexpr VkSubpassDependency dependency {
+		.srcSubpass = VK_SUBPASS_EXTERNAL,
+		.dstSubpass = 0,
+		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+		                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+		                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+		.srcAccessMask = 0,
+		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+		                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+	};
+	std::array attachments = {colorAttachment, depthAttachment};
+	const VkRenderPassCreateInfo renderPassInfo {
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+		.attachmentCount = static_cast<uint32_t>(attachments.size()),
+		.pAttachments = attachments.data(),
+		.subpassCount = 1,
+		.pSubpasses = &subPass,
+		.dependencyCount = 1,
+		.pDependencies = &dependency,
+	};
+	if (vkCreateRenderPass(device.GetLogical(),
+		    &renderPassInfo,
+		    nullptr,
+		    &renderPass) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create render pass!");
+	}
+}
 
 void Render::CreateCommandPool(const Device& device,
 	const VkSurfaceKHR& surface) {
@@ -29,10 +94,6 @@ void Render::CreateCommandPool(const Device& device,
 	}
 }
 
-void Render::DestroyCommandPool(const VkDevice& device) const {
-	vkDestroyCommandPool(device, commandPool, nullptr);
-}
-
 void Render::CreateCommandBuffers(const VkDevice& device) {
 	commandBuffers.resize(maxFramesInFlight);
 
@@ -49,8 +110,7 @@ void Render::CreateCommandBuffers(const VkDevice& device) {
 	}
 }
 
-void Render::RecordCommandBuffer(const std::vector<Mesh>& meshes,
-	const Pipeline& pipeline,
+void Render::RecordCommandBuffer(const std::vector<Draw>& draws,
 	const SwapChain& swapChain,
 	const uint32_t imageIndex) const {
 	const VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
@@ -67,7 +127,7 @@ void Render::RecordCommandBuffer(const std::vector<Mesh>& meshes,
 	};
 	VkRenderPassBeginInfo renderPassInfo {
 		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-		.renderPass = pipeline.GetRenderPass(),
+		.renderPass = renderPass,
 		.framebuffer = swapChain.GetFrameBuffers()[imageIndex],
 		.clearValueCount = static_cast<uint32_t>(clearValues.size()),
 		.pClearValues = clearValues.data(),
@@ -92,35 +152,37 @@ void Render::RecordCommandBuffer(const std::vector<Mesh>& meshes,
 	const VkRect2D scissor {.offset = {0, 0}, .extent = swapChain.GetExtent(),};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	for (const auto& mesh: meshes) {
+	for (const auto& draw: draws) {
 		vkCmdBindPipeline(commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipeline.GetGraphicsPipeline());
+			draw.GetGraphicsPipeline());
 
-		const VkBuffer vertexBuffers[] = {mesh.GetVertexBuffer()};
-		constexpr VkDeviceSize offsets[] = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+		for (const auto& mesh: draw.GetMeshes()) {
+			const VkBuffer vertexBuffers[] = {mesh.GetVertexBuffer()};
+			constexpr VkDeviceSize offsets[] = {0};
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-		vkCmdBindIndexBuffer(commandBuffer,
-			mesh.GetIndexBuffer(),
-			0,
-			VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffer,
+				mesh.GetIndexBuffer(),
+				0,
+				VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindDescriptorSets(commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipeline.GetPipelineLayout(),
-			0,
-			1,
-			&mesh.GetDescriptorSetByIndex(currentFrame),
-			0,
-			nullptr);
+			vkCmdBindDescriptorSets(commandBuffer,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				draw.GetPipelineLayout(),
+				0,
+				1,
+				&mesh.GetDescriptorSetByIndex(currentFrame),
+				0,
+				nullptr);
 
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(mesh.GetIndices().size()),
-			1,
-			0,
-			0,
-			0);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(mesh.GetIndices().size()),
+				1,
+				0,
+				0,
+				0);
+		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
@@ -173,11 +235,10 @@ void Render::EndSingleTimeCommands(const Device& device,
 	vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, &commandBuffer);
 }
 
-void Render::DrawFrame(const std::vector<Mesh>& meshes,
-	const Device& device,
+void Render::DrawFrame(const Device& device,
+	const std::vector<Draw>& draws,
 	Depth& depth,
 	Window& window,
-	const Pipeline& pipeline,
 	SwapChain& swapChain) {
 	vkWaitForFences(device.GetLogical(),
 		1,
@@ -194,22 +255,23 @@ void Render::DrawFrame(const std::vector<Mesh>& meshes,
 		&imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		swapChain.RecreateSwapChain(device, depth, window, pipeline);
+		swapChain.RecreateSwapChain(device, depth, window, renderPass);
 		return;
 	}
 	if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	for (const Mesh& mesh: meshes) {
-		mesh.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
+	for (const Draw& draw: draws) {
+		for (const Mesh& mesh: draw.GetMeshes()) {
+			mesh.UpdateUniformBuffers(swapChain.GetExtent(), currentFrame);
+		}
 	}
 	vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
 	vkResetCommandBuffer(commandBuffers[currentFrame],
 		/*VkCommandBufferResetFlagBits*/
 		0);
-
-	RecordCommandBuffer(meshes, pipeline, swapChain, imageIndex);
+	RecordCommandBuffer(draws, swapChain, imageIndex);
 
 	const VkSemaphore waitSemaphores[] = {
 		imageAvailableSemaphores[currentFrame]
@@ -253,7 +315,7 @@ void Render::DrawFrame(const std::vector<Mesh>& meshes,
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
 	    window.GetFrameBufferResized()) {
 		window.SetFrameBufferResized(false);
-		swapChain.RecreateSwapChain(device, depth, window, pipeline);
+		swapChain.RecreateSwapChain(device, depth, window, renderPass);
 	}
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
@@ -275,7 +337,7 @@ void Render::CreateSyncObjects(const VkDevice& device) {
 		.flags = VK_FENCE_CREATE_SIGNALED_BIT,
 	};
 
-	for (size_t i = 0; i < maxFramesInFlight; i++) {
+	for (int i = 0; i < maxFramesInFlight; i++) {
 		if (vkCreateSemaphore(device,
 			    &semaphoreInfo,
 			    nullptr,
@@ -294,10 +356,24 @@ void Render::CreateSyncObjects(const VkDevice& device) {
 	}
 }
 
+void Render::DestroyRenderPass(const VkDevice& device) const {
+	vkDestroyRenderPass(device, renderPass, nullptr);
+}
+
+void Render::DestroyCommandPool(const VkDevice& device) const {
+	vkDestroyCommandPool(device, commandPool, nullptr);
+}
+
 void Render::DestroySyncObjects(const VkDevice& device) const {
-	for (size_t i = 0; i < maxFramesInFlight; i++) {
+	for (int i = 0; i < maxFramesInFlight; i++) {
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
+}
+
+void Render::Destroy(const VkDevice& device) const {
+	DestroyRenderPass(device);
+	DestroySyncObjects(device);
+	DestroyCommandPool(device);
 }

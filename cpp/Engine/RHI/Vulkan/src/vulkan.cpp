@@ -10,7 +10,7 @@ void Vulkan::Run() {
 void Vulkan::MainLoop() {
 	while (!glfwWindowShouldClose(window.window)) {
 		glfwPollEvents();
-		render.DrawFrame(meshes, device, depth, window, pipeline, swapChain);
+		render.DrawFrame(device, draws, depth, window, swapChain);
 	}
 	device.WaitIdle();
 }
@@ -25,22 +25,18 @@ void Vulkan::InitVulkan() {
 
 	swapChain.Create(device, window);
 	swapChain.CreateImageViews(device.GetLogical());
-
-	pipeline.CreateRenderPass(swapChain.GetImageFormat(), device);
-	pipeline.CreateDescriptorSetLayout(device.GetLogical());
-	pipeline.CreateGraphicsPipeline(shader, device.GetLogical());
+	render.CreateRenderPass(swapChain.GetImageFormat(), device);
+	draws.emplace_back(device, Config::SHADER_PATH, render.GetRenderPass());
 
 	render.CreateCommandPool(device, window.GetSurface());
 	depth.CreateDepthResources(device, swapChain.GetExtent());
 	swapChain.CreateFrameBuffers(device.GetLogical(),
 		depth,
-		pipeline.GetRenderPass());
+		render.GetRenderPass());
 
-	// for (Mesh& mesh: meshes) {
-	// 	mesh.Create(device, render, pipeline);
-	// }
-	meshes.resize(1);
-	meshes[0].Create(device, render, pipeline);
+	draws[0].Load(device,
+		render,
+		{{Config::MODEL_PATH, {Config::TEXTURE_PATH}}});
 
 	render.CreateCommandBuffers(device.GetLogical());
 	render.CreateSyncObjects(device.GetLogical());
@@ -48,16 +44,11 @@ void Vulkan::InitVulkan() {
 
 void Vulkan::Cleanup() const {
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
-	pipeline.DestroyGraphicsPipeline(device.GetLogical());
-
-	for (const Mesh& mesh: meshes) {
-		mesh.Destroy(device.GetLogical(), render);
+	for (const Draw& draw: draws) {
+		draw.Destroy(device.GetLogical(), render);
 	}
-	render.DestroySyncObjects(device.GetLogical());
-	render.DestroyCommandPool(device.GetLogical());
-
+	render.Destroy(device.GetLogical());
 	device.DestroyLogicalDevice();
-
 	validation.DestroyMessenger(instance.GetVkInstance());
 	window.DestroySurface(instance.GetVkInstance());
 	instance.DestroyInstance();
