@@ -8,7 +8,7 @@ void Mesh::Create(const Device& device,
 	for (const std::string& texPath: texPaths) {
 		textures.emplace_back("NOSRPGB", device, render, texPath.c_str());
 	}
-	data.Create(dataPath.c_str());
+	data.Create(dataPath);
 	buffer.Create(device, data.GetVertices(), data.GetIndices(), render);
 	descriptor.Create(device, render, descriptorSetLayout, textures);
 }

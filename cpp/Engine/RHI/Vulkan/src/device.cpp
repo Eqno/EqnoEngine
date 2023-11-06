@@ -65,8 +65,8 @@ namespace DeviceCheck {
 			&extensionCount,
 			availableExtensions.data());
 
-		StringSet requiredExtensions(Config::DEVICE_EXTENSIONS.begin(),
-			Config::DEVICE_EXTENSIONS.end());
+		StringSet requiredExtensions(VulkanConfig::DEVICE_EXTENSIONS.begin(),
+			VulkanConfig::DEVICE_EXTENSIONS.end());
 		for (const auto& [extensionName, _]: availableExtensions) {
 			requiredExtensions.erase(extensionName);
 		}
@@ -188,9 +188,9 @@ void Device::CreateLogicalDevice(const VkSurfaceKHR& surface,
 		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
 		.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
 		.pQueueCreateInfos = queueCreateInfos.data(),
-		.enabledExtensionCount = static_cast<uint32_t>(Config::DEVICE_EXTENSIONS
-			.size()),
-		.ppEnabledExtensionNames = Config::DEVICE_EXTENSIONS.data(),
+		.enabledExtensionCount = static_cast<uint32_t>(
+			VulkanConfig::DEVICE_EXTENSIONS.size()),
+		.ppEnabledExtensionNames = VulkanConfig::DEVICE_EXTENSIONS.data(),
 		.pEnabledFeatures = &deviceFeatures,
 	};
 	if (validation.GetEnabled()) {

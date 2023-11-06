@@ -49,7 +49,7 @@ VkExtent2D SwapChain::ChooseSwapExtent(
 	};
 }
 
-void SwapChain::Create(const Device& device, const Window& window) {
+void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
 	const auto [capabilities, formats, presentModes] = device.
 		QuerySwapChainSupport(window.GetSurface());
 	const auto [format, colorSpace] = ChooseSurfaceFormat(formats);
@@ -163,7 +163,28 @@ void SwapChain::RecreateSwapChain(const Device& device,
 	CleanupSwapChain(device.GetLogical(), depth);
 
 	Create(device, window);
-	CreateImageViews(device.GetLogical());
 	depth.CreateDepthResources(device, extent);
 	CreateFrameBuffers(device.GetLogical(), depth, renderPass);
+}
+
+void SwapChain::Create(const Device& device, const Window& window) {
+	CreateSwapChain(device, window);
+}
+
+void SwapChain::Create(const std::string& format,
+	const Device& device,
+	const Window& window) {
+	surfaceFormat = VulkanUtils::ParseImageFormat(format);
+	CreateSwapChain(device, window);
+	CreateImageViews(device.GetLogical());
+}
+
+void SwapChain::Create(const std::string& format,
+	const std::string& space,
+	const Device& device,
+	const Window& window) {
+	surfaceFormat = VulkanUtils::ParseImageFormat(format);
+	surfaceColorSpace = VulkanUtils::ParseColorSpace(space);
+	CreateSwapChain(device, window);
+	CreateImageViews(device.GetLogical());
 }

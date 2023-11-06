@@ -10,7 +10,13 @@ void Vulkan::Run() {
 void Vulkan::MainLoop() {
 	while (!glfwWindowShouldClose(window.window)) {
 		glfwPollEvents();
-		render.DrawFrame(device, draws, depth, window, swapChain);
+		for (const std::pair<std::string, std::vector<Base*>> objects:
+		     Base::Objects) {
+			for (Base* object: objects.second) {
+				object->OnUpdate();
+			}
+		}
+		render.DrawFrame(device, scene->GetDraws(), depth, window, swapChain);
 	}
 	device.WaitIdle();
 }
@@ -22,12 +28,9 @@ void Vulkan::InitVulkan() {
 
 	device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
 	device.CreateLogicalDevice(window.GetSurface(), validation);
-
 	swapChain.Create("NOSRGB", "NOSRGB", device, window);
-	swapChain.CreateImageViews(device.GetLogical());
-	render.CreateRenderPass(swapChain.GetImageFormat(), device);
-	draws.emplace_back(device, Config::SHADER_PATH, render.GetRenderPass());
 
+	render.CreateRenderPass(swapChain.GetImageFormat(), device);
 	render.CreateCommandPool(device, window.GetSurface());
 	render.CreateUniformBuffers(device);
 
@@ -35,20 +38,41 @@ void Vulkan::InitVulkan() {
 	swapChain.CreateFrameBuffers(device.GetLogical(),
 		depth,
 		render.GetRenderPass());
-	
-	draws[0].Load(device,
-		render,
-		{{Config::MODEL_PATH, {Config::TEXTURE_PATH}}});
 
 	render.CreateCommandBuffers(device.GetLogical());
 	render.CreateSyncObjects(device.GetLogical());
+
+	scene = new Scene(game + "Assets/Scenes/Launcher");
+	for (const std::pair<std::string, std::vector<Base*>> objects:
+	     Base::Objects) {
+		for (Base* object: objects.second) {
+			object->OnCreate();
+		}
+	}
+	for (const std::pair<std::string, std::vector<Base*>> objects:
+	     Base::Objects) {
+		for (Base* object: objects.second) {
+			object->OnStart();
+		}
+	}
 }
 
 void Vulkan::Cleanup() const {
-	swapChain.CleanupSwapChain(device.GetLogical(), depth);
-	for (const Draw& draw: draws) {
-		draw.Destroy(device.GetLogical());
+	for (const std::pair<std::string, std::vector<Base*>> objects:
+	     Base::Objects) {
+		for (Base* object: objects.second) {
+			object->OnStop();
+		}
 	}
+	for (const std::pair<std::string, std::vector<Base*>> objects:
+	     Base::Objects) {
+		for (Base* object: objects.second) {
+			object->OnDestroy();
+		}
+	}
+	delete scene;
+
+	swapChain.CleanupSwapChain(device.GetLogical(), depth);
 	render.Destroy(device.GetLogical());
 	device.DestroyLogicalDevice();
 	validation.DestroyMessenger(instance.GetVkInstance());
@@ -56,3 +80,5 @@ void Vulkan::Cleanup() const {
 	instance.DestroyInstance();
 	window.DestroyWindow();
 }
+
+void LoadScene() {}

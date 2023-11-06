@@ -3,13 +3,9 @@
 #include <iostream>
 #include <ostream>
 
-#include "Engine/Model/include/model.h"
-
 int main() {
 	try {
-		Model model;
-
-		Vulkan app;
+		Vulkan app(VulkanConfig::GAMES_PATH + "Test/");
 		app.Run();
 	}
 	catch (const std::exception& e) {

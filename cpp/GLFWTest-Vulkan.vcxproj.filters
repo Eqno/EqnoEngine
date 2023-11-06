@@ -88,6 +88,21 @@
     <Filter Include="Engine\Model\src">
       <UniqueIdentifier>{04a71557-714d-424f-9feb-2053a8473e1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\System">
+      <UniqueIdentifier>{004162d0-7259-457a-9b4f-224523795d12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\src">
+      <UniqueIdentifier>{58531837-8cb7-4801-96d9-500f00fb6b50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\include">
+      <UniqueIdentifier>{d95cf4d9-786b-427e-9e79-768efdd68193}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Scene\src">
+      <UniqueIdentifier>{5009d1ea-09e9-477b-82eb-79e24d2b0cfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Scene\include">
+      <UniqueIdentifier>{bb5bd995-e2a0-4c93-a7ca-06bebb0a2059}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
@@ -291,6 +306,15 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\data.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Model\include\config.h">
+      <Filter>Engine\Model\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\include\base.h">
+      <Filter>Engine\System\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\include\scene.h">
+      <Filter>Engine\Scene\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -358,6 +382,12 @@
     </ClCompile>
     <ClCompile Include="Engine\RHI\Vulkan\src\data.cpp">
       <Filter>Engine\RHI\Vulkan\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\src\base.cpp">
+      <Filter>Engine\System\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\src\scene.cpp">
+      <Filter>Engine\Scene\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -26,7 +26,7 @@ class SwapChain {
 	std::vector<VkFramebuffer> frameBuffers;
 
 public:
-	VkSurfaceFormatKHR ChooseSurfaceFormat(
+	[[nodiscard]] VkSurfaceFormatKHR ChooseSurfaceFormat(
 		const SurfaceFormats& availableFormats) const;
 
 	static VkPresentModeKHR ChoosePresentMode(
@@ -56,25 +56,8 @@ public:
 		return frameBuffers;
 	}
 
-	void Create(const Device& device, const Window& window);
-
-	void Create(const std::string& format,
-		const Device& device,
-		const Window& window) {
-		surfaceFormat = VulkanUtils::ParseImageFormat(format);
-		Create(device, window);
-	}
-
-	void Create(const std::string& format,
-		const std::string& space,
-		const Device& device,
-		const Window& window) {
-		surfaceFormat = VulkanUtils::ParseImageFormat(format);
-		surfaceColorSpace = VulkanUtils::ParseColorSpace(space);
-		Create(device, window);
-	}
-
 	void CreateImageViews(const VkDevice& device);
+	void CleanupSwapChain(const VkDevice& device, const Depth& depth) const;
 	void CreateFrameBuffers(const VkDevice& device,
 		const Depth& depth,
 		const VkRenderPass& renderPass);
@@ -83,5 +66,16 @@ public:
 		const Window& window,
 		const VkRenderPass& renderPass);
 
-	void CleanupSwapChain(const VkDevice& device, const Depth& depth) const;
+	void Create(const Device& device, const Window& window);
+
+	void Create(const std::string& format,
+		const Device& device,
+		const Window& window);
+
+	void Create(const std::string& format,
+		const std::string& space,
+		const Device& device,
+		const Window& window);
+
+	void CreateSwapChain(const Device& device, const Window& window);
 };

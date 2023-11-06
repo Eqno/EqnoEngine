@@ -10,16 +10,18 @@ VkVertexInputBindingDescription Vertex::GetBindingDescription() {
 
 AttributeDescriptions Vertex::GetAttributeDescriptions() {
 	return {
-		VkVertexInputAttributeDescription {
+		VkVertexInputAttributeDescription
+		{
 			.location = 0,
 			.binding = 0,
 			.format = VK_FORMAT_R32G32B32_SFLOAT,
 			.offset = offsetof(Vertex, pos),
 		},
-		VkVertexInputAttributeDescription {
+		VkVertexInputAttributeDescription
+		{
 			.location = 1,
 			.binding = 0,
-			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
 			.offset = offsetof(Vertex, color),
 		},
 		VkVertexInputAttributeDescription {
@@ -30,6 +32,12 @@ AttributeDescriptions Vertex::GetAttributeDescriptions() {
 		},
 		VkVertexInputAttributeDescription {
 			.location = 3,
+			.binding = 0,
+			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.offset = offsetof(Vertex, tangent),
+		},
+		VkVertexInputAttributeDescription {
+			.location = 4,
 			.binding = 0,
 			.format = VK_FORMAT_R32G32_SFLOAT,
 			.offset = offsetof(Vertex, texCoord),

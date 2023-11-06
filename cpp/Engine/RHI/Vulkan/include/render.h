@@ -13,7 +13,7 @@ class SwapChain;
 class Render {
 	uint32_t currentFrame = 0;
 	std::vector<VkFence> inFlightFences;
-	int maxFramesInFlight = Config::MAX_FRAMES_IN_FLIGHT;
+	int maxFramesInFlight = VulkanConfig::MAX_FRAMES_IN_FLIGHT;
 
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;

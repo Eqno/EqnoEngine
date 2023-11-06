@@ -2,12 +2,15 @@
 
 #include "depth.h"
 #include "device.h"
-#include "draw.h"
 #include "instance.h"
 #include "render.h"
 #include "swapchain.h"
 #include "validation.h"
 #include "window.h"
+
+#include "Engine/System/include/base.h"
+#include "Engine/Scene/include/scene.h"
+#include "Engine/Model/include/model.h"
 
 class Vulkan {
 	Depth depth;
@@ -18,9 +21,14 @@ class Vulkan {
 	SwapChain swapChain;
 	Validation validation;
 
-	std::vector<Draw> draws;
+	Scene* scene = nullptr;
+	std::string game = "Unset";
 
 public:
+	explicit Vulkan(const std::string& gameName) {
+		game = gameName;
+	}
+
 	void Run();
 	void MainLoop();
 

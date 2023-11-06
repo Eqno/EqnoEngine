@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "vertex.h"
@@ -14,7 +15,7 @@ public:
 
 	Data(const std::vector<uint32_t>& indices,
 		const std::vector<Vertex>& vertices) : indices(indices),
-		vertices(vertices) {}
+	vertices(vertices) {}
 
 	[[nodiscard]] const std::vector<uint32_t>& GetIndices() const {
 		return indices;
@@ -32,9 +33,9 @@ public:
 		return vertices[index];
 	}
 
-	explicit Data(const char* dataPath) {
+	explicit Data(const std::string& dataPath) {
 		Create((dataPath));
 	}
 
-	void Create(const char* dataPath);
+	void Create(const std::string& dataPath);
 };

@@ -13,16 +13,16 @@ VkBool32 VKAPI_CALL DebugCallback(
 	return VK_FALSE;
 }
 
-Validation::Validation() : enabled(Config::ENABLE_VALIDATION_LAYER),
+Validation::Validation() : enabled(VulkanConfig::ENABLE_VALIDATION_LAYER),
 layers({"VK_LAYER_KHRONOS_validation"}),
 messengerCreateInfo({
 	.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
 	.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-	VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-	VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+	                   VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+	                   VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
 	.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-	VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-	VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+	               VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+	               VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
 	.pfnUserCallback = DebugCallback,
 }) {}
 
@@ -79,7 +79,7 @@ bool Validation::CheckLayerSupport() const {
 
 void Validation::SetupMessenger(const VkInstance& instance) {
 	if (enabled && CreateMessengerEXT(instance, nullptr, &debugMessenger) !=
-		VK_SUCCESS) {
+	    VK_SUCCESS) {
 		throw std::runtime_error("Failed to set up debug messenger!");
 	}
 }

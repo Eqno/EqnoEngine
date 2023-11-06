@@ -4,7 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-namespace Config {
+namespace VulkanConfig {
 	constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 	constexpr bool ENABLE_VALIDATION_LAYER = true;
 
@@ -16,8 +16,9 @@ namespace Config {
 	const std::string GAMES_PATH = ROOT_PATH + "Games/";
 
 	const std::string SHADER_PATH = GAMES_PATH + "Test/Assets/Shaders/glsl/";
+
 	const std::string MODEL_PATH =
-		GAMES_PATH + "Test/Assets/Models/viking_room.obj";
+		GAMES_PATH + "Test/Assets/Models/res/viking_room.obj";
 	const std::string TEXTURE_PATH =
 		GAMES_PATH + "Test/Assets/Textures/viking_room.png";
 

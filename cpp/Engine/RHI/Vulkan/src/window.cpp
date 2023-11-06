@@ -25,7 +25,8 @@ std::pair<const char**, uint32_t> Window::GetRequiredExtensions() {
 }
 
 void Window::CreateWindow() {
-	CreateWindow(Config::DEFAULT_WINDOW_WIDTH, Config::DEFAULT_WINDOW_HEIGHT);
+	CreateWindow(VulkanConfig::DEFAULT_WINDOW_WIDTH,
+		VulkanConfig::DEFAULT_WINDOW_HEIGHT);
 }
 
 void Window::CreateWindow(const int width, const int height) {
@@ -39,7 +40,7 @@ void Window::CreateWindow(const int width, const int height) {
 
 void Window::CreateSurface(const VkInstance& instance) {
 	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) !=
-		VK_SUCCESS) {
+	    VK_SUCCESS) {
 		throw std::runtime_error("Failed to create window surface!");
 	}
 }
