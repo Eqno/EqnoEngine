@@ -25,6 +25,12 @@ AttributeDescriptions Vertex::GetAttributeDescriptions() {
 		VkVertexInputAttributeDescription {
 			.location = 2,
 			.binding = 0,
+			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.offset = offsetof(Vertex, normal),
+		},
+		VkVertexInputAttributeDescription {
+			.location = 3,
+			.binding = 0,
 			.format = VK_FORMAT_R32G32_SFLOAT,
 			.offset = offsetof(Vertex, texCoord),
 		}

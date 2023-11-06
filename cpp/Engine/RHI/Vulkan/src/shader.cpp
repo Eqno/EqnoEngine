@@ -1,11 +1,7 @@
 #include "../include/shader.h"
 
 #include <filesystem>
-#include <fstream>
 #include <iostream>
-#include <sstream>
-
-#include "../include/config.h"
 
 namespace ShaderRcStatic {
 	shaderc::Compiler compiler;
@@ -35,50 +31,25 @@ const ShaderTypeInfo& Shader::GetTypeByName(const std::string& glslPath) {
 
 void Shader::CompileFromGLSLToSPV(const std::string& glslPath,
 	const std::string& shaderPath) {
-	if (std::ifstream glslFile(shaderPath + glslPath); glslFile.is_open()) {
-		std::stringstream buffer;
-		buffer << glslFile.rdbuf();
-		auto glslCode(buffer.str());
+	const std::string glslCode = FileUtils::ReadFileAsString(
+		shaderPath + glslPath);
 
-		auto module = ShaderRcStatic::compiler.CompileGlslToSpv(
-			glslCode.c_str(),
-			glslCode.size(),
-			GetTypeByName(glslPath).kind,
-			glslPath.c_str(),
-			ShaderRcStatic::options);
+	const auto module = ShaderRcStatic::compiler.CompileGlslToSpv(
+		glslCode.c_str(), glslCode.size(), GetTypeByName(glslPath).kind,
+		glslPath.c_str(), ShaderRcStatic::options);
 
-		if (module.GetCompilationStatus() !=
-		    shaderc_compilation_status_success) {
-			std::cerr << module.GetErrorMessage();
-		}
-		std::vector spvCode(module.cbegin(), module.cend());
-
-		std::ofstream spvFile(Config::SHADER_PATH + "../spv/" + glslPath,
-			std::ios::binary);
-		spvFile.write(reinterpret_cast<const char*>(spvCode.data()),
-			sizeof(uint32_t) / sizeof(char) * spvCode.size());
-
-		spvFile.close();
-		glslFile.close();
+	if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+		std::cerr << module.GetErrorMessage();
 	}
-	else {
-		throw std::runtime_error("failed to open file!");
-	}
+	const std::vector spvCode(module.cbegin(), module.cend());
+	FileUtils::WriteFileAsUIntegers(shaderPath + "../spv/" + glslPath,
+		std::ios::binary, spvCode);
 }
 
 UIntegers Shader::ReadSPVFileAsBinary(const std::string& spvPath,
 	const std::string& shaderPath) {
-	if (std::ifstream file(shaderPath + "../spv/" + spvPath,
-		std::ios::ate | std::ios::binary); file.is_open()) {
-		const size_t fileSize = file.tellg();
-		UIntegers buffer(fileSize);
-		file.seekg(0);
-		file.read(reinterpret_cast<char*>(buffer.data()),
-			static_cast<std::streamsize>(fileSize));
-		file.close();
-		return buffer;
-	}
-	throw std::runtime_error("failed to open file!");
+	return FileUtils::ReadFileAsUIntegers(shaderPath + "../spv/" + spvPath,
+		std::ios::ate | std::ios::binary);
 }
 
 UIntegers Shader::ReadGLSLFileAsBinary(const std::string& glslPath,
@@ -94,10 +65,8 @@ VkShaderModule Shader::CreateModule(const UIntegers& code,
 		.codeSize = code.size(),
 		.pCode = code.data(),
 	};
-	if (VkShaderModule shaderModule; vkCreateShaderModule(device,
-		                                 &createInfo,
-		                                 nullptr,
-		                                 &shaderModule) == VK_SUCCESS) {
+	if (VkShaderModule shaderModule; vkCreateShaderModule(device, &createInfo,
+		nullptr, &shaderModule) == VK_SUCCESS) {
 		return shaderModule;
 	}
 	throw std::runtime_error("failed to create shader module!");

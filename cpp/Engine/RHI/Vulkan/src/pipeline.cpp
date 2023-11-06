@@ -58,9 +58,9 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
 	constexpr VkPipelineColorBlendAttachmentState colorBlendAttachment {
 		.blendEnable = VK_FALSE,
 		.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-		                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
 	};
-	constexpr VkPipelineColorBlendStateCreateInfo colorBlending {
+	VkPipelineColorBlendStateCreateInfo colorBlending {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 		.logicOpEnable = VK_FALSE,
 		.logicOp = VK_LOGIC_OP_COPY,
@@ -82,10 +82,8 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
 		.setLayoutCount = 1,
 		.pSetLayouts = &descriptorSetLayout,
 	};
-	if (vkCreatePipelineLayout(device,
-		    &pipelineLayoutInfo,
-		    nullptr,
-		    &pipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
+		&pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 	const VkGraphicsPipelineCreateInfo pipelineInfo {
@@ -105,12 +103,8 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
 		.subpass = 0,
 		.basePipelineHandle = VK_NULL_HANDLE,
 	};
-	if (vkCreateGraphicsPipelines(device,
-		    VK_NULL_HANDLE,
-		    1,
-		    &pipelineInfo,
-		    nullptr,
-		    &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo,
+		nullptr, &graphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 	shader.DestroyModules(device);
@@ -135,16 +129,14 @@ void Pipeline::CreateDescriptorSetLayout(const VkDevice& device) {
 
 	std::array bindings = {uboLayoutBinding, samplerLayoutBinding};
 
-	constexpr VkDescriptorSetLayoutCreateInfo layoutInfo {
+	VkDescriptorSetLayoutCreateInfo layoutInfo {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 		.bindingCount = static_cast<uint32_t>(bindings.size()),
 		.pBindings = bindings.data(),
 	};
 
-	if (vkCreateDescriptorSetLayout(device,
-		    &layoutInfo,
-		    nullptr,
-		    &descriptorSetLayout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
+		&descriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create descriptor set layout!");
 	}
 }

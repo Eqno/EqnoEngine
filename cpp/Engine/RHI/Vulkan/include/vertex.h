@@ -4,23 +4,26 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_core.h>
 
-using AttributeDescriptions = std::array<VkVertexInputAttributeDescription, 3>;
+using AttributeDescriptions = std::array<VkVertexInputAttributeDescription, 4>;
 
 class Vertex {
 	glm::vec3 pos {};
 	glm::vec3 color {};
+	glm::vec3 normal {};
 	glm::vec2 texCoord {};
 
 public:
 	Vertex(const glm::vec3& pos,
 		const glm::vec3& color,
+		const glm::vec3& normal,
 		const glm::vec2& texCoord) : pos(pos),
-	color(color),
-	texCoord(texCoord) { }
+		color(color),
+		normal(normal),
+		texCoord(texCoord) { }
 
 	bool operator==(const Vertex& other) const {
-		return pos == other.pos && color == other.color && texCoord == other.
-		       texCoord;
+		return pos == other.pos && color == other.color && normal == other.
+			normal && texCoord == other.texCoord;
 	}
 
 	struct HashFunction {
@@ -33,10 +36,14 @@ public:
 			colorHash ^= std::hash<float>()(vertex.color[1]) << 1;
 			colorHash ^= std::hash<float>()(vertex.color[2]) << 2;
 
+			size_t normalHash = std::hash<float>()(vertex.normal[0]);
+			normalHash ^= std::hash<float>()(vertex.normal[1]) << 1;
+			normalHash ^= std::hash<float>()(vertex.normal[2]) << 2;
+
 			size_t texHash = std::hash<float>()(vertex.texCoord[0]);
 			texHash ^= std::hash<float>()(vertex.texCoord[1]) << 1;
 
-			return posHash ^ colorHash ^ texHash;
+			return posHash ^ colorHash ^ normalHash ^ texHash;
 		}
 	};
 
