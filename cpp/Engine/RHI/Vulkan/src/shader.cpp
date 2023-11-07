@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <iostream>
 
+#include "Engine/System/include/FileUtils.h"
+
 namespace ShaderRcStatic {
 	shaderc::Compiler compiler;
 	shaderc::CompileOptions options;

@@ -1,17 +1,12 @@
 #pragma once
 
-#include <assimp/matrix4x4.h>
+#include "Engine/System/include/BaseObject.h"
 
-#include "Engine/RHI/Vulkan/include/config.h"
-#include "Engine/RHI/Vulkan/include/draw.h"
-#include "Engine/RHI/Vulkan/include/utils.h"
-#include "Engine/System/include/base.h"
-
-class Model final : public Base {
+class BaseModel final : public BaseObject {
 	// const Base* scene;
 
 public:
-	explicit Model(const Base* scene, const std::string& path) {
+	explicit BaseModel(const BaseObject* scene, const std::string& path) {
 		name = "Model";
 		RegisterToObjects(name, this);
 	}

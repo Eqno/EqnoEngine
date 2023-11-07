@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\Model\include\config.h" />
-    <ClInclude Include="Engine\Model\include\material.h" />
-    <ClInclude Include="Engine\Model\include\model.h" />
+    <ClInclude Include="Engine\Model\include\ModelConfig.h" />
+    <ClInclude Include="Engine\Model\include\BaseMaterial.h" />
+    <ClInclude Include="Engine\Model\include\BaseModel.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\glfw\include\GLFW\glfw3native.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\common.hpp" />
@@ -87,12 +87,18 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\validation.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\vertex.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\window.h" />
-    <ClInclude Include="Engine\Scene\include\scene.h" />
-    <ClInclude Include="Engine\System\include\base.h" />
+    <ClInclude Include="Engine\Scene\include\BaseScene.h" />
+    <ClInclude Include="Engine\Scene\include\StartScene.h" />
+    <ClInclude Include="Engine\System\include\Application.h" />
+    <ClInclude Include="Engine\System\include\BaseObject.h" />
+    <ClInclude Include="Engine\System\include\GraphicsInterface.h" />
+    <ClInclude Include="Engine\System\include\FileUtils.h" />
+    <ClInclude Include="Engine\System\include\JsonUtils.h" />
+    <ClInclude Include="Engine\System\include\TypeUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\Model\src\material.cpp" />
-    <ClCompile Include="Engine\Model\src\model.cpp" />
+    <ClCompile Include="Engine\Model\src\BaseMaterial.cpp" />
+    <ClCompile Include="Engine\Model\src\BaseModel.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="Engine\RHI\Vulkan\src\buffer.cpp" />
@@ -112,8 +118,14 @@
     <ClCompile Include="Engine\RHI\Vulkan\src\validation.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\vertex.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\window.cpp" />
-    <ClCompile Include="Engine\Scene\src\scene.cpp" />
-    <ClCompile Include="Engine\System\src\base.cpp" />
+    <ClCompile Include="Engine\Scene\src\BaseCcene.cpp" />
+    <ClCompile Include="Engine\Scene\src\StartScene.cpp" />
+    <ClCompile Include="Engine\System\src\Application.cpp" />
+    <ClCompile Include="Engine\System\src\BaseObject.cpp" />
+    <ClCompile Include="Engine\System\src\GraphicsInterface.cpp" />
+    <ClCompile Include="Engine\System\src\FileUtils.cpp" />
+    <ClCompile Include="Engine\System\src\JsonUtils.cpp" />
+    <ClCompile Include="Engine\System\src\TypeUtils.cpp" />
     <ClCompile Include="Games\Test\main.cpp" />
   </ItemGroup>
   <ItemGroup>

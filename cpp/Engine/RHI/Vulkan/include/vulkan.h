@@ -8,11 +8,9 @@
 #include "validation.h"
 #include "window.h"
 
-#include "Engine/System/include/base.h"
-#include "Engine/Scene/include/scene.h"
-#include "Engine/Model/include/model.h"
+#include "Engine/System/include/GraphicsInterface.h"
 
-class Vulkan {
+class Vulkan final: public GraphicsInterface {
 	Depth depth;
 	Device device;
 	Window window;
@@ -21,18 +19,16 @@ class Vulkan {
 	SwapChain swapChain;
 	Validation validation;
 
-	Scene* scene = nullptr;
-	std::string game = "Unset";
+	void InitVulkan();
+	void CleanupVulkan() const;
+	void InitStartScene();
+	void CleanupStartScene() const;
 
 public:
-	explicit Vulkan(const std::string& gameName) {
-		game = gameName;
-	}
+	Vulkan() = delete;
 
-	void Run();
-	void MainLoop();
-
-private:
-	void InitVulkan();
-	void Cleanup() const;
+	void CreateWindow() override;
+	void InitGraphics() override;
+	void RendererLoop() override;
+	void CleanupGraphics() override;
 };

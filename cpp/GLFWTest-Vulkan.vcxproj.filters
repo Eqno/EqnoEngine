@@ -291,10 +291,10 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Model\include\model.h">
+    <ClInclude Include="Engine\Model\include\BaseModel.h">
       <Filter>Engine\Model\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Model\include\material.h">
+    <ClInclude Include="Engine\Model\include\BaseMaterial.h">
       <Filter>Engine\Model\include</Filter>
     </ClInclude>
     <ClInclude Include="Engine\RHI\Vulkan\include\draw.h">
@@ -306,13 +306,31 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\data.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Model\include\config.h">
+    <ClInclude Include="Engine\Model\include\ModelConfig.h">
       <Filter>Engine\Model\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\include\base.h">
+    <ClInclude Include="Engine\System\include\BaseObject.h">
       <Filter>Engine\System\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\include\scene.h">
+    <ClInclude Include="Engine\Scene\include\BaseScene.h">
+      <Filter>Engine\Scene\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\include\GraphicsInterface.h">
+      <Filter>Engine\System\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\include\Application.h">
+      <Filter>Engine\System\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\include\StartScene.h">
+      <Filter>Engine\Scene\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\include\FileUtils.h">
+      <Filter>Engine\Scene\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\include\TypeUtils.h">
+      <Filter>Engine\Scene\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\include\JsonUtils.h">
       <Filter>Engine\Scene\include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -368,10 +386,10 @@
     <ClCompile Include="Games\Test\main.cpp">
       <Filter>Games\Test</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Model\src\model.cpp">
+    <ClCompile Include="Engine\Model\src\BaseModel.cpp">
       <Filter>Engine\Model\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Model\src\material.cpp">
+    <ClCompile Include="Engine\Model\src\BaseMaterial.cpp">
       <Filter>Engine\Model\src</Filter>
     </ClCompile>
     <ClCompile Include="Engine\RHI\Vulkan\src\draw.cpp">
@@ -383,10 +401,28 @@
     <ClCompile Include="Engine\RHI\Vulkan\src\data.cpp">
       <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\src\base.cpp">
+    <ClCompile Include="Engine\System\src\BaseObject.cpp">
       <Filter>Engine\System\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\src\scene.cpp">
+    <ClCompile Include="Engine\Scene\src\BaseCcene.cpp">
+      <Filter>Engine\Scene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\src\Application.cpp">
+      <Filter>Engine\System\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\src\GraphicsInterface.cpp">
+      <Filter>Engine\System\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\src\StartScene.cpp">
+      <Filter>Engine\Scene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\src\FileUtils.cpp">
+      <Filter>Engine\Scene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\src\TypeUtils.cpp">
+      <Filter>Engine\Scene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\src\JsonUtils.cpp">
       <Filter>Engine\Scene\src</Filter>
     </ClCompile>
   </ItemGroup>

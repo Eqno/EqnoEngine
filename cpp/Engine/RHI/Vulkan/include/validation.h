@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include "utils.h"
+#include "Engine/System/include/TypeUtils.h"
 
 using MessengerCreateInfo = VkDebugUtilsMessengerCreateInfoEXT;
 

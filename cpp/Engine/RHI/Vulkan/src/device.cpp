@@ -1,6 +1,7 @@
 #include "../include/device.h"
 
 #include <stdexcept>
+#include "Engine/System/include/TypeUtils.h"
 
 #include "../include/config.h"
 #include "../include/validation.h"

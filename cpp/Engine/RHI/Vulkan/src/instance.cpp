@@ -1,6 +1,7 @@
 #include "../include/instance.h"
 
 #include <stdexcept>
+#include <vector>
 
 #include "../include/validation.h"
 #include "../include/window.h"

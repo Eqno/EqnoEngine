@@ -3,12 +3,12 @@
 #include <string>
 #include <unordered_map>
 
-class Base {
+class BaseObject {
 protected:
 	std::string name = "Unset";
 
 public:
-	virtual ~Base() = default;
+	virtual ~BaseObject() = default;
 
 	virtual void OnCreate() = 0;
 	virtual void OnStart() = 0;
@@ -16,10 +16,10 @@ public:
 	virtual void OnStop() = 0;
 	virtual void OnDestroy() = 0;
 
-	static std::unordered_map<std::string, std::vector<Base*>> Objects;
+	static std::unordered_map<std::string, std::vector<BaseObject*>>
+	BaseObjects;
 
-	static void RegisterToObjects(const std::string& name, Base* inst) {
-		Objects[name].push_back(inst);
+	static void RegisterToObjects(const std::string& name, BaseObject* inst) {
+		BaseObjects[name].push_back(inst);
 	}
 };
-

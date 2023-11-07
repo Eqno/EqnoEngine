@@ -1,25 +1,7 @@
 #include "../include/vulkan.h"
 
-void Vulkan::Run() {
-	window.CreateWindow();
-	InitVulkan();
-	MainLoop();
-	Cleanup();
-}
-
-void Vulkan::MainLoop() {
-	while (!glfwWindowShouldClose(window.window)) {
-		glfwPollEvents();
-		for (const std::pair<std::string, std::vector<Base*>> objects:
-		     Base::Objects) {
-			for (Base* object: objects.second) {
-				object->OnUpdate();
-			}
-		}
-		render.DrawFrame(device, scene->GetDraws(), depth, window, swapChain);
-	}
-	device.WaitIdle();
-}
+#include "Engine/Scene/include/BaseScene.h"
+#include "Engine/System/include/BaseObject.h"
 
 void Vulkan::InitVulkan() {
 	instance.CreateInstance(validation);
@@ -35,50 +17,81 @@ void Vulkan::InitVulkan() {
 	render.CreateUniformBuffers(device);
 
 	depth.CreateDepthResources(device, swapChain.GetExtent());
-	swapChain.CreateFrameBuffers(device.GetLogical(),
-		depth,
+	swapChain.CreateFrameBuffers(device.GetLogical(), depth,
 		render.GetRenderPass());
 
 	render.CreateCommandBuffers(device.GetLogical());
 	render.CreateSyncObjects(device.GetLogical());
-
-	scene = new Scene(game + "Assets/Scenes/Launcher");
-	for (const std::pair<std::string, std::vector<Base*>> objects:
-	     Base::Objects) {
-		for (Base* object: objects.second) {
-			object->OnCreate();
-		}
-	}
-	for (const std::pair<std::string, std::vector<Base*>> objects:
-	     Base::Objects) {
-		for (Base* object: objects.second) {
-			object->OnStart();
-		}
-	}
 }
 
-void Vulkan::Cleanup() const {
-	for (const std::pair<std::string, std::vector<Base*>> objects:
-	     Base::Objects) {
-		for (Base* object: objects.second) {
-			object->OnStop();
-		}
-	}
-	for (const std::pair<std::string, std::vector<Base*>> objects:
-	     Base::Objects) {
-		for (Base* object: objects.second) {
-			object->OnDestroy();
-		}
-	}
-	delete scene;
-
+void Vulkan::CleanupVulkan() const {
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
 	render.Destroy(device.GetLogical());
+
 	device.DestroyLogicalDevice();
 	validation.DestroyMessenger(instance.GetVkInstance());
+
 	window.DestroySurface(instance.GetVkInstance());
 	instance.DestroyInstance();
 	window.DestroyWindow();
 }
 
-void LoadScene() {}
+void Vulkan::InitStartScene() {
+	// scene = new BaseScene(game + "Assets/Scenes/Launcher");
+	for (const std::pair<std::string, std::vector<BaseObject*>> objects:
+	     BaseObject::BaseObjects) {
+		for (BaseObject* object: objects.second) {
+			object->OnCreate();
+		}
+	}
+	for (const std::pair<std::string, std::vector<BaseObject*>> objects:
+	     BaseObject::BaseObjects) {
+		for (BaseObject* object: objects.second) {
+			object->OnStart();
+		}
+	}
+}
+
+void Vulkan::CleanupStartScene() const {
+	for (const std::pair<std::string, std::vector<BaseObject*>> objects:
+	     BaseObject::BaseObjects) {
+		for (BaseObject* object: objects.second) {
+			object->OnStop();
+		}
+	}
+	for (const std::pair<std::string, std::vector<BaseObject*>> objects:
+	     BaseObject::BaseObjects) {
+		for (BaseObject* object: objects.second) {
+			object->OnDestroy();
+		}
+	}
+	// delete scene;
+}
+
+void Vulkan::CreateWindow() {
+	window.CreateWindow();
+}
+
+void Vulkan::InitGraphics() {
+	InitVulkan();
+	InitStartScene();
+}
+
+void Vulkan::RendererLoop() {
+	while (!glfwWindowShouldClose(window.window)) {
+		glfwPollEvents();
+		for (const std::pair<std::string, std::vector<BaseObject*>> objects:
+		     BaseObject::BaseObjects) {
+			for (BaseObject* object: objects.second) {
+				object->OnUpdate();
+			}
+		}
+		// render.DrawFrame(device, scene->GetDraws(), depth, window, swapChain);
+	}
+	device.WaitIdle();
+}
+
+void Vulkan::CleanupGraphics() {
+	CleanupVulkan();
+	CleanupStartScene();
+}

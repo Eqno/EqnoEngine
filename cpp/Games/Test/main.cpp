@@ -1,12 +1,12 @@
-#include "Engine/RHI/Vulkan/include/vulkan.h"
-
 #include <iostream>
 #include <ostream>
 
+#include "Engine/RHI/Vulkan/include/vulkan.h"
+#include "Engine/System/include/Application.h"
+
 int main() {
 	try {
-		Vulkan app(VulkanConfig::GAMES_PATH + "Test/");
-		app.Run();
+		Application app("Games/Test");
 	}
 	catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;
