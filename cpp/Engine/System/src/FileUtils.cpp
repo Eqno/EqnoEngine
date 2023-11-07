@@ -1,11 +1,8 @@
 #include "../include/FileUtils.h"
 
 #include <fstream>
-#include <iostream>
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
 
 #include "Engine/System/include/Application.h"
 
@@ -56,29 +53,4 @@ void FileUtils::WriteFileAsString(const std::string& filePath,
 	else {
 		throw std::runtime_error("failed to open file!");
 	}
-}
-
-const std::string& FileUtils::GetGameFilePath(const std::string& fileName) {
-	return Application::GetGameRoot() + "";
-}
-
-void FileUtils::AddGameFilePath() {
-	rapidjson::Document doc;
-	doc.SetObject();
-	rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-
-	std::string str = "Configs/Graphics";
-	rapidjson::Value strValue(rapidjson::kStringType);
-	strValue.SetString(str.c_str(), str.size());
-	if (!strValue.IsNull()) {
-		doc.AddMember("GraphicsConfig", strValue, allocator);
-	}
-
-	rapidjson::StringBuffer strBuf;
-	rapidjson::Writer writer(strBuf);
-	doc.Accept(writer);
-
-	std::string data = strBuf.GetString();
-	std::cout << data << std::endl;
-	WriteFileAsString(Application::GetGameRoot() + "Index", data);
 }

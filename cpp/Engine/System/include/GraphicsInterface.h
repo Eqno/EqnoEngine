@@ -2,9 +2,9 @@
 
 class GraphicsInterface {
 public:
-	virtual ~GraphicsInterface() = default;
+	virtual ~GraphicsInterface() = 0;
 
-	GraphicsInterface() = delete;
+	GraphicsInterface() = default;
 	GraphicsInterface(const GraphicsInterface& other) = delete;
 	GraphicsInterface(GraphicsInterface&& other) = delete;
 

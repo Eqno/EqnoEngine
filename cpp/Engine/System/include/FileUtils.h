@@ -17,9 +17,4 @@ namespace FileUtils {
 
 	void WriteFileAsString(const std::string& filePath,
 		const std::string& fileContent = {});
-
-	const std::string& GetEngineFilePath(const std::string& fileName);
-	const std::string& GetGameFilePath(const std::string& fileName);
-
-	void AddGameFilePath();
 }

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <ostream>
 
-#include "Engine/RHI/Vulkan/include/vulkan.h"
 #include "Engine/System/include/Application.h"
 
 int main() {

@@ -8,7 +8,11 @@ protected:
 	std::string name = "Unset";
 
 public:
-	virtual ~BaseObject() = default;
+	virtual ~BaseObject() = 0;
+
+	BaseObject() = default;
+	BaseObject(const BaseObject& app) = delete;
+	BaseObject(BaseObject&& app) = delete;
 
 	virtual void OnCreate() = 0;
 	virtual void OnStart() = 0;

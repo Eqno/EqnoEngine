@@ -1,14 +1,18 @@
 #pragma once
 
-#include <iostream>
 #include <string>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-
-#include "FileUtils.h"
 
 namespace JsonUtils {
-	void WriteToFile(std::string& filePath,
-		std::string& key,
-		std::string& value);
+	std::string ReadStringFromFile(const std::string& filePath,
+		const std::string& key);
+
+	void WriteStringToFile(const std::string& filePath,
+		const std::string& key,
+		const std::string& value);
+
+	void AppendStringToFile(const std::string& filePath,
+		const std::string& key,
+		const std::string& value);
+
+	void ClearDocumentCache();
 }

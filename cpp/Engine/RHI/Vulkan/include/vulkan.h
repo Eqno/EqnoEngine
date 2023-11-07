@@ -19,14 +19,10 @@ class Vulkan final: public GraphicsInterface {
 	SwapChain swapChain;
 	Validation validation;
 
-	void InitVulkan();
-	void CleanupVulkan() const;
 	void InitStartScene();
 	void CleanupStartScene() const;
 
 public:
-	Vulkan() = delete;
-
 	void CreateWindow() override;
 	void InitGraphics() override;
 	void RendererLoop() override;
