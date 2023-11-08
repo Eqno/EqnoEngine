@@ -7,6 +7,7 @@
 #include "swapchain.h"
 #include "validation.h"
 #include "window.h"
+#include "draw.h"
 
 #include "Engine/System/include/GraphicsInterface.h"
 
@@ -18,14 +19,14 @@ class Vulkan final: public GraphicsInterface {
 	Instance instance;
 	SwapChain swapChain;
 	Validation validation;
+	std::vector<Draw> draws;
 
 	void InitStartScene();
 	void CleanupStartScene() const;
 
 public:
-	explicit Vulkan(const std::string& name,
-		const std::string& root,
-		const std::string& file) : GraphicsInterface(name, root, file) {}
+	explicit Vulkan(const std::string& root,
+		const std::string& file) : GraphicsInterface(root, file) {}
 
 	~Vulkan() override = default;
 

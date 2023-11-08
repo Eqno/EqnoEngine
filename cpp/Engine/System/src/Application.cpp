@@ -7,7 +7,7 @@ void Application::CreateGraphics() {
 	const std::string apiPath = JSON_CONFIG(String, "GraphicsConfig");
 	if (const std::string rhiType = JsonUtils::ReadStringFromFile(
 		GetRoot() + apiPath, "RenderHardwareInterface"); rhiType == "Vulkan") {
-		graphics = new Vulkan("Vulkan", GetRoot(), apiPath);
+		graphics = new Vulkan(GetRoot(), apiPath);
 	}
 	else if (rhiType == "DirectX") {
 		throw std::runtime_error("DirectX not supported now!");
@@ -19,7 +19,7 @@ void Application::CreateGraphics() {
 
 void Application::CreateLauncherScene() {
 	const std::string scenePath = JSON_CONFIG(String, "LauncherScene");
-	scene = new StartScene("LauncherScene", GetRoot(), scenePath);
+	scene = new StartScene(GetRoot(), scenePath);
 }
 
 void Application::Run() const {

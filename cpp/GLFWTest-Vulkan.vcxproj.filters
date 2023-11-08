@@ -103,6 +103,15 @@
     <Filter Include="Engine\Scene\include">
       <UniqueIdentifier>{bb5bd995-e2a0-4c93-a7ca-06bebb0a2059}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Utility">
+      <UniqueIdentifier>{b0c5c184-235e-4eab-9400-397440474727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Utility\src">
+      <UniqueIdentifier>{d0fdaa09-83e1-4d5c-b375-d3d329cc3092}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Utility\include">
+      <UniqueIdentifier>{2c8ab234-e398-482e-8c8b-5867dfae0be5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
@@ -324,13 +333,16 @@
     <ClInclude Include="Engine\Scene\include\StartScene.h">
       <Filter>Engine\Scene\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\include\FileUtils.h">
-      <Filter>Engine\Scene\include</Filter>
+    <ClInclude Include="Engine\Utility\include\JsonUtils.h">
+      <Filter>Engine\Utility\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\include\TypeUtils.h">
-      <Filter>Engine\Scene\include</Filter>
+    <ClInclude Include="Engine\Utility\include\TypeUtils.h">
+      <Filter>Engine\Utility\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\include\JsonUtils.h">
+    <ClInclude Include="Engine\Utility\include\FileUtils.h">
+      <Filter>Engine\Utility\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\include\SceneObject.h">
       <Filter>Engine\Scene\include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -416,13 +428,16 @@
     <ClCompile Include="Engine\Scene\src\StartScene.cpp">
       <Filter>Engine\Scene\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\src\FileUtils.cpp">
-      <Filter>Engine\Scene\src</Filter>
+    <ClCompile Include="Engine\Utility\src\JsonUtils.cpp">
+      <Filter>Engine\Utility\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\src\TypeUtils.cpp">
-      <Filter>Engine\Scene\src</Filter>
+    <ClCompile Include="Engine\Utility\src\TypeUtils.cpp">
+      <Filter>Engine\Utility\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\src\JsonUtils.cpp">
+    <ClCompile Include="Engine\Utility\src\FileUtils.cpp">
+      <Filter>Engine\Utility\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\src\SceneObject.cpp">
       <Filter>Engine\Scene\src</Filter>
     </ClCompile>
   </ItemGroup>

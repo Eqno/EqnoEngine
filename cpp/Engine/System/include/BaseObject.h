@@ -1,23 +1,26 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
+
+#include "Engine/Utility/include/JsonUtils.h"
 
 class BaseObject {
 protected:
 	static std::unordered_map<std::string, std::vector<BaseObject*>>
 	BaseObjects;
 
-	std::string _name = "Unset";
 	std::string _root = "Unset";
 	std::string _file = "Unset";
+	std::string _name = "Unset";
 
-	explicit BaseObject(const std::string& name,
-		std::string root,
-		std::string file) : _name(name),
+	explicit BaseObject(std::string root, std::string file) :
 		_root(std::move(root)),
-		_file(std::move(file)) {
-		BaseObjects[name].push_back(this);
+		_file(std::move(file)),
+		_name(JSON_CONFIG(String, "Name")) {
+		BaseObjects[_name].push_back(this);
+		std::cout << _name << std::endl;
 	}
 
 public:

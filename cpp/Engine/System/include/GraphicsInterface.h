@@ -4,9 +4,9 @@
 
 class GraphicsInterface: public BaseObject {
 public:
-	explicit GraphicsInterface(const std::string& name,
-		const std::string& root,
-		const std::string& file) : BaseObject(name, root, file) {}
+	explicit
+	GraphicsInterface(const std::string& root,
+		const std::string& file) : BaseObject(root, file) {}
 
 	~GraphicsInterface() override = default;
 

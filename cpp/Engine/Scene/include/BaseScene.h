@@ -4,9 +4,9 @@
 
 class BaseScene: public BaseObject {
 public:
-	explicit BaseScene(const std::string& name,
-		const std::string& root,
-		const std::string& file) : BaseObject(name, root, file) {}
+	explicit
+	BaseScene(const std::string& root, const std::string& file) : BaseObject(
+		root, file) {}
 
 	~BaseScene() override = default;
 };

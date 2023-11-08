@@ -1,6 +1,8 @@
 #include "../include/vulkan.h"
 
-#include "Engine/System/include/JsonUtils.h"
+#include <ranges>
+
+#include "Engine/Utility/include/JsonUtils.h"
 
 void Vulkan::CreateWindow(const std::string& title) {
 	int width = JSON_CONFIG(Int, "DefaultWindowWidth");
@@ -35,13 +37,12 @@ void Vulkan::InitGraphics() {
 void Vulkan::RendererLoop() {
 	while (!glfwWindowShouldClose(window.window)) {
 		glfwPollEvents();
-		for (const std::pair<std::string, std::vector<BaseObject*>> objects:
-		     BaseObjects) {
-			for (BaseObject* object: objects.second) {
+		for (const auto& val: BaseObjects | std::views::values) {
+			for (BaseObject* object: val) {
 				object->OnUpdate();
 			}
 		}
-		// render.DrawFrame(device, scene->GetDraws(), depth, window, swapChain);
+		render.DrawFrame(device, draws, depth, window, swapChain);
 	}
 	device.WaitIdle();
 }

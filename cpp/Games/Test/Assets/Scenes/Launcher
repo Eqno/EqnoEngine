@@ -1,3 +1,13 @@
 {
-    
+    "Name": "TestScene",
+    "SceneObjects": {
+        "Type": "BaseModel",
+        "Path": "Assets/Models/ObjModel",
+        "Sons": [
+            {
+                "Type": "BaseModel",
+                "Path": "Assets/Models/FbxModel"
+            }
+        ]
+    }
 }

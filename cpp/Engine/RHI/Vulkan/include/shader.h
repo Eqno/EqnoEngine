@@ -4,7 +4,7 @@
 #include <shaderc/shaderc.hpp>
 #include <vulkan/vulkan_core.h>
 
-#include "Engine/System/include/TypeUtils.h"
+#include "Engine/Utility/include/TypeUtils.h"
 
 using ShaderStages = std::vector<VkPipelineShaderStageCreateInfo>;
 using Definitions = std::vector<std::pair<std::string, std::string>>;

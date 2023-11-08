@@ -1,7 +1,8 @@
 #include "../include/device.h"
 
 #include <stdexcept>
-#include "Engine/System/include/TypeUtils.h"
+
+#include "Engine/Utility/include/TypeUtils.h"
 
 #include "../include/config.h"
 #include "../include/validation.h"
@@ -21,12 +22,10 @@ namespace DeviceCheck {
 	QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& device,
 		const VkSurfaceKHR& surface) {
 		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device,
-			&queueFamilyCount,
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
 			nullptr);
 		QueueFamilyProps queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device,
-			&queueFamilyCount,
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
 			queueFamilies.data());
 
 		QueueFamilyIndices indices = {};
@@ -36,9 +35,7 @@ namespace DeviceCheck {
 				indices.graphicsFamily = i;
 			}
 			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device,
-				i,
-				surface,
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface,
 				&presentSupport);
 			if (presentSupport) {
 				indices.presentFamily = i;
@@ -56,14 +53,10 @@ namespace DeviceCheck {
 	 */
 	bool DoesExtensionsSupport(const VkPhysicalDevice& device) {
 		uint32_t extensionCount;
-		vkEnumerateDeviceExtensionProperties(device,
-			nullptr,
-			&extensionCount,
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
 			nullptr);
 		ExtensionProps availableExtensions(extensionCount);
-		vkEnumerateDeviceExtensionProperties(device,
-			nullptr,
-			&extensionCount,
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
 			availableExtensions.data());
 
 		StringSet requiredExtensions(VulkanConfig::DEVICE_EXTENSIONS.begin(),
@@ -81,32 +74,23 @@ namespace DeviceCheck {
 		const VkPhysicalDevice& device,
 		const VkSurfaceKHR& surface) {
 		SwapChainSupportDetails details;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device,
-			surface,
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface,
 			&details.capabilities);
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device,
-			surface,
-			&formatCount,
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
 			nullptr);
 		if (formatCount != 0) {
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device,
-				surface,
-				&formatCount,
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
 				details.formats.data());
 		}
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device,
-			surface,
-			&presentModeCount,
-			nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface,
+			&presentModeCount, nullptr);
 		if (presentModeCount != 0) {
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device,
-				surface,
-				&presentModeCount,
-				details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface,
+				&presentModeCount, details.presentModes.data());
 		}
 		return details;
 	}
@@ -117,14 +101,13 @@ namespace DeviceCheck {
 	bool DoesRequiresSuit(const VkPhysicalDevice& device,
 		const VkSurfaceKHR& surface) {
 		if (FindQueueFamilies(device, surface).IsComplete() &&
-		    DoesExtensionsSupport(device)) {
+			DoesExtensionsSupport(device)) {
 			const auto& [_, formats, presentModes] = QuerySwapChainSupport(
-				device,
-				surface);
+				device, surface);
 			VkPhysicalDeviceFeatures supportedFeatures;
 			vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 			return !formats.empty() && !presentModes.empty() &&
-			       supportedFeatures.samplerAnisotropy;
+				supportedFeatures.samplerAnisotropy;
 		}
 		return false;
 	}
@@ -144,7 +127,7 @@ void Device::PickPhysicalDevice(const VkInstance& instance,
 	const VkSurfaceKHR& surface) {
 	uint32_t deviceCount = 0;
 	if (vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr) !=
-	    VK_SUCCESS || deviceCount == 0) {
+		VK_SUCCESS || deviceCount == 0) {
 		throw std::runtime_error("failed to find GPUs with Vulkan support!");
 	}
 	std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -171,8 +154,7 @@ void Device::CreateLogicalDevice(const VkSurfaceKHR& surface,
 	DeviceCheck::QueueCreateInfos queueCreateInfos {};
 
 	const auto [graphicsFamily, presentFamily] = DeviceCheck::FindQueueFamilies(
-		physicalDevice,
-		surface);
+		physicalDevice, surface);
 	for (const std::set uniqueQueueFamilies = {
 		     graphicsFamily.has_value() ? graphicsFamily.value() : 0,
 		     presentFamily.has_value() ? presentFamily.value() : 0
@@ -204,15 +186,13 @@ void Device::CreateLogicalDevice(const VkSurfaceKHR& surface,
 	}
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) !=
-	    VK_SUCCESS) {
+		VK_SUCCESS) {
 		throw std::runtime_error("failed to create logical logicalDevice!");
 	}
 	vkGetDeviceQueue(logicalDevice,
-		graphicsFamily.has_value() ? graphicsFamily.value() : 0,
-		0,
+		graphicsFamily.has_value() ? graphicsFamily.value() : 0, 0,
 		&graphicsQueue);
 	vkGetDeviceQueue(logicalDevice,
-		presentFamily.has_value() ? presentFamily.value() : 0,
-		0,
+		presentFamily.has_value() ? presentFamily.value() : 0, 0,
 		&presentQueue);
 }

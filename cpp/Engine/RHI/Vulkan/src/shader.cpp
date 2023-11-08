@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include "Engine/System/include/FileUtils.h"
+#include "Engine/Utility/include/FileUtils.h"
 
 namespace ShaderRcStatic {
 	shaderc::Compiler compiler;

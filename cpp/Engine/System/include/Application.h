@@ -1,9 +1,9 @@
 #pragma once
 
-#include "JsonUtils.h"
 #include "BaseObject.h"
 #include "GraphicsInterface.h"
 #include "Engine/Scene/include/BaseScene.h"
+#include "Engine/Utility/include/JsonUtils.h"
 
 class Application final: public BaseObject {
 	BaseScene* scene = nullptr;
@@ -13,11 +13,10 @@ class Application final: public BaseObject {
 	void CreateLauncherScene();
 
 public:
-	explicit Application(const std::string& name,
-		const std::string& root,
-		const std::string& file) : BaseObject(name, root, file) {
-		CreateGraphics();
-		CreateLauncherScene();
+	explicit
+	Application(const std::string& root, const std::string& file) : BaseObject(
+		root, file) {
+		OnCreate();
 	}
 
 	~Application() override {
@@ -26,5 +25,11 @@ public:
 		delete scene;
 		delete graphics;
 	}
+
+	void OnCreate() override {
+		CreateGraphics();
+		CreateLauncherScene();
+	}
+
 	void Run() const;
 };
