@@ -11,10 +11,8 @@
 using namespace rapidjson;
 std::unordered_map<std::string, Document*> docCache;
 
-std::string JsonUtils::ReadStringFromFile(const std::string& filePath,
-	const std::string& key) {
+Document* GetJsonDocFromFile(const std::string& filePath) {
 	Document* doc;
-
 	if (const auto docIter = docCache.find(filePath); docIter != docCache.
 		end()) {
 		doc = docIter->second;
@@ -25,11 +23,34 @@ std::string JsonUtils::ReadStringFromFile(const std::string& filePath,
 		doc->Parse(FileUtils::ReadFileAsString(filePath).c_str());
 		docCache[filePath] = doc;
 	}
+	return doc;
+}
 
-	if (doc->HasMember(key.c_str())) {
+std::string JsonUtils::ReadStringFromFile(const std::string& filePath,
+	const std::string& key) {
+	if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember(
+		key.c_str())) {
 		return (*doc)[key.c_str()].GetString();
 	}
 	return "Unset";
+}
+
+float JsonUtils::ReadFloatFromFile(const std::string& filePath,
+	const std::string& key) {
+	if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember(
+		key.c_str())) {
+		return (*doc)[key.c_str()].GetFloat();
+	}
+	return 0;
+}
+
+int JsonUtils::ReadIntFromFile(const std::string& filePath,
+	const std::string& key) {
+	if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember(
+		key.c_str())) {
+		return (*doc)[key.c_str()].GetInt();
+	}
+	return 0;
 }
 
 void JsonUtils::WriteStringToFile(const std::string& filePath,
@@ -64,18 +85,7 @@ void JsonUtils::WriteStringToFile(const std::string& filePath,
 void JsonUtils::AppendStringToFile(const std::string& filePath,
 	const std::string& key,
 	const std::string& value) {
-	Document* doc;
-
-	if (const auto docIter = docCache.find(filePath); docIter != docCache.
-		end()) {
-		doc = docIter->second;
-	}
-	else {
-		doc = new Document;
-		doc->SetObject();
-		doc->Parse(FileUtils::ReadFileAsString(filePath).c_str());
-		docCache[filePath] = doc;
-	}
+	Document* doc = GetJsonDocFromFile(filePath);
 	auto& allocator = doc->GetAllocator();
 
 	if (doc->HasMember(key.c_str())) {

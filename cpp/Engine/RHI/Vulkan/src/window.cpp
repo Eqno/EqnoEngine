@@ -24,23 +24,20 @@ std::pair<const char**, uint32_t> Window::GetRequiredExtensions() {
 	return std::make_pair(glfwExtensions, glfwExtensionCount);
 }
 
-void Window::CreateWindow() {
-	CreateWindow(VulkanConfig::DEFAULT_WINDOW_WIDTH,
-		VulkanConfig::DEFAULT_WINDOW_HEIGHT);
-}
-
-void Window::CreateWindow(const int width, const int height) {
+void Window::CreateWindow(const int width,
+	const int height,
+	const std::string& title) {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	window = glfwCreateWindow(width, height, "Vulkan", nullptr, nullptr);
+	window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
 }
 
 void Window::CreateSurface(const VkInstance& instance) {
 	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) !=
-	    VK_SUCCESS) {
+		VK_SUCCESS) {
 		throw std::runtime_error("Failed to create window surface!");
 	}
 }

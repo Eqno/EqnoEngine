@@ -5,16 +5,19 @@
 #include "GraphicsInterface.h"
 #include "Engine/Scene/include/BaseScene.h"
 
-class Application: public BaseObject {
-	inline static std::string gameRoot = "Unset";
-
+class Application final: public BaseObject {
 	BaseScene* scene = nullptr;
 	GraphicsInterface* graphics = nullptr;
 
+	void CreateGraphics();
+	void CreateLauncherScene();
+
 public:
-	explicit Application(const std::string& rootPath) : BaseObject() {
-		gameRoot = rootPath + "/";
+	explicit Application(const std::string& name,
+		const std::string& root,
+		const std::string& file) : BaseObject(name, root, file) {
 		CreateGraphics();
+		CreateLauncherScene();
 	}
 
 	~Application() override {
@@ -23,16 +26,5 @@ public:
 		delete scene;
 		delete graphics;
 	}
-
-	static std::string& GetGameRoot() {
-		return gameRoot;
-	}
-
-	void CreateGraphics();
-
-	void OnCreate() override {}
-	void OnStart() override {}
-	void OnUpdate() override {}
-	void OnStop() override {}
-	void OnDestroy() override {}
+	void Run() const;
 };

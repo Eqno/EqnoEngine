@@ -1,14 +1,13 @@
 #include "../include/Application.h"
 
 #include "Engine/RHI/Vulkan/include/vulkan.h"
+#include "Engine/Scene/include/StartScene.h"
 
 void Application::CreateGraphics() {
-	const std::string apiPath = JsonUtils::ReadStringFromFile(
-		gameRoot + "Index", "GraphicsConfig");
-
+	const std::string apiPath = JSON_CONFIG(String, "GraphicsConfig");
 	if (const std::string rhiType = JsonUtils::ReadStringFromFile(
-		gameRoot + apiPath, "RenderHardwareInterface"); rhiType == "Vulkan") {
-		// graphics = new Vulkan;
+		GetRoot() + apiPath, "RenderHardwareInterface"); rhiType == "Vulkan") {
+		graphics = new Vulkan("Vulkan", GetRoot(), apiPath);
 	}
 	else if (rhiType == "DirectX") {
 		throw std::runtime_error("DirectX not supported now!");
@@ -16,9 +15,16 @@ void Application::CreateGraphics() {
 	else {
 		throw std::runtime_error(rhiType + " not supported now!");
 	}
+}
 
-	// graphics->CreateWindow();
-	// graphics->InitGraphics();
-	// graphics->RendererLoop();
-	// graphics->CleanupGraphics();
+void Application::CreateLauncherScene() {
+	const std::string scenePath = JSON_CONFIG(String, "LauncherScene");
+	scene = new StartScene("LauncherScene", GetRoot(), scenePath);
+}
+
+void Application::Run() const {
+	graphics->CreateWindow(JSON_CONFIG(String, "ApplicationName"));
+	graphics->InitGraphics();
+	graphics->RendererLoop();
+	graphics->CleanupGraphics();
 }

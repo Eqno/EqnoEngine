@@ -1,17 +1,16 @@
 #pragma once
 
-class GraphicsInterface {
+#include "BaseObject.h"
+
+class GraphicsInterface: public BaseObject {
 public:
-	virtual ~GraphicsInterface() = 0;
+	explicit GraphicsInterface(const std::string& name,
+		const std::string& root,
+		const std::string& file) : BaseObject(name, root, file) {}
 
-	GraphicsInterface() = default;
-	GraphicsInterface(const GraphicsInterface& other) = delete;
-	GraphicsInterface(GraphicsInterface&& other) = delete;
+	~GraphicsInterface() override = default;
 
-	GraphicsInterface& operator =(const GraphicsInterface& other) = delete;
-	GraphicsInterface& operator =(GraphicsInterface&& other) = delete;
-
-	virtual void CreateWindow() = 0;
+	virtual void CreateWindow(const std::string& title) = 0;
 	virtual void InitGraphics() = 0;
 	virtual void RendererLoop() = 0;
 	virtual void CleanupGraphics() = 0;

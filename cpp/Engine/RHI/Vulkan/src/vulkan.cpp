@@ -1,10 +1,13 @@
 #include "../include/vulkan.h"
 
-#include "Engine/Scene/include/BaseScene.h"
-#include "Engine/System/include/BaseObject.h"
+#include "Engine/System/include/JsonUtils.h"
 
-void Vulkan::CreateWindow() {
-	window.CreateWindow();
+void Vulkan::CreateWindow(const std::string& title) {
+	int width = JSON_CONFIG(Int, "DefaultWindowWidth");
+	int height = JSON_CONFIG(Int, "DefaultWindowHeight");
+	width = width == 0 ? VulkanConfig::DEFAULT_WINDOW_WIDTH : width;
+	height = height == 0 ? VulkanConfig::DEFAULT_WINDOW_HEIGHT : height;
+	window.CreateWindow(width, height, title);
 }
 
 void Vulkan::InitGraphics() {
@@ -14,7 +17,8 @@ void Vulkan::InitGraphics() {
 
 	device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
 	device.CreateLogicalDevice(window.GetSurface(), validation);
-	swapChain.Create("NOSRGB", "NOSRGB", device, window);
+	swapChain.Create(JSON_CONFIG(String, "SwapChainSurfaceImageFormat"),
+		JSON_CONFIG(String, "SwapChainSurfaceColorSpace"), device, window);
 
 	render.CreateRenderPass(swapChain.GetImageFormat(), device);
 	render.CreateCommandPool(device, window.GetSurface());
@@ -28,6 +32,20 @@ void Vulkan::InitGraphics() {
 	render.CreateSyncObjects(device.GetLogical());
 }
 
+void Vulkan::RendererLoop() {
+	while (!glfwWindowShouldClose(window.window)) {
+		glfwPollEvents();
+		for (const std::pair<std::string, std::vector<BaseObject*>> objects:
+		     BaseObjects) {
+			for (BaseObject* object: objects.second) {
+				object->OnUpdate();
+			}
+		}
+		// render.DrawFrame(device, scene->GetDraws(), depth, window, swapChain);
+	}
+	device.WaitIdle();
+}
+
 void Vulkan::CleanupGraphics() {
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
 	render.Destroy(device.GetLogical());
@@ -39,21 +57,6 @@ void Vulkan::CleanupGraphics() {
 	instance.DestroyInstance();
 	window.DestroyWindow();
 }
-
-void Vulkan::RendererLoop() {
-	while (!glfwWindowShouldClose(window.window)) {
-		glfwPollEvents();
-		// for (const std::pair<std::string, std::vector<BaseObject*>> objects:
-		//      BaseObject::BaseObjects) {
-		// 	for (BaseObject* object: objects.second) {
-		// 		object->OnUpdate();
-		// 	}
-		// }
-		// render.DrawFrame(device, scene->GetDraws(), depth, window, swapChain);
-	}
-	device.WaitIdle();
-}
-
 
 void Vulkan::InitStartScene() {
 	// scene = new BaseScene(game + "Assets/Scenes/Launcher");

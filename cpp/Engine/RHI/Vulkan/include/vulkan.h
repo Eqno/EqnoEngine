@@ -23,7 +23,13 @@ class Vulkan final: public GraphicsInterface {
 	void CleanupStartScene() const;
 
 public:
-	void CreateWindow() override;
+	explicit Vulkan(const std::string& name,
+		const std::string& root,
+		const std::string& file) : GraphicsInterface(name, root, file) {}
+
+	~Vulkan() override = default;
+
+	void CreateWindow(const std::string& title) override;
 	void InitGraphics() override;
 	void RendererLoop() override;
 	void CleanupGraphics() override;

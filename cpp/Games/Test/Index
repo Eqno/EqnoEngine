@@ -1,4 +1,5 @@
 {
+    "ApplicationName": "Eqno Engine Test",
     "GraphicsConfig": "Configs/Graphics",
     "LauncherScene": "Scenes/Launcher"
 }

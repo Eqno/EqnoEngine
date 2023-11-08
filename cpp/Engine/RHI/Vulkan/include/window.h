@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <utility>
+#include <xstring>
 #include <vulkan/vulkan_core.h>
 
 struct GLFWwindow;
@@ -32,10 +33,9 @@ public:
 		frameBufferResized = resized;
 	}
 
-	void CreateWindow();
-	void CreateWindow(int width, int height);
-	void CreateSurface(const VkInstance& instance);
+	void CreateWindow(int width, int height, const std::string& title);
 
+	void CreateSurface(const VkInstance& instance);
 	void DestroySurface(const VkInstance& instance) const;
 	void DestroyWindow() const;
 
