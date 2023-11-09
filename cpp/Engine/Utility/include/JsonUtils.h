@@ -4,6 +4,7 @@
 #include <vector>
 
 class SceneObject;
+class BaseScene;
 
 #define JSON_CONFIG(type, key) JsonUtils::Read##type##FromFile(GetRoot() + GetFile(), key)
 
@@ -21,7 +22,12 @@ namespace JsonUtils {
 
 	void ParseSceneObjectTree(const std::string& filePath,
 		const std::string& root,
-		SceneObject*& parent);
+		SceneObject*& parent,
+		BaseScene* inScene);
+
+	std::pair<std::string, std::vector<std::string>> ParseMeshDataInfos(
+		const std::string& filePath,
+		const std::string& meshName);
 
 	void WriteStringToFile(const std::string& filePath,
 		const std::string& key,

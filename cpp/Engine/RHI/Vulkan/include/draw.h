@@ -39,9 +39,13 @@ public:
 	void Create(const Device& device,
 		const std::string& shaderPath,
 		const VkRenderPass& renderPass);
+
 	void Load(const Device& device,
 		const Render& render,
 		const std::vector<std::pair<std::string, std::vector<std::string>>>&
 		meshDatas);
+
+	void Load(const Device& device, const Render& render, const MeshData* data);
+
 	void Destroy(const VkDevice& device) const;
 };

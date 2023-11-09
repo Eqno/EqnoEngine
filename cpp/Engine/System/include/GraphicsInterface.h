@@ -14,4 +14,6 @@ public:
 	virtual void InitGraphics() = 0;
 	virtual void RendererLoop() = 0;
 	virtual void CleanupGraphics() = 0;
+
+	virtual void ParseMeshDatas(std::vector<MeshData*>& meshDatas) = 0;
 };

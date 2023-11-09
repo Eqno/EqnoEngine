@@ -20,7 +20,6 @@ protected:
 		_file(std::move(file)),
 		_name(JSON_CONFIG(String, "Name")) {
 		BaseObjects[_name].push_back(this);
-		std::cout << _name << std::endl;
 	}
 
 public:

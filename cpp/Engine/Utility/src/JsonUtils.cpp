@@ -1,15 +1,15 @@
 #include "../include/JsonUtils.h"
+#include "../include/FileUtils.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-#include "../include/FileUtils.h"
-
 #include <ranges>
 #include <unordered_map>
 
 #include "Engine/Model/include/BaseModel.h"
+#include "Engine/Scene/include/BaseScene.h"
 #include "Engine/Scene/include/SceneObject.h"
 
 using namespace rapidjson;
@@ -74,15 +74,16 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
 
 void TravelSceneObjectTree(const Value& val,
 	const std::string& root,
-	SceneObject*& parent) {
+	SceneObject*& parent,
+	BaseScene* inScene) {
 	if (val.HasMember("Type") && val.HasMember("Path")) {
 		if (strcmp(val["Type"].GetString(), "BaseModel") == 0) {
 			SceneObject* object = new BaseModel(root, val["Path"].GetString(),
-				parent);
+				parent, inScene);
 			if (val.HasMember("Sons")) {
 				const auto& values = val["Sons"];
 				for (unsigned int i = 0; i < values.Size(); ++i) {
-					TravelSceneObjectTree(values[i], root, object);
+					TravelSceneObjectTree(values[i], root, object, inScene);
 				}
 			}
 		}
@@ -94,12 +95,36 @@ void TravelSceneObjectTree(const Value& val,
 
 void JsonUtils::ParseSceneObjectTree(const std::string& filePath,
 	const std::string& root,
-	SceneObject*& parent) {
+	SceneObject*& parent,
+	BaseScene* inScene) {
 	if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember(
 		"SceneObjects")) {
 		const Value& val = (*doc)["SceneObjects"];
-		TravelSceneObjectTree(val, root, parent);
+		TravelSceneObjectTree(val, root, parent, inScene);
 	}
+}
+
+std::pair<std::string, std::vector<std::string>> JsonUtils::ParseMeshDataInfos(
+	const std::string& filePath,
+	const std::string& meshName) {
+	std::pair<std::string, std::vector<std::string>> infos;
+	if (Document* doc = GetJsonDocFromFile(filePath); doc->
+		HasMember("Meshes")) {
+		if (const Value& val = (*doc)["Meshes"]; val.
+			HasMember(meshName.c_str())) {
+			const Value& info = (*doc)["Meshes"][meshName.c_str()];
+			if (info.HasMember("Material")) {
+				infos.first = info["Material"].GetString();
+			}
+			if (info.HasMember("Textures")) {
+				const Value& texs = info["Textures"];
+				for (unsigned int i = 0; i < texs.Size(); ++i) {
+					infos.second.emplace_back(texs[i].GetString());
+				}
+			}
+		}
+	}
+	return infos;
 }
 
 void JsonUtils::WriteStringToFile(const std::string& filePath,

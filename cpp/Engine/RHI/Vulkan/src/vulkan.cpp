@@ -2,6 +2,7 @@
 
 #include <ranges>
 
+#include "Engine/Model/include/BaseModel.h"
 #include "Engine/Utility/include/JsonUtils.h"
 
 void Vulkan::CreateWindow(const std::string& title) {
@@ -57,6 +58,16 @@ void Vulkan::CleanupGraphics() {
 	window.DestroySurface(instance.GetVkInstance());
 	instance.DestroyInstance();
 	window.DestroyWindow();
+}
+
+void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
+	for (const MeshData* data: meshDatas) {
+		if (!draws.contains(data->material)) {
+			draws[data->material] = Draw(device, VulkanConfig::SHADER_PATH,
+				render.GetRenderPass());
+		}
+		draws[data->material].Load(device, render, data);
+	}
 }
 
 void Vulkan::InitStartScene() {

@@ -38,7 +38,7 @@ void Descriptor::CreateDescriptorSets(const VkDevice& device,
 			.offset = 0,
 			.range = sizeof(UniformBufferObject),
 		};
-		descriptorWrites[0] = VkWriteDescriptorSet {
+		descriptorWrites[0] = {
 			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 			.dstSet = descriptorSets[i],
 			.dstBinding = 0,

@@ -13,6 +13,18 @@ void Mesh::Create(const Device& device,
 	descriptor.Create(device, render, descriptorSetLayout, textures);
 }
 
+void Mesh::Create(const Device& device,
+	const Render& render,
+	const MeshData* inData,
+	const VkDescriptorSetLayout& descriptorSetLayout) {
+	for (const TextureData& texData: inData->textures) {
+		textures.emplace_back("NOSRPGB", device, render, texData.width,
+			texData.height, texData.channels, texData.data);
+	}
+	data.Create(inData->indices, inData->vertices);
+}
+
+
 void Mesh::Destroy(const VkDevice& device) const {
 	descriptor.Destroy(device);
 	buffer.Destroy(device);

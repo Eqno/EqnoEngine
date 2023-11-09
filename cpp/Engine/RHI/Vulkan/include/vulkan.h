@@ -19,7 +19,7 @@ class Vulkan final: public GraphicsInterface {
 	Instance instance;
 	SwapChain swapChain;
 	Validation validation;
-	std::vector<Draw> draws;
+	std::unordered_map<std::string, Draw> draws;
 
 	void InitStartScene();
 	void CleanupStartScene() const;
@@ -34,4 +34,6 @@ public:
 	void InitGraphics() override;
 	void RendererLoop() override;
 	void CleanupGraphics() override;
+
+	void ParseMeshDatas(std::vector<MeshData*>& meshDatas) override;
 };

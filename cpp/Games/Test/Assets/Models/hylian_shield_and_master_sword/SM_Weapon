@@ -1,0 +1,25 @@
+{
+    "Name": "SM_Weapon",
+    "Type": "FBX",
+    "File": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon.fbx",
+    "Meshes": {
+        "Shield_low": {
+            "Material": "Assets/Materials/SMWeaponMaterial",
+            "Textures": [
+                "Assets/Textures/hylian_shield_and_master_sword/M_Shield_Base_Color.tga.png"
+            ]
+        },
+        "Steath_low": {
+            "Material": "Assets/Materials/SMWeaponMaterial",
+            "Textures": [
+                "Assets/Textures/hylian_shield_and_master_sword/M_Steath_Base_Color.tga.png"
+            ]
+        },
+        "Sword_low": {
+            "Material": "Assets/Materials/SMWeaponMaterial",
+            "Textures": [
+                "Assets/Textures/hylian_shield_and_master_sword/M_Sword_Base_Color.tga.png"
+            ]
+        }
+    }
+}

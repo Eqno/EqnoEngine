@@ -1,0 +1,4 @@
+{
+    "Name": "SMWeaponMaterial",
+    "Shader": "Assets/Shaders/glsl/SMWeaponShader"
+}

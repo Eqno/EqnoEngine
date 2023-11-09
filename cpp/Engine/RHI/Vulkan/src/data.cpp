@@ -4,13 +4,15 @@
 #include <tiny_obj_loader.h>
 #include <unordered_map>
 
-void Data::Create(const std::string& dataPath) {
+#include "Engine/RHI/Vulkan/include/utils.h"
+
+void Data::Create(const std::string& objPath) {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
-	if (!LoadObj(&attrib, &shapes, &materials, &warn, &err, dataPath.c_str())) {
+	if (!LoadObj(&attrib, &shapes, &materials, &warn, &err, objPath.c_str())) {
 		throw std::runtime_error(warn + err);
 	}
 	std::unordered_map<Vertex, uint32_t, Vertex::HashFunction> uniqueVertices
@@ -43,4 +45,10 @@ void Data::Create(const std::string& dataPath) {
 			indices.push_back(uniqueVertices[vertex]);
 		}
 	}
+}
+
+void Data::Create(const std::vector<uint32_t>& inIndices,
+	const std::vector<Vertex>& inVertices) {
+	indices = inIndices;
+	vertices = inVertices;
 }

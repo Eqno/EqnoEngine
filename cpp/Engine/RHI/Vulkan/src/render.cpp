@@ -1,6 +1,7 @@
 #include "../include/render.h"
 
 #include <stdexcept>
+#include <ranges>
 
 #include "../include/device.h"
 #include "../include/swapchain.h"
@@ -49,12 +50,12 @@ void Render::CreateRenderPass(const VkFormat& imageFormat,
 		.srcSubpass = VK_SUBPASS_EXTERNAL,
 		.dstSubpass = 0,
 		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-		                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+		VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-		                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+		VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
 		.srcAccessMask = 0,
 		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-		                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 	};
 	std::array attachments = {colorAttachment, depthAttachment};
 	const VkRenderPassCreateInfo renderPassInfo {
@@ -66,10 +67,8 @@ void Render::CreateRenderPass(const VkFormat& imageFormat,
 		.dependencyCount = 1,
 		.pDependencies = &dependency,
 	};
-	if (vkCreateRenderPass(device.GetLogical(),
-		    &renderPassInfo,
-		    nullptr,
-		    &renderPass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(device.GetLogical(), &renderPassInfo, nullptr,
+		&renderPass) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
 	}
 }
@@ -82,14 +81,13 @@ void Render::CreateCommandPool(const Device& device,
 	const VkCommandPoolCreateInfo poolInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-		.queueFamilyIndex = graphicsFamily.has_value() ? graphicsFamily.value()
+		.queueFamilyIndex = graphicsFamily.has_value()
+		? graphicsFamily.value()
 		: 0,
 	};
 
-	if (vkCreateCommandPool(device.GetLogical(),
-		    &poolInfo,
-		    nullptr,
-		    &commandPool) != VK_SUCCESS) {
+	if (vkCreateCommandPool(device.GetLogical(), &poolInfo, nullptr,
+		&commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics command pool!");
 	}
 }
@@ -105,12 +103,13 @@ void Render::CreateCommandBuffers(const VkDevice& device) {
 	};
 
 	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) !=
-	    VK_SUCCESS) {
+		VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
 }
 
-void Render::RecordCommandBuffer(const std::vector<Draw>& draws,
+void Render::RecordCommandBuffer(
+	const std::unordered_map<std::string, Draw>& draws,
 	const SwapChain& swapChain,
 	const uint32_t imageIndex) const {
 	const VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
@@ -135,8 +134,7 @@ void Render::RecordCommandBuffer(const std::vector<Draw>& draws,
 	renderPassInfo.renderArea.offset = {0, 0};
 	renderPassInfo.renderArea.extent = swapChain.GetExtent();
 
-	vkCmdBeginRenderPass(commandBuffer,
-		&renderPassInfo,
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo,
 		VK_SUBPASS_CONTENTS_INLINE);
 
 	const VkViewport viewport {
@@ -152,9 +150,8 @@ void Render::RecordCommandBuffer(const std::vector<Draw>& draws,
 	const VkRect2D scissor {.offset = {0, 0}, .extent = swapChain.GetExtent(),};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	for (const auto& draw: draws) {
-		vkCmdBindPipeline(commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
+	for (const auto& draw: draws | std::views::values) {
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			draw.GetGraphicsPipeline());
 
 		for (const auto& mesh: draw.GetMeshes()) {
@@ -162,26 +159,15 @@ void Render::RecordCommandBuffer(const std::vector<Draw>& draws,
 			constexpr VkDeviceSize offsets[] = {0};
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-			vkCmdBindIndexBuffer(commandBuffer,
-				mesh.GetIndexBuffer(),
-				0,
+			vkCmdBindIndexBuffer(commandBuffer, mesh.GetIndexBuffer(), 0,
 				VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffer,
-				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				draw.GetPipelineLayout(),
-				0,
-				1,
-				&mesh.GetDescriptorSetByIndex(currentFrame),
-				0,
-				nullptr);
+				VK_PIPELINE_BIND_POINT_GRAPHICS, draw.GetPipelineLayout(), 0, 1,
+				&mesh.GetDescriptorSetByIndex(currentFrame), 0, nullptr);
 
 			vkCmdDrawIndexed(commandBuffer,
-				static_cast<uint32_t>(mesh.GetIndices().size()),
-				1,
-				0,
-				0,
-				0);
+				static_cast<uint32_t>(mesh.GetIndices().size()), 1, 0, 0, 0);
 		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
@@ -236,22 +222,16 @@ void Render::EndSingleTimeCommands(const Device& device,
 }
 
 void Render::DrawFrame(const Device& device,
-	const std::vector<Draw>& draws,
+	const std::unordered_map<std::string, Draw>& draws,
 	Depth& depth,
 	Window& window,
 	SwapChain& swapChain) {
-	vkWaitForFences(device.GetLogical(),
-		1,
-		&inFlightFences[currentFrame],
-		VK_TRUE,
-		UINT64_MAX);
+	vkWaitForFences(device.GetLogical(), 1, &inFlightFences[currentFrame],
+		VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	auto result = vkAcquireNextImageKHR(device.GetLogical(),
-		swapChain.Get(),
-		UINT64_MAX,
-		imageAvailableSemaphores[currentFrame],
-		VK_NULL_HANDLE,
+	auto result = vkAcquireNextImageKHR(device.GetLogical(), swapChain.Get(),
+		UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE,
 		&imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -290,10 +270,8 @@ void Render::DrawFrame(const Device& device,
 		.pSignalSemaphores = signalSemaphores,
 	};
 
-	if (vkQueueSubmit(device.GetGraphicsQueue(),
-		    1,
-		    &submitInfo,
-		    inFlightFences[currentFrame]) != VK_SUCCESS) {
+	if (vkQueueSubmit(device.GetGraphicsQueue(), 1, &submitInfo,
+		inFlightFences[currentFrame]) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit data command buffer!");
 	}
 
@@ -309,7 +287,7 @@ void Render::DrawFrame(const Device& device,
 	result = vkQueuePresentKHR(device.GetPresentQueue(), &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-	    window.GetFrameBufferResized()) {
+		window.GetFrameBufferResized()) {
 		window.SetFrameBufferResized(false);
 		swapChain.RecreateSwapChain(device, depth, window, renderPass);
 	}
@@ -334,18 +312,11 @@ void Render::CreateSyncObjects(const VkDevice& device) {
 	};
 
 	for (int i = 0; i < maxFramesInFlight; i++) {
-		if (vkCreateSemaphore(device,
-			    &semaphoreInfo,
-			    nullptr,
-			    &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-		    vkCreateSemaphore(device,
-			    &semaphoreInfo,
-			    nullptr,
-			    &renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(
-			    device,
-			    &fenceInfo,
-			    nullptr,
-			    &inFlightFences[i]) != VK_SUCCESS) {
+		if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+			&imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(
+			device, &semaphoreInfo, nullptr,
+			&renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(device,
+			&fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
 			throw std::runtime_error(
 				"failed to create synchronization objects for a frame!");
 		}

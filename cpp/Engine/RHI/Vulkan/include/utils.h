@@ -38,7 +38,7 @@ namespace MathUtils {
 		return {vec.x, vec.y, vec.z};
 	}
 
-	inline glm::vec2 AiVector2D2GlmVec2(const aiVector3D vec) {
+	inline glm::vec2 AiVector2D2GlmVec2(const aiVector2D vec) {
 		return {vec.x, vec.y};
 	}
 }

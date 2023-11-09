@@ -4,6 +4,7 @@
 
 class SceneObject: public BaseObject {
 protected:
+	BaseScene* _scene = nullptr;
 	SceneObject* _parent = nullptr;
 	std::vector<SceneObject*> _sons;
 
@@ -14,7 +15,10 @@ protected:
 public:
 	explicit SceneObject(const std::string& root,
 		const std::string& file,
-		SceneObject*& parent) : BaseObject(root, file), _parent(parent) {
+		SceneObject*& parent,
+		BaseScene* inScene) : BaseObject(root, file),
+		_scene(inScene),
+		_parent(parent) {
 		if (parent != nullptr) {
 			parent->AddToSons(this);
 		}

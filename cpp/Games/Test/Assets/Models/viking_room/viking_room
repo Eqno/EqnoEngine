@@ -1,0 +1,13 @@
+{
+    "Name": "ObjModel",
+    "Type": "OBJ",
+    "File": "Assets/Models/viking_room/viking_room.obj",
+    "Meshes": {
+        "Shield_low": {
+            "Material": "Assets/Materials/SMWeaponMaterial",
+            "Textures": [
+                "Assets/Textures/viking_room/viking_room.png"
+            ]
+        }
+    }
+}

@@ -2,11 +2,11 @@
     "Name": "TestScene",
     "SceneObjects": {
         "Type": "BaseModel",
-        "Path": "Assets/Models/ObjModel",
+        "Path": "Assets/Models/viking_room/viking_room",
         "Sons": [
             {
                 "Type": "BaseModel",
-                "Path": "Assets/Models/FbxModel"
+                "Path": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon"
             }
         ]
     }

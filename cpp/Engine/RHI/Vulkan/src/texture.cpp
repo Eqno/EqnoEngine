@@ -1,7 +1,5 @@
 #include "../include/texture.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 #include <stdexcept>
 
 #include "../include/buffer.h"
@@ -10,13 +8,10 @@
 
 void Texture::CreateTextureImage(const Device& device,
 	const Render& render,
-	const std::string& texturePath) {
-	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load(texturePath.c_str(),
-		&texWidth,
-		&texHeight,
-		&texChannels,
-		STBI_rgb_alpha);
+	const int texWidth,
+	const int texHeight,
+	const int texChannels,
+	stbi_uc* pixels) {
 	const VkDeviceSize imageSize = static_cast<VkDeviceSize>(texWidth) *
 	                               texHeight * 4;
 
@@ -276,8 +271,11 @@ void Texture::CopyBufferToImage(const Device& device,
 
 void Texture::Create(const Device& device,
 	const Render& render,
-	const std::string& texturePath) {
-	CreateTextureImage(device, render, texturePath);
+	const int width,
+	const int height,
+	const int channels,
+	stbi_uc* data) {
+	CreateTextureImage(device, render, width, height, channels, data);
 	CreateTextureImageView(device.GetLogical());
 	CreateTextureSampler(device);
 }

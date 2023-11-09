@@ -1,8 +1,14 @@
 #pragma once
 
+#include <assimp/vector2.h>
+#include <assimp/vector3.h>
+#include <assimp/color4.h>
+
 #include <array>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_core.h>
+
+#include "utils.h"
 
 using AttributeDescriptions = std::array<VkVertexInputAttributeDescription, 5>;
 
@@ -19,14 +25,24 @@ public:
 		const glm::vec3& normal,
 		const glm::vec3& tangent,
 		const glm::vec2& texCoord) : pos(pos),
-	color(color),
-	normal(normal),
-	tangent(tangent),
-	texCoord(texCoord) { }
+		color(color),
+		normal(normal),
+		tangent(tangent),
+		texCoord(texCoord) {}
+
+	Vertex(const aiVector3D& pos,
+		const aiColor4D& color,
+		const aiVector3D& normal,
+		const aiVector3D& tangent,
+		const aiVector2D& texCoord) : pos(MathUtils::AiVector3D2GlmVec3(pos)),
+		color(MathUtils::AiColor4D2GlmVec4(color)),
+		normal(MathUtils::AiVector3D2GlmVec3(normal)),
+		tangent(MathUtils::AiVector3D2GlmVec3(tangent)),
+		texCoord(MathUtils::AiVector2D2GlmVec2(texCoord)) {}
 
 	bool operator==(const Vertex& other) const {
 		return pos == other.pos && color == other.color && normal == other.
-		       normal && tangent == other.tangent && texCoord == other.texCoord;
+			normal && tangent == other.tangent && texCoord == other.texCoord;
 	}
 
 	struct HashFunction {

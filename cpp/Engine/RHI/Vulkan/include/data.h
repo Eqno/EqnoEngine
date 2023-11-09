@@ -15,7 +15,7 @@ public:
 
 	Data(const std::vector<uint32_t>& indices,
 		const std::vector<Vertex>& vertices) : indices(indices),
-	vertices(vertices) {}
+		vertices(vertices) {}
 
 	[[nodiscard]] const std::vector<uint32_t>& GetIndices() const {
 		return indices;
@@ -33,9 +33,20 @@ public:
 		return vertices[index];
 	}
 
-	explicit Data(const std::string& dataPath) {
-		Create((dataPath));
+	void AddIndex(const uint32_t index) {
+		indices.emplace_back(index);
 	}
 
-	void Create(const std::string& dataPath);
+	void AddVertex(const Vertex& vertex) {
+		vertices.emplace_back(vertex);
+	}
+
+	explicit Data(const std::string& objPath) {
+		Create(objPath);
+	}
+
+	void Create(const std::string& objPath);
+
+	void Create(const std::vector<uint32_t>& indices,
+		const std::vector<Vertex>& vertices);
 };

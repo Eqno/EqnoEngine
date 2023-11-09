@@ -3,6 +3,7 @@
 #include <string>
 #include <vulkan/vulkan_core.h>
 
+#include "stb_image.h"
 #include "utils.h"
 
 class Device;
@@ -18,7 +19,10 @@ class Texture {
 
 	void CreateTextureImage(const Device& device,
 		const Render& render,
-		const std::string& texturePath);
+		int texWidth,
+		int texHeight,
+		int texChannels,
+		stbi_uc* pixels);
 	void CreateTextureImageView(const VkDevice& device);
 	void CreateTextureSampler(const Device& device);
 
@@ -42,16 +46,22 @@ public:
 
 	Texture(const Device& device,
 		const Render& render,
-		const char* texturePath) {
-		Create(device, render, texturePath);
+		const int width,
+		const int height,
+		const int channels,
+		stbi_uc* data) {
+		Create(device, render, width, height, channels, data);
 	}
 
 	Texture(const std::string& imageFormat,
 		const Device& device,
 		const Render& render,
-		const std::string& texturePath) : imageFormat(
+		const int width,
+		const int height,
+		const int channels,
+		stbi_uc* data) : imageFormat(
 		VulkanUtils::ParseImageFormat(imageFormat)) {
-		Create(device, render, texturePath);
+		Create(device, render, width, height, channels, data);
 	}
 
 	[[nodiscard]] const VkImageView& GetTextureImageView() const {
@@ -66,6 +76,7 @@ public:
 		VkImage image,
 		VkFormat format,
 		VkImageAspectFlags aspectFlags);
+
 	static void CreateImage(const Device& device,
 		uint32_t width,
 		uint32_t height,
@@ -78,6 +89,9 @@ public:
 
 	void Create(const Device& device,
 		const Render& render,
-		const std::string& texturePath);
+		int width,
+		int height,
+		int channels,
+		stbi_uc* data);
 	void Destroy(const VkDevice& device) const;
 };

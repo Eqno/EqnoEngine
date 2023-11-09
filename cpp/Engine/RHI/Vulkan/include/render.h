@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "config.h"
 #include "uniform.h"
 #include "window.h"
@@ -43,9 +45,9 @@ public:
 	}
 
 	void CreateCommandBuffers(const VkDevice& device);
-	void RecordCommandBuffer(const std::vector<Draw>& draws,
+	void RecordCommandBuffer(const std::unordered_map<std::string, Draw>& draws,
 		const SwapChain& swapChain,
-		uint32_t imageIndex) const;
+		const uint32_t imageIndex) const;
 	void CopyCommandBuffer(const Device& device,
 		const VkBuffer& srcBuffer,
 		const VkBuffer& dstBuffer,
@@ -57,7 +59,7 @@ public:
 		VkCommandBuffer commandBuffer) const;
 
 	void DrawFrame(const Device& device,
-		const std::vector<Draw>& draws,
+		const std::unordered_map<std::string, Draw>& draws,
 		Depth& depth,
 		Window& window,
 		SwapChain& swapChain);

@@ -17,7 +17,7 @@ UIntegers FileUtils::ReadFileAsUIntegers(const std::string& filePath,
 		file.close();
 		return buffer;
 	}
-	throw std::runtime_error("failed to open file!");
+	throw std::runtime_error("failed to open file: " + filePath);
 }
 
 std::string FileUtils::ReadFileAsString(const std::string& filePath) {
@@ -28,7 +28,7 @@ std::string FileUtils::ReadFileAsString(const std::string& filePath) {
 		file.close();
 		return buffer.str();
 	}
-	throw std::runtime_error("failed to open file!");
+	throw std::runtime_error("failed to open file: " + filePath);
 }
 
 void FileUtils::WriteFileAsUIntegers(const std::string& filePath,
@@ -40,7 +40,7 @@ void FileUtils::WriteFileAsUIntegers(const std::string& filePath,
 		file.close();
 	}
 	else {
-		throw std::runtime_error("failed to open file!");
+		throw std::runtime_error("failed to open file: " + filePath);
 	}
 }
 
@@ -51,6 +51,6 @@ void FileUtils::WriteFileAsString(const std::string& filePath,
 		file.close();
 	}
 	else {
-		throw std::runtime_error("failed to open file!");
+		throw std::runtime_error("failed to open file: " + filePath);
 	}
 }
