@@ -1,7 +1,5 @@
 #pragma once
 
-#include "BaseMaterial.h"
-
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -18,9 +16,11 @@ class BaseModel final: public SceneObject {
 	static void ParseFbxData(const aiMatrix4x4& transform,
 		const aiMesh* mesh,
 		MeshData* meshData);
+
 	void ParseFbxDatas(const aiMatrix4x4& transform,
 		const aiNode* node,
 		const aiScene* scene);
+
 	void LoadFbxDatas(const std::string& fbxPath, unsigned parserFlags);
 
 public:
@@ -32,22 +32,11 @@ public:
 	}
 
 	~BaseModel() override {
-		for (const MeshData* mesh: meshes) {
-			delete mesh;
-		}
+		OnDestroy();
 	}
 
-	void OnCreate() override {
-		if (JSON_CONFIG(String, "Type") == "FBX") {
-			LoadFbxDatas(JSON_CONFIG(String, "File"),
-				aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-				aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-		}
-		else if (JSON_CONFIG(String, "Type") == "OBJ") {
-			// LoadObjDatas(JSON_CONFIG(String, "File"), 0);
-		}
-		_scene->GetGraphics()->ParseMeshDatas(meshes);
-	}
+	void OnCreate() override;
+	void OnDestroy() override;
 
 	// void OnCreate() {
 	// 	// scene->draws.emplace_back(device,

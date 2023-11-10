@@ -67,12 +67,6 @@
     <Filter Include="Games\Test\Assets\Shaders">
       <UniqueIdentifier>{7718082b-f4d3-40ac-b108-ec4cee7ecc7a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Games\Test\Assets\Shaders\glsl">
-      <UniqueIdentifier>{c3c0a518-5b5d-4669-862d-2bdc396b0973}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Games\Test\Assets\Shaders\spv">
-      <UniqueIdentifier>{c170acec-ce42-4f08-bf16-08a789dc0bef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Games\Test\Assets\Models">
       <UniqueIdentifier>{1d216de4-95f7-40c2-8ffd-5be1ffa0b467}</UniqueIdentifier>
     </Filter>
@@ -111,6 +105,12 @@
     </Filter>
     <Filter Include="Engine\Utility\include">
       <UniqueIdentifier>{2c8ab234-e398-482e-8c8b-5867dfae0be5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Shaders\SMWeaponShader">
+      <UniqueIdentifier>{e5f8717a-7687-476a-88cb-d239c3059b5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl">
+      <UniqueIdentifier>{b7c1ee04-0992-413f-ba5b-c5d9771b0708}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -413,7 +413,7 @@
     <ClCompile Include="Engine\System\src\BaseObject.cpp">
       <Filter>Engine\System\src</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\src\BaseCcene.cpp">
+    <ClCompile Include="Engine\Scene\src\BaseScene.cpp">
       <Filter>Engine\Scene\src</Filter>
     </ClCompile>
     <ClCompile Include="Engine\System\src\Application.cpp">
@@ -442,19 +442,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Games\Test\Assets\Shaders\glsl\hello_triangle.frag">
-      <Filter>Games\Test\Assets\Shaders\glsl</Filter>
-    </None>
-    <None Include="Games\Test\Assets\Shaders\glsl\hello_triangle.vert">
-      <Filter>Games\Test\Assets\Shaders\glsl</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="Games\Test\Assets\Textures\texture.jpg">
       <Filter>Games\Test\Assets\Textures</Filter>
     </Image>
     <Image Include="Games\Test\Assets\Textures\viking_room.png">
       <Filter>Games\Test\Assets\Textures</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl\hello_triangle.vert">
+      <Filter>Games\Test\Assets\Shaders\SMWeaponShader\glsl</Filter>
+    </None>
+    <None Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl\hello_triangle.frag">
+      <Filter>Games\Test\Assets\Shaders\SMWeaponShader\glsl</Filter>
+    </None>
   </ItemGroup>
 </Project>

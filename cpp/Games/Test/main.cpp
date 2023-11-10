@@ -5,8 +5,8 @@
 
 int main() {
 	try {
-		const Application app("Games/Test/", "Index");
-		app.Run();
+		Application app("Games/Test/", "Index");
+		app.RunApplication();
 	}
 	catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;

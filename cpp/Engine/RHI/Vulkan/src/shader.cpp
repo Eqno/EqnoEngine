@@ -34,7 +34,7 @@ const ShaderTypeInfo& Shader::GetTypeByName(const std::string& glslPath) {
 void Shader::CompileFromGLSLToSPV(const std::string& glslPath,
 	const std::string& shaderPath) {
 	const std::string glslCode = FileUtils::ReadFileAsString(
-		shaderPath + glslPath);
+		shaderPath + "/" + glslPath);
 
 	const auto module = ShaderRcStatic::compiler.CompileGlslToSpv(
 		glslCode.c_str(), glslCode.size(), GetTypeByName(glslPath).kind,
@@ -44,13 +44,13 @@ void Shader::CompileFromGLSLToSPV(const std::string& glslPath,
 		std::cerr << module.GetErrorMessage();
 	}
 	const std::vector spvCode(module.cbegin(), module.cend());
-	FileUtils::WriteFileAsUIntegers(shaderPath + "../spv/" + glslPath,
+	FileUtils::WriteFileAsUIntegers(shaderPath + "/../spv/" + glslPath,
 		std::ios::binary, spvCode);
 }
 
 UIntegers Shader::ReadSPVFileAsBinary(const std::string& spvPath,
 	const std::string& shaderPath) {
-	return FileUtils::ReadFileAsUIntegers(shaderPath + "../spv/" + spvPath,
+	return FileUtils::ReadFileAsUIntegers(shaderPath + "/../spv/" + spvPath,
 		std::ios::ate | std::ios::binary);
 }
 

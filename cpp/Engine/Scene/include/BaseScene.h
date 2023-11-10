@@ -17,21 +17,11 @@ public:
 	}
 
 	~BaseScene() override {
-		std::cout << "Destroy" << std::endl;
-		DestroyObjects(rootObject);
+		OnDestroy();
 	}
 
-	static void DestroyObjects(SceneObject* root) {
-		for (SceneObject* son: root->GetSons()) {
-			DestroyObjects(son);
-			delete son;
-		}
-	}
-
-	void OnCreate() override {
-		JsonUtils::ParseSceneObjectTree(GetRoot() + GetFile(), GetRoot(),
-			rootObject, this);
-	}
+	void OnCreate() override;
+	void OnDestroy() override;
 
 	[[nodiscard]] GraphicsInterface* GetGraphics() const {
 		return graphics;

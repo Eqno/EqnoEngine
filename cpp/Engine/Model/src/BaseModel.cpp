@@ -76,9 +76,12 @@ void BaseModel::ParseFbxDatas(const aiMatrix4x4& transform,
 		// Parse Textures
 		for (const std::string& texPath: snd) {
 			int width, height, channels;
-			stbi_uc* pixels = stbi_load(texPath.c_str(), &width, &height,
-				&channels, STBI_rgb_alpha);
-			meshData->textures.emplace_back(width, height, channels, pixels);
+			stbi_uc* data = stbi_load((GetRoot() + texPath).c_str(), &width,
+				&height, &channels, STBI_rgb_alpha);
+			if (!data) {
+				throw std::runtime_error("failed to load texture image!");
+			}
+			meshData->textures.emplace_back(width, height, channels, data);
 		}
 		meshes.emplace_back(meshData);
 	}
@@ -104,4 +107,24 @@ void BaseModel::LoadFbxDatas(const std::string& fbxPath,
 
 	const aiMatrix4x4 identity;
 	ParseFbxDatas(identity, scene->mRootNode, scene);
+}
+
+void BaseModel::OnCreate() {
+	SceneObject::OnCreate();
+	if (JSON_CONFIG(String, "Type") == "FBX") {
+		LoadFbxDatas(JSON_CONFIG(String, "File"),
+			aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+			aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	}
+	else if (JSON_CONFIG(String, "Type") == "OBJ") {
+		// LoadObjDatas(JSON_CONFIG(String, "File"), 0);
+	}
+	_scene->GetGraphics()->ParseMeshDatas(meshes);
+}
+
+void BaseModel::OnDestroy() {
+	SceneObject::OnDestroy();
+	for (const MeshData* mesh: meshes) {
+		delete mesh;
+	}
 }

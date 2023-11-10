@@ -12,6 +12,10 @@ class Application final: public BaseObject {
 	void CreateGraphics();
 	void CreateLauncherScene();
 
+	void CreateWindow() const;
+	void LaunchScene();
+	void TerminateScene() const;
+
 public:
 	explicit
 	Application(const std::string& root, const std::string& file) : BaseObject(
@@ -20,16 +24,11 @@ public:
 	}
 
 	~Application() override {
-		JsonUtils::ClearDocumentCache();
-
-		delete scene;
-		delete graphics;
+		OnDestroy();
 	}
 
-	void OnCreate() override {
-		CreateGraphics();
-		CreateLauncherScene();
-	}
+	void OnCreate() override;
+	void OnDestroy() override;
 
-	void Run() const;
+	void RunApplication();
 };

@@ -22,9 +22,32 @@ void Application::CreateLauncherScene() {
 	scene = new BaseScene(GetRoot(), scenePath, graphics);
 }
 
-void Application::Run() const {
+void Application::OnCreate() {
+	CreateGraphics();
+}
+
+void Application::RunApplication() {
+	CreateWindow();
+	LaunchScene();
+	TerminateScene();
+}
+
+void Application::OnDestroy() {
+	delete graphics;
+	JsonUtils::ClearDocumentCache();
+}
+
+void Application::CreateWindow() const {
 	graphics->CreateWindow(JSON_CONFIG(String, "ApplicationName"));
 	graphics->InitGraphics();
+}
+
+void Application::LaunchScene() {
+	CreateLauncherScene();
 	graphics->RendererLoop();
+}
+
+void Application::TerminateScene() const {
+	delete scene;
 	graphics->CleanupGraphics();
 }

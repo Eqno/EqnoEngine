@@ -1,6 +1,5 @@
 #pragma once
 
-#include <assimp/vector2.h>
 #include <assimp/vector3.h>
 #include <assimp/color4.h>
 
@@ -9,6 +8,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "utils.h"
+#include "Engine/Utility/include/TypeUtils.h"
 
 using AttributeDescriptions = std::array<VkVertexInputAttributeDescription, 5>;
 
@@ -17,14 +17,14 @@ class Vertex {
 	glm::vec4 color {};
 	glm::vec3 normal {};
 	glm::vec3 tangent {};
-	glm::vec2 texCoord {};
+	glm::vec3 texCoord {};
 
 public:
 	Vertex(const glm::vec3& pos,
 		const glm::vec4& color,
 		const glm::vec3& normal,
 		const glm::vec3& tangent,
-		const glm::vec2& texCoord) : pos(pos),
+		const glm::vec3& texCoord) : pos(pos),
 		color(color),
 		normal(normal),
 		tangent(tangent),
@@ -34,11 +34,14 @@ public:
 		const aiColor4D& color,
 		const aiVector3D& normal,
 		const aiVector3D& tangent,
-		const aiVector2D& texCoord) : pos(MathUtils::AiVector3D2GlmVec3(pos)),
-		color(MathUtils::AiColor4D2GlmVec4(color)),
-		normal(MathUtils::AiVector3D2GlmVec3(normal)),
-		tangent(MathUtils::AiVector3D2GlmVec3(tangent)),
-		texCoord(MathUtils::AiVector2D2GlmVec2(texCoord)) {}
+		const aiVector3D& texCoord) : Vertex(MathUtils::AiVector3D2GlmVec3(pos),
+		MathUtils::AiColor4D2GlmVec4(color),
+		MathUtils::AiVector3D2GlmVec3(normal),
+		MathUtils::AiVector3D2GlmVec3(tangent),
+		MathUtils::AiVector3D2GlmVec3(texCoord)) {}
+
+	explicit Vertex(const VertexData& vert) : Vertex(vert.pos, vert.color,
+		vert.normal, vert.tangent, vert.texCoord) {}
 
 	bool operator==(const Vertex& other) const {
 		return pos == other.pos && color == other.color && normal == other.

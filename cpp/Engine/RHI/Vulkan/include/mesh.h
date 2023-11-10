@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "buffer.h"
 #include "data.h"
 #include "uniform.h"
@@ -13,6 +11,16 @@ class Mesh {
 	Buffer buffer;
 	Descriptor descriptor;
 	std::vector<Texture> textures;
+
+	void ParseTextures(const Device& device,
+		const Render& render,
+		const MeshData* inData);
+
+	void ParseVertexAndIndex(const MeshData* inData);
+
+	void ParseBufferAndDescriptor(const Device& device,
+		const Render& render,
+		const VkDescriptorSetLayout& descriptorSetLayout);
 
 public:
 	[[nodiscard]] const VkBuffer& GetIndexBuffer() const {
@@ -42,24 +50,10 @@ public:
 
 	Mesh(const Device& device,
 		const Render& render,
-		const std::string& dataPath,
-		const std::vector<std::string>& texPaths,
-		const VkDescriptorSetLayout& descriptorSetLayout) {
-		Create(device, render, dataPath, texPaths, descriptorSetLayout);
-	}
-
-	Mesh(const Device& device,
-		const Render& render,
 		const MeshData* data,
 		const VkDescriptorSetLayout& descriptorSetLayout) {
 		Create(device, render, data, descriptorSetLayout);
 	}
-
-	void Create(const Device& device,
-		const Render& render,
-		const std::string& dataPath,
-		const std::vector<std::string>& texPaths,
-		const VkDescriptorSetLayout& descriptorSetLayout);
 
 	void Create(const Device& device,
 		const Render& render,

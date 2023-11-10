@@ -25,7 +25,7 @@ void Descriptor::CreateDescriptorSets(const VkDevice& device,
 
 	descriptorSets.resize(render.GetMaxFramesInFlight());
 	if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) !=
-	    VK_SUCCESS) {
+		VK_SUCCESS) {
 		throw std::runtime_error("Failed to allocate descriptor sets!");
 	}
 
@@ -69,9 +69,7 @@ void Descriptor::CreateDescriptorSets(const VkDevice& device,
 		}
 		vkUpdateDescriptorSets(device,
 			static_cast<uint32_t>(descriptorWrites.size()),
-			descriptorWrites.data(),
-			0,
-			nullptr);
+			descriptorWrites.data(), 0, nullptr);
 	}
 }
 
@@ -99,7 +97,7 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
 	};
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) !=
-	    VK_SUCCESS) {
+		VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
@@ -108,11 +106,8 @@ void Descriptor::Create(const Device& device,
 	const Render& render,
 	const VkDescriptorSetLayout& descriptorSetLayout,
 	const std::vector<Texture>& textures) {
-	
 	CreateDescriptorPool(device.GetLogical(), render, textures.size());
-	CreateDescriptorSets(device.GetLogical(),
-		render,
-		descriptorSetLayout,
+	CreateDescriptorSets(device.GetLogical(), render, descriptorSetLayout,
 		textures);
 }
 
@@ -127,20 +122,14 @@ void UniformBuffer::CreateUniformBuffers(const Device& device,
 	uniformBuffersMapped.resize(render.GetMaxFramesInFlight());
 
 	for (size_t i = 0; i < render.GetMaxFramesInFlight(); i++) {
-		Buffer::CreateBuffer(device,
-			sizeof(UniformBufferObject),
+		Buffer::CreateBuffer(device, sizeof(UniformBufferObject),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			uniformBuffers[i],
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i],
 			uniformBuffersMemory[i]);
 
-		vkMapMemory(device.GetLogical(),
-			uniformBuffersMemory[i],
-			0,
-			sizeof(UniformBufferObject),
-			0,
-			&uniformBuffersMapped[i]);
+		vkMapMemory(device.GetLogical(), uniformBuffersMemory[i], 0,
+			sizeof(UniformBufferObject), 0, &uniformBuffersMapped[i]);
 	}
 }
 
@@ -151,19 +140,21 @@ void UniformBuffer::UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
 	const auto time = std::chrono::duration<float>(currentTime - startTime).
 		count();
 
+	glm::mat4 scale(0.05f);
+	scale[3][3] = 1.0f;
+
+	glm::mat4 model1 = rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f)) * scale;
+
+	glm::mat4 model2 = scale;
+
 	UniformBufferObject ubo {
-		.model =
-		rotate(glm::mat4(1.0f),
-			time * glm::radians(90.0f),
-			glm::vec3(0.0f, 0.0f, 1.0f)),
-		.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 1.0f)),
+		.model = model2,
+		.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f)),
 		.proj = glm::perspective(glm::radians(45.0f),
 			static_cast<float>(swapChainExtent.width) / static_cast<float>(
-				swapChainExtent.height),
-			0.1f,
-			10.0f),
+				swapChainExtent.height), 0.1f, 1000.0f),
 	};
 	ubo.proj[1][1] *= -1;
 	memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));

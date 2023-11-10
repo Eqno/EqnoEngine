@@ -2,6 +2,8 @@
 
 #include "BaseObject.h"
 
+struct MeshData;
+
 class GraphicsInterface: public BaseObject {
 public:
 	explicit
