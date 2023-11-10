@@ -29,6 +29,8 @@ namespace JsonUtils {
 		const std::string& filePath,
 		const std::string& meshName);
 
+	std::vector<std::string> ParseMaterialParams(const std::string& filePath);
+
 	void WriteStringToFile(const std::string& filePath,
 		const std::string& key,
 		const std::string& value);

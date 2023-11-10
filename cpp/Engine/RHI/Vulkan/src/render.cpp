@@ -109,7 +109,7 @@ void Render::CreateCommandBuffers(const VkDevice& device) {
 }
 
 void Render::RecordCommandBuffer(
-	const std::unordered_map<std::string, Draw>& draws,
+	const std::unordered_map<std::string, Draw*>& draws,
 	const SwapChain& swapChain,
 	const uint32_t imageIndex) const {
 	const VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
@@ -150,11 +150,11 @@ void Render::RecordCommandBuffer(
 	const VkRect2D scissor {.offset = {0, 0}, .extent = swapChain.GetExtent(),};
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	for (const auto& draw: draws | std::views::values) {
+	for (const Draw* draw: draws | std::views::values) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			draw.GetGraphicsPipeline());
+			draw->GetGraphicsPipeline());
 
-		for (const auto& mesh: draw.GetMeshes()) {
+		for (const auto& mesh: draw->GetMeshes()) {
 			const VkBuffer vertexBuffers[] = {mesh.GetVertexBuffer()};
 			constexpr VkDeviceSize offsets[] = {0};
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -163,8 +163,8 @@ void Render::RecordCommandBuffer(
 				VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffer,
-				VK_PIPELINE_BIND_POINT_GRAPHICS, draw.GetPipelineLayout(), 0, 1,
-				&mesh.GetDescriptorSetByIndex(currentFrame), 0, nullptr);
+				VK_PIPELINE_BIND_POINT_GRAPHICS, draw->GetPipelineLayout(), 0,
+				1, &mesh.GetDescriptorSetByIndex(currentFrame), 0, nullptr);
 
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(mesh.GetIndices().size()), 1, 0, 0, 0);
@@ -222,7 +222,7 @@ void Render::EndSingleTimeCommands(const Device& device,
 }
 
 void Render::DrawFrame(const Device& device,
-	const std::unordered_map<std::string, Draw>& draws,
+	const std::unordered_map<std::string, Draw*>& draws,
 	Depth& depth,
 	Window& window,
 	SwapChain& swapChain) {

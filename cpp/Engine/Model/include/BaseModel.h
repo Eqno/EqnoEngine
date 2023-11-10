@@ -37,19 +37,4 @@ public:
 
 	void OnCreate() override;
 	void OnDestroy() override;
-
-	// void OnCreate() {
-	// 	// scene->draws.emplace_back(device,
-	// 	// 	VulkanConfig::SHADER_PATH,
-	// 	// 	render.GetRenderPass());
-	// 	// draws[0].Load(device,
-	// 	// 	render,
-	// 	// 	{{VulkanConfig::MODEL_PATH, {VulkanConfig::TEXTURE_PATH}}});
-	// }
-	//
-	// void OnDestroy() {
-	// 	// for (const Draw& draw: draws) {
-	// 	// 	draw.Destroy(device.GetLogical());
-	// 	// }
-	// }
 };

@@ -13,7 +13,7 @@ VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
 	const SurfaceFormats& availableFormats) const {
 	for (const auto& format: availableFormats) {
 		if (format.format == surfaceFormat && format.colorSpace ==
-		    surfaceColorSpace) {
+			surfaceColorSpace) {
 			return format;
 		}
 	}
@@ -34,7 +34,7 @@ VkExtent2D SwapChain::ChooseSwapExtent(
 	const VkSurfaceCapabilitiesKHR& capabilities,
 	const Window& window) {
 	if (capabilities.currentExtent.width != std::numeric_limits<
-		    uint32_t>::max()) {
+		uint32_t>::max()) {
 		return capabilities.currentExtent;
 	}
 
@@ -58,7 +58,7 @@ void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
 
 	auto imageCount = capabilities.minImageCount + 1;
 	if (capabilities.maxImageCount > 0 && imageCount > capabilities.
-	    maxImageCount) {
+		maxImageCount) {
 		imageCount = capabilities.maxImageCount;
 	}
 
@@ -93,14 +93,12 @@ void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
 	}
 
 	if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain)
-	    != VK_SUCCESS) {
+		!= VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain!");
 	}
 	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, nullptr);
 	images.resize(imageCount);
-	vkGetSwapchainImagesKHR(device.GetLogical(),
-		chain,
-		&imageCount,
+	vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount,
 		images.data());
 
 	imageFormat = format;
@@ -110,9 +108,7 @@ void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
 void SwapChain::CreateImageViews(const VkDevice& device) {
 	imageViews.resize(images.size());
 	for (size_t i = 0; i < images.size(); i++) {
-		imageViews[i] = Texture::CreateImageView(device,
-			images[i],
-			imageFormat,
+		imageViews[i] = Texture::CreateImageView(device, images[i], imageFormat,
 			VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
@@ -145,10 +141,8 @@ void SwapChain::CreateFrameBuffers(const VkDevice& device,
 			.height = extent.height,
 			.layers = 1,
 		};
-		if (vkCreateFramebuffer(device,
-			    &frameBufferInfo,
-			    nullptr,
-			    &frameBuffers[i]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(device, &frameBufferInfo, nullptr,
+			&frameBuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create frame buffer!");
 		}
 	}
@@ -169,6 +163,7 @@ void SwapChain::RecreateSwapChain(const Device& device,
 
 void SwapChain::Create(const Device& device, const Window& window) {
 	CreateSwapChain(device, window);
+	CreateImageViews(device.GetLogical());
 }
 
 void SwapChain::Create(const std::string& format,

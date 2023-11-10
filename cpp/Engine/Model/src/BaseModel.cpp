@@ -7,22 +7,20 @@
 #include <assimp/types.h>
 #include <assimp/scene.h>
 
+#include "Engine/Model/include/BaseMaterial.h"
 #include "Engine/Utility/include/FileUtils.h"
 
-
-////Materials
-// static void s_ProcessMaterials(const struct aiScene* pScene,
-// 	StringVector& aMaterials) {
-// 	for (unsigned int i = 0; i < pScene->mNumMaterials; ++i) {
-// 		aiMaterial* pMaterial = pScene->mMaterials[i];
-// 		if (pMaterial) {
+// std::unordered_map<std::string, aiMaterial*> defaultMaterialDatas;
+// void BaseModel::ParseFbxMaterials(const aiScene* scene) {
+// 	std::vector<std::string> materials;
+// 	for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+// 		if (aiMaterial* material = scene->mMaterials[i]) {
 // 			aiString name;
-// 			aiGetMaterialString(pMaterial, AI_MATKEY_NAME, &name);
-// 			aMaterials.push_back(name.C_Str());
+// 			aiGetMaterialString(material, AI_MATKEY_NAME, &name);
+// 			defaultMaterialDatas[name.C_Str()] = material;
 // 		}
 // 	}
 // }
-//
 
 void BaseModel::ParseFbxData(const aiMatrix4x4& transform,
 	const aiMesh* mesh,
@@ -59,16 +57,15 @@ void BaseModel::ParseFbxDatas(const aiMatrix4x4& transform,
 	for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
 		const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-		std::string name = mesh->mName.C_Str();
-
 		const auto [fst, snd] = JsonUtils::ParseMeshDataInfos(
 			GetRoot() + GetFile(), mesh->mName.C_Str());
 
-		// Parse Name and Material
-		auto meshData = new MeshData {
-			.name = mesh->mName.C_Str(),
-			.material = fst,
-		};
+		// Parse Name
+		auto meshData = new MeshData {.name = mesh->mName.C_Str()};
+
+		// Parse Material
+		auto* mat = _scene->GetMaterialByPath(fst);
+		meshData->material = {mat->GetShader(), mat->GetParams()};
 
 		// Parse Data
 		ParseFbxData(nodeTransform, mesh, meshData);

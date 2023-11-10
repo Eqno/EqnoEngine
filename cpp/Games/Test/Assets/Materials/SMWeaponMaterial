@@ -1,4 +1,11 @@
 {
     "Name": "SMWeaponMaterial",
-    "Shader": "Assets/Shaders/glsl/SMWeaponShader"
+    "Shader": "Assets/Shaders/SMWeaponShader/glsl",
+    "Params": [
+        {
+            "Key": "BaseColor",
+            "Type": "Color4D",
+            "Value": "(1, 1, 1, 1)"
+        }
+    ]
 }

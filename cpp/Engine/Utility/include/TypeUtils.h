@@ -7,6 +7,7 @@
 #include <assimp/vector3.h>
 
 #include <stb_image.h>
+#include <assimp/material.h>
 
 class Vertex;
 
@@ -33,9 +34,14 @@ struct TextureData {
 	stbi_uc* data;
 };
 
+struct MaterialData {
+	std::string shader;
+	std::vector<std::string> params;
+};
+
 struct MeshData {
 	std::string name;
-	std::string material;
+	MaterialData material;
 	std::vector<uint32_t> indices;
 	std::vector<VertexData> vertices;
 	std::vector<TextureData> textures;

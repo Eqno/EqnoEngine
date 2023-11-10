@@ -50,7 +50,7 @@ void Vulkan::RendererLoop() {
 
 void Vulkan::CleanupGraphics() {
 	for (const auto& val: draws | std::views::values) {
-		val.Destroy(device.GetLogical());
+		val->Destroy(device.GetLogical());
 	}
 
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
@@ -66,10 +66,7 @@ void Vulkan::CleanupGraphics() {
 
 void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
 	for (const MeshData* data: meshDatas) {
-		if (!draws.contains(data->material)) {
-			draws[data->material] = Draw(device, VulkanConfig::SHADER_PATH,
-				render.GetRenderPass());
-		}
-		draws[data->material].Load(device, render, data);
+		Draw* draw = GetDrawByShader(GetRoot() + data->material.shader);
+		draw->Load(device, render, data);
 	}
 }

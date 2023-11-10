@@ -19,12 +19,17 @@ class Vulkan final: public GraphicsInterface {
 	Instance instance;
 	SwapChain swapChain;
 	Validation validation;
-	std::unordered_map<std::string, Draw> draws;
-
-	void InitStartScene();
-	void CleanupStartScene() const;
+	std::unordered_map<std::string, Draw*> draws;
 
 public:
+	Draw* GetDrawByShader(const std::string& shaderPath) {
+		if (!draws.contains(shaderPath)) {
+			draws[shaderPath] = new Draw(device, shaderPath,
+				render.GetRenderPass());
+		}
+		return draws[shaderPath];
+	}
+
 	explicit Vulkan(const std::string& root,
 		const std::string& file) : GraphicsInterface(root, file) {}
 

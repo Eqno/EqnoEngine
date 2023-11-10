@@ -45,7 +45,7 @@ public:
 	}
 
 	void CreateCommandBuffers(const VkDevice& device);
-	void RecordCommandBuffer(const std::unordered_map<std::string, Draw>& draws,
+	void RecordCommandBuffer(const std::unordered_map<std::string, Draw*>& draws,
 		const SwapChain& swapChain,
 		const uint32_t imageIndex) const;
 	void CopyCommandBuffer(const Device& device,
@@ -59,7 +59,7 @@ public:
 		VkCommandBuffer commandBuffer) const;
 
 	void DrawFrame(const Device& device,
-		const std::unordered_map<std::string, Draw>& draws,
+		const std::unordered_map<std::string, Draw*>& draws,
 		Depth& depth,
 		Window& window,
 		SwapChain& swapChain);

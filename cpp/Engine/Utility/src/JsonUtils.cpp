@@ -127,6 +127,25 @@ std::pair<std::string, std::vector<std::string>> JsonUtils::ParseMeshDataInfos(
 	return infos;
 }
 
+std::vector<std::string> JsonUtils::ParseMaterialParams(
+	const std::string& filePath) {
+	std::vector<std::string> outParams;
+	if (Document* doc = GetJsonDocFromFile(filePath); doc->
+		HasMember("Params")) {
+		const Value& params = (*doc)["Params"];
+		for (unsigned int i = 0; i < params.Size(); ++i) {
+			if (params[i].HasMember("Key") && params[i].HasMember("Type") &&
+				params[i].HasMember("Value")) {
+				const Value& param = params[i];
+				outParams.emplace_back(param["Key"].GetString());
+				outParams.emplace_back(param["Type"].GetString());
+				outParams.emplace_back(param["Value"].GetString());
+			}
+		}
+	}
+	return outParams;
+}
+
 void JsonUtils::WriteStringToFile(const std::string& filePath,
 	const std::string& key,
 	const std::string& value) {

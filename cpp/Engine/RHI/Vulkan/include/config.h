@@ -11,11 +11,5 @@ namespace VulkanConfig {
 	constexpr int DEFAULT_WINDOW_WIDTH = 800;
 	constexpr int DEFAULT_WINDOW_HEIGHT = 600;
 
-	const std::string ROOT_PATH = "./";
-	const std::string ENGINE_PATH = ROOT_PATH + "Engine/";
-	const std::string GAMES_PATH = ROOT_PATH + "Games/";
-
-	const std::string SHADER_PATH = GAMES_PATH + "Test/Assets/Shaders/SMWeaponShader/glsl/";
-
 	const std::vector DEVICE_EXTENSIONS {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 }
