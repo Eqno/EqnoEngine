@@ -13,13 +13,15 @@ void Draw::Create(const Device& device,
 void Draw::Load(const Device& device,
 	const Render& render,
 	const MeshData* data) {
-	meshes.emplace_back(device, render, data,
+	meshes.emplace_back(device,
+		render,
+		data,
 		pipeline.GetDescriptorSetLayout());
 }
 
-void Draw::Destroy(const VkDevice& device) const {
+void Draw::Destroy(const VkDevice& device, const Render& render) const {
 	pipeline.Destroy(device);
 	for (const Mesh& mesh: meshes) {
-		mesh.Destroy(device);
+		mesh.Destroy(device, render);
 	}
 }

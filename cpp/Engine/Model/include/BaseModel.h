@@ -4,13 +4,15 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include "Engine/RHI/Vulkan/deps/glm/glm/mat4x4.hpp"
 #include "Engine/Utility/include/TypeUtils.h"
 
 #include "Engine/Scene/include/BaseScene.h"
 #include "Engine/System/include/BaseObject.h"
 #include "Engine/Scene/include/SceneObject.h"
 
-class BaseModel final: public SceneObject {
+class BaseModel final : public SceneObject {
+	glm::mat4x4 transform = glm::mat4x4(1);
 	std::vector<MeshData*> meshes;
 
 	static void ParseFbxData(const aiMatrix4x4& transform,

@@ -9,8 +9,8 @@ void Mesh::Create(const Device& device,
 	ParseBufferAndDescriptor(device, render, descriptorSetLayout);
 }
 
-void Mesh::Destroy(const VkDevice& device) const {
-	descriptor.Destroy(device);
+void Mesh::Destroy(const VkDevice& device, const Render& render) const {
+	descriptor.Destroy(device, render);
 	buffer.Destroy(device);
 	for (const Texture& texture: textures) {
 		texture.Destroy(device);
@@ -21,8 +21,13 @@ void Mesh::ParseTextures(const Device& device,
 	const Render& render,
 	const MeshData* inData) {
 	for (const auto& [width, height, channels, _data]: inData->textures) {
-		textures.emplace_back("NOSRPGB", device, render, width, height,
-			channels, _data);
+		textures.emplace_back("NOSRPGB",
+			device,
+			render,
+			width,
+			height,
+			channels,
+			_data);
 	}
 }
 

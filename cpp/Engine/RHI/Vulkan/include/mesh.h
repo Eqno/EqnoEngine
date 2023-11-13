@@ -48,6 +48,11 @@ public:
 		return descriptor.GetDescriptorSetByIndex(index);
 	}
 
+	void UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
+		const uint32_t currentImage) const {
+		descriptor.UpdateUniformBuffer(swapChainExtent, currentImage);
+	}
+
 	Mesh(const Device& device,
 		const Render& render,
 		const MeshData* data,
@@ -60,5 +65,5 @@ public:
 		const MeshData* inData,
 		const VkDescriptorSetLayout& descriptorSetLayout);
 
-	void Destroy(const VkDevice& device) const;
+	void Destroy(const VkDevice& device, const Render& render) const;
 };

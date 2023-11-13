@@ -42,5 +42,5 @@ public:
 
 	void Load(const Device& device, const Render& render, const MeshData* data);
 
-	void Destroy(const VkDevice& device) const;
+	void Destroy(const VkDevice& device, const Render& render) const;
 };

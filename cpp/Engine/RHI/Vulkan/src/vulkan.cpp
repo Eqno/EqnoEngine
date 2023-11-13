@@ -21,14 +21,16 @@ void Vulkan::InitGraphics() {
 	device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
 	device.CreateLogicalDevice(window.GetSurface(), validation);
 	swapChain.Create(JSON_CONFIG(String, "SwapChainSurfaceImageFormat"),
-		JSON_CONFIG(String, "SwapChainSurfaceColorSpace"), device, window);
+		JSON_CONFIG(String, "SwapChainSurfaceColorSpace"),
+		device,
+		window);
 
 	render.CreateRenderPass(swapChain.GetImageFormat(), device);
 	render.CreateCommandPool(device, window.GetSurface());
-	render.CreateUniformBuffers(device);
 
 	depth.CreateDepthResources(device, swapChain.GetExtent());
-	swapChain.CreateFrameBuffers(device.GetLogical(), depth,
+	swapChain.CreateFrameBuffers(device.GetLogical(),
+		depth,
 		render.GetRenderPass());
 
 	render.CreateCommandBuffers(device.GetLogical());
@@ -50,7 +52,7 @@ void Vulkan::RendererLoop() {
 
 void Vulkan::CleanupGraphics() {
 	for (const auto& val: draws | std::views::values) {
-		val->Destroy(device.GetLogical());
+		val->Destroy(device.GetLogical(), render);
 	}
 
 	swapChain.CleanupSwapChain(device.GetLogical(), depth);
