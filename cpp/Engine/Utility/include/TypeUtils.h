@@ -3,11 +3,10 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <assimp/color4.h>
-#include <assimp/vector3.h>
 
 #include <stb_image.h>
-#include <assimp/material.h>
+#include <assimp/color4.h>
+#include <assimp/vector3.h>
 
 class Vertex;
 

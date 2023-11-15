@@ -3,10 +3,9 @@
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <glm/mat4x4.hpp>
 
-#include "Engine/RHI/Vulkan/deps/glm/glm/mat4x4.hpp"
 #include "Engine/Utility/include/TypeUtils.h"
-
 #include "Engine/Scene/include/BaseScene.h"
 #include "Engine/System/include/BaseObject.h"
 #include "Engine/Scene/include/SceneObject.h"

@@ -1,11 +1,8 @@
 #pragma once
 
-#include <stdexcept>
 #include <string>
 #include <vulkan/vulkan_core.h>
-
 #include <assimp/scene.h>
-#include <assimp/matrix4x4.h>
 
 #include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
