@@ -345,6 +345,12 @@
     <ClInclude Include="Engine\System\include\GraphicsInterface.h">
       <Filter>Engine\System\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Model\include\BaseTransform.h">
+      <Filter>Engine\Model\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Utility\include\MathUtils.h">
+      <Filter>Engine\Utility\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -439,6 +445,12 @@
     </ClCompile>
     <ClCompile Include="Engine\Model\src\BaseModel.cpp">
       <Filter>Engine\Model\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Model\src\BaseTransform.cpp">
+      <Filter>Engine\Model\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Utility\src\MathUtils.cpp">
+      <Filter>Engine\Utility\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -15,6 +15,7 @@ public:
 	}
 
 	void OnCreate() override {
+		BaseObject::OnCreate();
 		data.shader = JSON_CONFIG(String, "Shader");
 		data.params = JsonUtils::ParseMaterialParams(GetRoot() + GetFile());
 	}

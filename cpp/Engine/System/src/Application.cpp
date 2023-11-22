@@ -23,6 +23,7 @@ void Application::CreateLauncherScene() {
 }
 
 void Application::OnCreate() {
+	BaseObject::OnCreate();
 	CreateGraphics();
 }
 
@@ -33,6 +34,7 @@ void Application::RunApplication() {
 }
 
 void Application::OnDestroy() {
+	BaseObject::OnDestroy();
 	delete graphics;
 	JsonUtils::ClearDocumentCache();
 }

@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 #include <assimp/types.h>
 #include <assimp/scene.h>
@@ -22,7 +23,7 @@
 // 	}
 // }
 
-void BaseModel::ParseFbxData(const aiMatrix4x4& transform,
+void ParseFbxData(const aiMatrix4x4& transform,
 	const aiMesh* mesh,
 	MeshData* meshData) {
 	for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
@@ -49,22 +50,26 @@ void BaseModel::ParseFbxData(const aiMatrix4x4& transform,
 	}
 }
 
-void BaseModel::ParseFbxDatas(const aiMatrix4x4& transform,
+void ParseFbxDatas(const aiMatrix4x4& transform,
 	const aiNode* node,
-	const aiScene* scene) {
+	const aiScene* scene,
+	const std::string& rootPath,
+	const std::string& modelPath,
+	BaseScene* modelScene,
+	std::vector<MeshData*>& modelMeshes) {
 	const aiMatrix4x4 nodeTransform = transform * node->mTransformation;
 
 	for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
 		const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
 		const auto [fst, snd] = JsonUtils::ParseMeshDataInfos(
-			GetRoot() + GetFile(), mesh->mName.C_Str());
+			rootPath + modelPath, mesh->mName.C_Str());
 
 		// Parse Name
 		auto meshData = new MeshData {.name = mesh->mName.C_Str()};
 
 		// Parse Material
-		auto* mat = _scene->GetMaterialByPath(fst);
+		auto* mat = modelScene->GetMaterialByPath(fst);
 		meshData->material = {mat->GetShader(), mat->GetParams()};
 
 		// Parse Data
@@ -73,18 +78,19 @@ void BaseModel::ParseFbxDatas(const aiMatrix4x4& transform,
 		// Parse Textures
 		for (const std::string& texPath: snd) {
 			int width, height, channels;
-			stbi_uc* data = stbi_load((GetRoot() + texPath).c_str(), &width,
+			stbi_uc* data = stbi_load((rootPath + texPath).c_str(), &width,
 				&height, &channels, STBI_rgb_alpha);
 			if (!data) {
 				throw std::runtime_error("failed to load texture image!");
 			}
 			meshData->textures.emplace_back(width, height, channels, data);
 		}
-		meshes.emplace_back(meshData);
+		modelMeshes.emplace_back(meshData);
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-		ParseFbxDatas(nodeTransform, node->mChildren[i], scene);
+		ParseFbxDatas(nodeTransform, node->mChildren[i], scene, rootPath,
+			modelPath, modelScene, modelMeshes);
 	}
 }
 
@@ -103,7 +109,8 @@ void BaseModel::LoadFbxDatas(const std::string& fbxPath,
 	}
 
 	const aiMatrix4x4 identity;
-	ParseFbxDatas(identity, scene->mRootNode, scene);
+	ParseFbxDatas(identity, scene->mRootNode, scene, GetRoot(), GetFile(),
+		_scene, meshes);
 }
 
 void BaseModel::OnCreate() {

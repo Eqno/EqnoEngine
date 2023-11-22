@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Model\include\BaseTransform.h" />
     <ClInclude Include="Engine\Model\include\ModelConfig.h" />
     <ClInclude Include="Engine\Model\include\BaseMaterial.h" />
     <ClInclude Include="Engine\Model\include\BaseModel.h" />
@@ -95,11 +96,13 @@
     <ClInclude Include="Engine\System\include\GraphicsInterface.h" />
     <ClInclude Include="Engine\Utility\include\FileUtils.h" />
     <ClInclude Include="Engine\Utility\include\JsonUtils.h" />
+    <ClInclude Include="Engine\Utility\include\MathUtils.h" />
     <ClInclude Include="Engine\Utility\include\TypeUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Model\src\BaseMaterial.cpp" />
     <ClCompile Include="Engine\Model\src\BaseModel.cpp" />
+    <ClCompile Include="Engine\Model\src\BaseTransform.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="Engine\RHI\Vulkan\src\buffer.cpp" />
@@ -127,6 +130,7 @@
     <ClCompile Include="Engine\System\src\GraphicsInterface.cpp" />
     <ClCompile Include="Engine\Utility\src\FileUtils.cpp" />
     <ClCompile Include="Engine\Utility\src\JsonUtils.cpp" />
+    <ClCompile Include="Engine\Utility\src\MathUtils.cpp" />
     <ClCompile Include="Engine\Utility\src\TypeUtils.cpp" />
     <ClCompile Include="Games\Test\main.cpp" />
   </ItemGroup>
