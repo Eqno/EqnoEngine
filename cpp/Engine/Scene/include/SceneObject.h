@@ -38,7 +38,7 @@ public:
 		return _parent;
 	}
 
-	[[nodiscard]] const BaseTransform& GetTransform() const {
+	[[nodiscard]] BaseTransform& GetTransform() {
 		return transform;
 	}
 

@@ -4,73 +4,97 @@
 
 class SceneObject;
 
+#define TRANSFORM_MEMBERS(where) \
+	where(vec3, Position, 0.0f) \
+	where(vec3, Rotation, 0.0f) \
+	where(vec3, Scale, 0.0f) \
+	where(vec3, Right, (1.0f, 0.0f, 0.0f)) \
+	where(vec3, Up, (0.0f, 1.0f, 0.0f)) \
+	where(vec3, Forward, (0.0f, 0.0f, 1.0f)) \
+	where(mat4x4, Transform, 1)
+
+#define DEFINE_GETTER(class, type, upper) \
+	glm::type class Get##upper()
+
+#define IMPLEMENT_GETTER(upper, lower) { \
+		if ((lower).first == true) { \
+			Update##upper(); \
+		} \
+		return (lower).second; \
+	}
+
+#define DEFINE_SETTER(class, type, member, upper) \
+	void class Set##upper##member(const glm::type& (member))
+
+#define IMPLEMENT_SETTER(member, lower) { \
+		lower##member = {false, member}; \
+		DirtAbsolute##member(); \
+	}
+
+#define DEFINE_DIRTTER(class, upper) \
+	void class Dirt##upper()
+
+#define IMPLEMENT_DIRTTER(upper, lower, opposite) { \
+		Update##opposite(); \
+		(lower).first = true; \
+		for (SceneObject* son : _owner->GetSons()) { \
+			son->GetTransform().Dirt##upper(); \
+		} \
+	}
+
+#define DEFINE_MEMBER(type, member, upper, lower, value) \
+private: \
+	std::pair<bool, glm::type> lower##member = {false, glm::type(value)}; \
+public: \
+	DEFINE_GETTER(, type, upper##member); \
+	DEFINE_SETTER(, type, member, upper); \
+	DEFINE_DIRTTER(, upper##member);
+
+#define IMPLEMENT_MEMBER(type, member, upper, lower, opposite) \
+	DEFINE_GETTER(BaseTransform::, type, upper##member) \
+	IMPLEMENT_GETTER(upper##member, lower##member) \
+	DEFINE_SETTER(BaseTransform::, type, member, upper) \
+	IMPLEMENT_SETTER(member, lower) \
+	DEFINE_DIRTTER(BaseTransform::, upper##member) \
+	IMPLEMENT_DIRTTER(upper##member, lower##member, opposite##member)
+
+#define DEFINE_HEADER(type, member, value) \
+	DEFINE_MEMBER(type, member, Relative, relative, value) \
+	DEFINE_MEMBER(type, member, Absolute, absolute, value)
+
+#define IMPLEMENT_SOURCE(type, member, value) \
+	IMPLEMENT_MEMBER(type, member, Relative, relative, Absolute) \
+	IMPLEMENT_MEMBER(type, member, Absolute, absolute, Relative)
+
 class BaseTransform {
-	glm::vec3 relativePosition = glm::vec3(0);
-	glm::vec3 absolutePosition = glm::vec3(0);
+	TRANSFORM_MEMBERS(DEFINE_HEADER)
 
-	glm::vec3 relativeRotation = glm::vec3(0);
-	glm::vec3 absoluteRotation = glm::vec3(0);
-
-	glm::vec3 relativeScale = glm::vec3(1);
-	glm::vec3 absoluteScale = glm::vec3(1);
-
-	glm::vec3 relativeForward = glm::vec3(0, 0, 1);
-	glm::vec3 absoluteForward = glm::vec3(0, 0, 1);
-
-	glm::vec3 relativeUp = glm::vec3(0, 1, 0);
-	glm::vec3 absoluteUp = glm::vec3(0, 1, 0);
-
-	glm::vec3 relativeRight = glm::vec3(1, 0, 0);
-	glm::vec3 absoluteRight = glm::vec3(1, 0, 0);
-
-	glm::mat4x4 relativeTransform = glm::mat4x4(1);
-	glm::mat4x4 absoluteTransform = glm::mat4x4(1);
-
-	const SceneObject* _owner = nullptr;
-
-	void UpdateAbsolutePosition();
-	void UpdateAbsoluteRotation();
-	void UpdateAbsoluteScale();
+private:
+	SceneObject* _owner = nullptr;
 
 	void UpdateRelativePosition();
+	void UpdateAbsolutePosition();
+
 	void UpdateRelativeRotation();
+	void UpdateAbsoluteRotation();
+
 	void UpdateRelativeScale();
+	void UpdateAbsoluteScale();
+
+	void UpdateRelativeRight();
+	void UpdateAbsoluteRight();
+
+	void UpdateRelativeUp();
+	void UpdateAbsoluteUp();
+
+	void UpdateRelativeForward();
+	void UpdateAbsoluteForward();
 
 	void UpdateRelativeTransform();
 	void UpdateAbsoluteTransform();
 
 public:
-	[[nodiscard]] glm::vec3 GetRelativePosition() const;
-	[[nodiscard]] glm::vec3 GetAbsolutePosition() const;
-
-	[[nodiscard]] glm::vec3 GetRelativeRotation() const;
-	[[nodiscard]] glm::vec3 GetAbsoluteRotation() const;
-
-	[[nodiscard]] glm::vec3 GetRelativeScale() const;
-	[[nodiscard]] glm::vec3 GetAbsoluteScale() const;
-
-	[[nodiscard]] glm::vec3 GetRelativeForward() const;
-	[[nodiscard]] glm::vec3 GetAbsoluteForward() const;
-
-	[[nodiscard]] glm::vec3 GetRelativeUp() const;
-	[[nodiscard]] glm::vec3 GetAbsoluteUp() const;
-
-	[[nodiscard]] glm::vec3 GetRelativeRight() const;
-	[[nodiscard]] glm::vec3 GetAbsoluteRight() const;
-
-	[[nodiscard]] glm::mat4x4 GetRelativeTransform() const;
-	[[nodiscard]] glm::mat4x4 GetAbsoluteTransform() const;
-
-	void SetRelativePosition(const glm::vec3& position);
-	void SetAbsolutePosition(const glm::vec3& position);
-
-	void SetRelativeRotation(const glm::vec3& rotation);
-	void SetAbsoluteRotation(const glm::vec3& rotation);
-
-	void SetRelativeScale(const glm::vec3& scale);
-	void SetAbsoluteScale(const glm::vec3& scale);
-
-	void RegisterOwner(const SceneObject* owner) {
-		_owner = owner;
+	void RegisterOwner(SceneObject* other) {
+		_owner = other;
 	}
 };
