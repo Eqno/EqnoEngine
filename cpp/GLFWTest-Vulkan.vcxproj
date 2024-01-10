@@ -240,7 +240,7 @@
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;shaderc_shared.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)Engine\RHI\Vulkan\deps\assimp-5.3.1\bin\Release\" "$(OutDir)" /a /F /I /Y /C</Command>
+      <Command>xcopy "$(SolutionDir)Engine\RHI\Vulkan\deps\assimp-5.3.1\binaries\" "$(OutDir)" /a /F /I /Y /C</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
