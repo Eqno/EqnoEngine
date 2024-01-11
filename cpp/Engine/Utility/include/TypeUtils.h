@@ -1,5 +1,10 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -38,8 +43,20 @@ struct MaterialData {
 	std::vector<std::string> params;
 };
 
+struct UniformData {
+	glm::mat4x4 modelMatrix;
+	glm::mat4x4 viewMatrix;
+	glm::mat4x4 projMatrix;
+};
+
+struct StateData {
+	bool alive;
+};
+
 struct MeshData {
 	std::string name;
+	StateData state;
+	UniformData uniform;
 	MaterialData material;
 	std::vector<uint32_t> indices;
 	std::vector<VertexData> vertices;

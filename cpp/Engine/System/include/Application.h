@@ -1,34 +1,34 @@
 #pragma once
 
-#include "BaseObject.h"
-#include "GraphicsInterface.h"
-#include "Engine/Scene/include/BaseScene.h"
-#include "Engine/Utility/include/JsonUtils.h"
+#include <Engine/System/include/BaseObject.h>
+#include <Engine/Utility/include/JsonUtils.h>
 
-class Application final: public BaseObject {
-	BaseScene* scene = nullptr;
-	GraphicsInterface* graphics = nullptr;
+#include <ranges>
 
-	void CreateGraphics();
-	void CreateLauncherScene();
+class BaseScene;
+class GraphicsInterface;
 
-	void CreateWindow() const;
-	void LaunchScene();
-	void TerminateScene() const;
+class Application final : public BaseObject {
+  BaseScene* scene = nullptr;
+  GraphicsInterface* graphics = nullptr;
 
-public:
-	explicit
-	Application(const std::string& root, const std::string& file) : BaseObject(
-		root, file) {
-		OnCreate();
-	}
+  void CreateGraphics();
+  void CreateLauncherScene();
 
-	~Application() override {
-		OnDestroy();
-	}
+  void CreateWindow() const;
+  void LaunchScene();
+  void TerminateScene() const;
 
-	void OnCreate() override;
-	void OnDestroy() override;
+ public:
+  explicit Application(const std::string& root, const std::string& file)
+      : BaseObject(nullptr, root, file) {}
+  ~Application() override {}
+  void TriggerOnUpdate();
+  void RunApplication();
 
-	void RunApplication();
+  void OnCreate() override;
+  void OnStart() override;
+  void OnUpdate() override;
+  void OnStop() override;
+  void OnDestroy() override;
 };

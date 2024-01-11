@@ -1,44 +1,49 @@
 #pragma once
 
+#include <Engine/System/include/GraphicsInterface.h>
+
 #include "depth.h"
 #include "device.h"
+#include "draw.h"
 #include "instance.h"
 #include "render.h"
 #include "swapchain.h"
 #include "validation.h"
 #include "window.h"
-#include "draw.h"
 
-#include "Engine/System/include/GraphicsInterface.h"
+class Vulkan final : public GraphicsInterface {
+  Depth depth;
+  Device device;
+  Window window;
+  Render render;
+  Instance instance;
+  SwapChain swapChain;
+  Validation validation;
+  std::unordered_map<std::string, Draw*> draws;
 
-class Vulkan final: public GraphicsInterface {
-	Depth depth;
-	Device device;
-	Window window;
-	Render render;
-	Instance instance;
-	SwapChain swapChain;
-	Validation validation;
-	std::unordered_map<std::string, Draw*> draws;
+ public:
+  template <typename... Args>
+  explicit Vulkan(const Args&... args) : GraphicsInterface(args...) {}
+  ~Vulkan() override = default;
 
-public:
-	Draw* GetDrawByShader(const std::string& shaderPath) {
-		if (!draws.contains(shaderPath)) {
-			draws[shaderPath] = new Draw(device, shaderPath,
-				render.GetRenderPass());
-		}
-		return draws[shaderPath];
-	}
+  void CreateWindow(const std::string& title) override;
+  void InitGraphics() override;
+  void RendererLoop() override;
+  void CleanupGraphics() override;
 
-	explicit Vulkan(const std::string& root,
-		const std::string& file) : GraphicsInterface(root, file) {}
+  Draw* GetDrawByShader(const std::string& shaderPath) {
+    if (!draws.contains(shaderPath)) {
+      draws[shaderPath] = new Draw(device, shaderPath, render.GetRenderPass());
+    }
+    return draws[shaderPath];
+  }
 
-	~Vulkan() override = default;
+  void ParseMeshDatas(std::vector<MeshData*>& meshDatas) override;
+  float GetViewportAspect() override;
 
-	void CreateWindow(const std::string& title) override;
-	void InitGraphics() override;
-	void RendererLoop() override;
-	void CleanupGraphics() override;
-
-	void ParseMeshDatas(std::vector<MeshData*>& meshDatas) override;
+  void OnCreate() override {}
+  void OnStart() override {}
+  void OnUpdate() override {}
+  void OnStop() override {}
+  void OnDestroy() override {}
 };

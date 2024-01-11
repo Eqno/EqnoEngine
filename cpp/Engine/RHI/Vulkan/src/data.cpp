@@ -7,11 +7,11 @@
 #include "Engine/RHI/Vulkan/include/utils.h"
 
 void Data::Create(const std::string& objPath) {
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warn, err;
-
+	// tinyobj::attrib_t attrib;
+	// std::vector<tinyobj::shape_t> shapes;
+	// std::vector<tinyobj::material_t> materials;
+	// std::string warn, err;
+	// 
 	// if (!LoadObj(&attrib, &shapes, &materials, &warn, &err, objPath.c_str())) {
 	// 	throw std::runtime_error(warn + err);
 	// }

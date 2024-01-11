@@ -1,69 +1,69 @@
 #pragma once
 
+#include "Engine/Utility/include/TypeUtils.h"
 #include "buffer.h"
 #include "data.h"
-#include "uniform.h"
 #include "texture.h"
-#include "Engine/Utility/include/TypeUtils.h"
+#include "uniform.h"
 
 class Mesh {
-	Data data;
-	Buffer buffer;
-	Descriptor descriptor;
-	std::vector<Texture> textures;
+  const MeshData* _meshData;
 
-	void ParseTextures(const Device& device,
-		const Render& render,
-		const MeshData* inData);
+  Data data;
+  Buffer buffer;
+  Descriptor descriptor;
+  std::vector<Texture> textures;
 
-	void ParseVertexAndIndex(const MeshData* inData);
+  void ParseTextures(const Device& device, const Render& render);
 
-	void ParseBufferAndDescriptor(const Device& device,
-		const Render& render,
-		const VkDescriptorSetLayout& descriptorSetLayout);
+  void ParseVertexAndIndex();
 
-public:
-	[[nodiscard]] const VkBuffer& GetIndexBuffer() const {
-		return buffer.GetIndexBuffer();
-	}
+  void ParseBufferAndDescriptor(
+      const Device& device, const Render& render,
+      const VkDescriptorSetLayout& descriptorSetLayout);
 
-	[[nodiscard]] const VkBuffer& GetVertexBuffer() const {
-		return buffer.GetVertexBuffer();
-	}
+ public:
+  [[nodiscard]] const VkBuffer& GetIndexBuffer() const {
+    return buffer.GetIndexBuffer();
+  }
 
-	[[nodiscard]] const std::vector<uint32_t>& GetIndices() const {
-		return data.GetIndices();
-	}
+  [[nodiscard]] const VkBuffer& GetVertexBuffer() const {
+    return buffer.GetVertexBuffer();
+  }
 
-	[[nodiscard]] const std::vector<Vertex>& GetVertices() const {
-		return data.GetVertices();
-	}
+  [[nodiscard]] const std::vector<uint32_t>& GetIndices() const {
+    return data.GetIndices();
+  }
 
-	[[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
-		return descriptor.GetDescriptorSets();
-	}
+  [[nodiscard]] const std::vector<Vertex>& GetVertices() const {
+    return data.GetVertices();
+  }
 
-	[[nodiscard]] const VkDescriptorSet& GetDescriptorSetByIndex(
-		const uint32_t index) const {
-		return descriptor.GetDescriptorSetByIndex(index);
-	}
+  [[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
+    return descriptor.GetDescriptorSets();
+  }
 
-	void UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
-		const uint32_t currentImage) const {
-		descriptor.UpdateUniformBuffer(swapChainExtent, currentImage);
-	}
+  [[nodiscard]] const VkDescriptorSet& GetDescriptorSetByIndex(
+      const uint32_t index) const {
+    return descriptor.GetDescriptorSetByIndex(index);
+  }
 
-	Mesh(const Device& device,
-		const Render& render,
-		const MeshData* data,
-		const VkDescriptorSetLayout& descriptorSetLayout) {
-		Create(device, render, data, descriptorSetLayout);
-	}
+  void UpdateUniformBuffer(const uint32_t currentImage) const {
+    descriptor.UpdateUniformBuffer(currentImage);
+  }
 
-	void Create(const Device& device,
-		const Render& render,
-		const MeshData* inData,
-		const VkDescriptorSetLayout& descriptorSetLayout);
+  Mesh(const Device& device, const Render& render, const MeshData* data,
+       const VkDescriptorSetLayout& descriptorSetLayout) {
+    Create(device, render, data, descriptorSetLayout);
+  }
 
-	void Destroy(const VkDevice& device, const Render& render) const;
+  void Create(const Device& device, const Render& render,
+              const MeshData* inData,
+              const VkDescriptorSetLayout& descriptorSetLayout);
+
+  void Destroy(const VkDevice& device, const Render& render) const;
+
+  const glm::mat4x4* GetModelMatrix();
+  const glm::mat4x4* GetViewMatrix();
+  const glm::mat4x4* GetProjMatrix();
 };

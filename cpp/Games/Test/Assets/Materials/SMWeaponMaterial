@@ -1,5 +1,6 @@
 {
     "Name": "SMWeaponMaterial",
+    
     "Shader": "Assets/Shaders/SMWeaponShader/glsl",
     "Params": [
         {

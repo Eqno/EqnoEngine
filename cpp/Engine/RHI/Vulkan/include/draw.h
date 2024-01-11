@@ -9,7 +9,7 @@ class Render;
 class Draw {
 	Shader shader;
 	Pipeline pipeline;
-	std::vector<Mesh> meshes;
+	std::vector<Mesh> meshes; ERROR REASON
 
 public:
 	[[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {

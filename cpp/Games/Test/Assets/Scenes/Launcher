@@ -1,5 +1,6 @@
 {
     "Name": "TestScene",
+    
     "SceneObjects": {
         "Type": "BaseModel",
         "Path": "Assets/Models/viking_room/viking_room",

@@ -1,16 +1,13 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <vector>
 #include <vulkan/vulkan_core.h>
+#include "Engine/Utility/include/TypeUtils.h"
 
+class Mesh;
 class Device;
 class Render;
 class Texture;
+class Descriptor;
 
 using UniformMapped = std::vector<void*>;
 using UniformBuffers = std::vector<VkBuffer>;
@@ -24,11 +21,16 @@ struct UniformBufferObject {
 };
 
 class UniformBuffer {
+	Descriptor* _owner;
+
 	UniformBuffers uniformBuffers;
 	UniformMemories uniformBuffersMemory;
 	UniformMapped uniformBuffersMapped;
 
 public:
+	void RegisterOwner(Descriptor* other) {
+		_owner = other;
+	}
 	explicit UniformBuffer() = default;
 
 	[[nodiscard]] const UniformBuffers& GetUniformBuffers() const {
@@ -42,13 +44,14 @@ public:
 
 	void CreateUniformBuffers(const Device& device, const Render& render);
 
-	void UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
-		uint32_t currentImage) const;
+	void UpdateUniformBuffer(uint32_t currentImage) const;
 
 	void Destroy(const VkDevice& device, const Render& render) const;
 };
 
 class Descriptor {
+	Mesh* _owner;
+
 	UniformBuffer uniformBuffer {};
 	VkDescriptorPool descriptorPool {};
 	DescriptorSets descriptorSets {};
@@ -62,17 +65,17 @@ class Descriptor {
 		const Render& render,
 		size_t textureNum);
 
+	void CreateUniformBuffer(const Device& device, const Render& render);
 	void DestroyUniformBuffers(const VkDevice& device,
 		const Render& render) const;
 
 public:
-	void CreateUniformBuffer(const Device& device, const Render& render) {
-		uniformBuffer.CreateUniformBuffers(device, render);
+	void RegisterOwner(Mesh* other) {
+		_owner = other;
 	}
 
-	void UpdateUniformBuffer(const VkExtent2D& swapChainExtent,
-		const uint32_t currentImage) const {
-		uniformBuffer.UpdateUniformBuffer(swapChainExtent, currentImage);
+	void UpdateUniformBuffer(const uint32_t currentImage) const {
+		uniformBuffer.UpdateUniformBuffer(currentImage);
 	}
 
 	[[nodiscard]] const UniformBuffer& GetUniformBuffer() const {
@@ -102,4 +105,9 @@ public:
 		const VkDescriptorSetLayout& descriptorSetLayout,
 		const std::vector<Texture>& textures);
 	void Destroy(const VkDevice& device, const Render& render) const;
+
+	// Update uniform buffer data
+	const glm::mat4x4* GetModelMatrix();
+	const glm::mat4x4* GetViewMatrix();
+	const glm::mat4x4* GetProjMatrix();
 };

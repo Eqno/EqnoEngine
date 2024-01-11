@@ -1,7 +1,7 @@
 #include "../include/BaseObject.h"
 
-std::unordered_map<std::string, std::vector<BaseObject*>>
-BaseObject::BaseObjects;
+std::unordered_map<std::string, std::unordered_set<BaseObject*>>
+    BaseObject::_BaseObjects, BaseObject::BaseObjects;
 
 void BaseObject::OnCreate() {}
 void BaseObject::OnStart() {}

@@ -78,4 +78,9 @@ public:
 		const Window& window);
 
 	void CreateSwapChain(const Device& device, const Window& window);
+
+	float GetViewportAspect() {
+		return static_cast<float>(extent.width)
+			/ static_cast<float>(extent.height);
+	}
 };

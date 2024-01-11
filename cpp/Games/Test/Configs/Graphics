@@ -1,5 +1,6 @@
 {
-    "Name": "Vulkan",
+    "Name": "GraphicsAPI",
+    
     "RenderHardwareInterface": "Vulkan",
     "DefaultWindowWidth": 1280,
     "DefaultWindowHeight": 720,
