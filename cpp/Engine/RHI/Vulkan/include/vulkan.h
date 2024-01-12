@@ -11,7 +11,7 @@
 #include "validation.h"
 #include "window.h"
 
-class Vulkan final : public GraphicsInterface {
+class Vulkan final : public GraphicsInterface, public Base {
   Depth depth;
   Device device;
   Window window;
@@ -31,19 +31,16 @@ class Vulkan final : public GraphicsInterface {
   void RendererLoop() override;
   void CleanupGraphics() override;
 
-  Draw* GetDrawByShader(const std::string& shaderPath) {
-    if (!draws.contains(shaderPath)) {
-      draws[shaderPath] = new Draw(device, shaderPath, render.GetRenderPass());
-    }
-    return draws[shaderPath];
-  }
-
+  Draw* GetDrawByShader(const std::string& shaderPath);
   void ParseMeshDatas(std::vector<MeshData*>& meshDatas) override;
   float GetViewportAspect() override;
 
-  void OnCreate() override {}
-  void OnStart() override {}
-  void OnUpdate() override {}
-  void OnStop() override {}
-  void OnDestroy() override {}
+  virtual void OnCreate() override {
+    RegisterMember(depth, device, window, render, instance, swapChain,
+                   validation);
+  }
+  virtual void OnStart() override {}
+  virtual void OnUpdate() override {}
+  virtual void OnStop() override {}
+  virtual void OnDestroy() override {}
 };

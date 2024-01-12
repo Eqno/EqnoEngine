@@ -2,16 +2,16 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include "base.h"
+
 class Validation;
 
-class Instance {
-	VkInstance instance = nullptr;
+class Instance : public Base {
+  VkInstance instance = nullptr;
 
-public:
-	[[nodiscard]] const VkInstance& GetVkInstance() const {
-		return instance;
-	}
+ public:
+  [[nodiscard]] const VkInstance& GetVkInstance() const { return instance; }
 
-	void CreateInstance(const Validation& validation);
-	void DestroyInstance() const;
+  void CreateInstance(const Validation& validation);
+  void DestroyInstance() const;
 };

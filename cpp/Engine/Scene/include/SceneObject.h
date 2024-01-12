@@ -30,5 +30,5 @@ class SceneObject : public BaseObject {
 
   [[nodiscard]] BaseTransform& GetTransform() { return transform; }
 
-  void OnCreate() override;
+  virtual void OnCreate() override;
 };

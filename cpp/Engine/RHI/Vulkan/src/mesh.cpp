@@ -1,6 +1,6 @@
 #include "../include/mesh.h"
 
-void Mesh::Create(const Device& device, const Render& render,
+void Mesh::CreateMesh(const Device& device, const Render& render,
                   const MeshData* inData,
                   const VkDescriptorSetLayout& descriptorSetLayout) {
   _meshData = inData;
@@ -10,11 +10,11 @@ void Mesh::Create(const Device& device, const Render& render,
   ParseBufferAndDescriptor(device, render, descriptorSetLayout);
 }
 
-void Mesh::Destroy(const VkDevice& device, const Render& render) const {
-  descriptor.Destroy(device, render);
-  buffer.Destroy(device);
+void Mesh::DestroyMesh(const VkDevice& device, const Render& render) const {
+  descriptor.DestroyDesciptor(device, render);
+  buffer.DestroyBuffers(device);
   for (const Texture& texture : textures) {
-    texture.Destroy(device);
+    texture.DestroyTexture(device);
   }
 }
 
@@ -31,15 +31,14 @@ void Mesh::ParseVertexAndIndex() {
   for (const auto& vert : _meshData->vertices) {
     vertices.emplace_back(vert);
   }
-  data.Create(_meshData->indices, vertices);
+  data.CreateData(_meshData->indices, vertices);
 }
 
 void Mesh::ParseBufferAndDescriptor(
     const Device& device, const Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout) {
-  descriptor.RegisterOwner(this);
-  buffer.Create(device, data.GetVertices(), data.GetIndices(), render);
-  descriptor.Create(device, render, descriptorSetLayout, textures);
+  buffer.CreateBuffers(device, data.GetVertices(), data.GetIndices(), render);
+  descriptor.CreateDescriptor(device, render, descriptorSetLayout, textures);
 }
 
 const glm::mat4x4* Mesh::GetModelMatrix() {

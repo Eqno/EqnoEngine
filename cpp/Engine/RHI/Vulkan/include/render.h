@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "base.h"
 #include "config.h"
 #include "uniform.h"
 #include "window.h"
@@ -12,7 +13,7 @@ class Depth;
 class Device;
 class SwapChain;
 
-class Render {
+class Render : public Base {
   uint32_t currentFrame = 0;
   std::vector<VkFence> inFlightFences;
   int maxFramesInFlight = VulkanConfig::MAX_FRAMES_IN_FLIGHT;
@@ -50,7 +51,7 @@ class Render {
                  const std::unordered_map<std::string, Draw*>& draws,
                  Depth& depth, Window& window, SwapChain& swapChain);
 
-  void Destroy(const VkDevice& device) const;
+  void DestroyRenderResources(const VkDevice& device) const;
 
   [[nodiscard]] const VkRenderPass& GetRenderPass() const { return renderPass; }
 

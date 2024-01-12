@@ -269,7 +269,7 @@ void Texture::CopyBufferToImage(const Device& device,
 	render.EndSingleTimeCommands(device, commandBuffer);
 }
 
-void Texture::Create(const Device& device,
+void Texture::CreateTexture(const Device& device,
 	const Render& render,
 	const int width,
 	const int height,
@@ -280,7 +280,7 @@ void Texture::Create(const Device& device,
 	CreateTextureSampler(device);
 }
 
-void Texture::Destroy(const VkDevice& device) const {
+void Texture::DestroyTexture(const VkDevice& device) const {
 	vkDestroySampler(device, textureSampler, nullptr);
 	vkDestroyImageView(device, textureImageView, nullptr);
 	vkDestroyImage(device, textureImage, nullptr);

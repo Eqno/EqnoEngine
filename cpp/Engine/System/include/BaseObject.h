@@ -34,8 +34,8 @@ class BaseObject {
   template <
       typename T, typename... Args,
       typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type = 0>
-  T* Create(const Args&... args) {
-    T* ret = new T(this, args...);
+  T* Create(Args&&... args) {
+    T* ret = new T(this, std::forward<Args>(args)...);
     _BaseObjects[ret->_name].insert(ret);
     ret->OnCreate();
     return ret;

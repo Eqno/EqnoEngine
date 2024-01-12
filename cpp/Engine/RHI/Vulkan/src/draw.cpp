@@ -4,19 +4,24 @@
 
 #include "../include/config.h"
 
-void Draw::Create(const Device& device, const std::string& shaderPath,
-                  const VkRenderPass& renderPass) {
-  pipeline.Create(device, shader, shaderPath, renderPass);
+void Draw::CreateDrawResource(const Device& device,
+                              const std::string& shaderPath,
+                              const VkRenderPass& renderPass) {
+  pipeline.CreatePipeline(device, shader, shaderPath, renderPass);
 }
 
-void Draw::Load(const Device& device, const Render& render,
-                const MeshData* data) {
-  meshes.emplace_back(device, render, data, pipeline.GetDescriptorSetLayout());
+void Draw::LoadDrawResource(const Device& device, const Render& render,
+                            const MeshData* data) {
+  Mesh* mesh =
+      Create<Mesh>(device, render, data, pipeline.GetDescriptorSetLayout());
+  meshes.emplace_back(mesh);
 }
 
-void Draw::Destroy(const VkDevice& device, const Render& render) const {
-  pipeline.Destroy(device);
-  for (const Mesh& mesh : meshes) {
-    mesh.Destroy(device, render);
+void Draw::DestroyDrawResource(const VkDevice& device,
+                               const Render& render) const {
+  pipeline.DestroyPipeline(device);
+  for (Mesh* mesh : meshes) {
+    mesh->DestroyMesh(device, render);
+    mesh->Destroy();
   }
 }

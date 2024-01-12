@@ -2,42 +2,42 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 
 #include <utility>
 #include <xstring>
-#include <vulkan/vulkan_core.h>
+
+#include "base.h"
 
 struct GLFWwindow;
 
-class Window {
-	VkSurfaceKHR surface {};
-	bool frameBufferResized = false;
+class Window : public Base {
+  VkSurfaceKHR surface{};
+  bool frameBufferResized = false;
 
-public:
-	GLFWwindow* window = nullptr;
+ public:
+  GLFWwindow* window = nullptr;
 
-	[[nodiscard]] const VkSurfaceKHR& GetSurface() const {
-		return surface;
-	}
+  [[nodiscard]] const VkSurfaceKHR& GetSurface() const { return surface; }
 
-	[[nodiscard]] std::pair<int, int> GetFrameBufferSize() const;
+  [[nodiscard]] std::pair<int, int> GetFrameBufferSize() const;
 
-	[[nodiscard]] const bool& GetFrameBufferResized() const {
-		return frameBufferResized;
-	}
+  [[nodiscard]] const bool& GetFrameBufferResized() const {
+    return frameBufferResized;
+  }
 
-	[[nodiscard]] static std::pair<const char**, uint32_t>
-	GetRequiredExtensions();
+  [[nodiscard]] static std::pair<const char**, uint32_t>
+  GetRequiredExtensions();
 
-	void SetFrameBufferResized(const bool resized) {
-		frameBufferResized = resized;
-	}
+  void SetFrameBufferResized(const bool resized) {
+    frameBufferResized = resized;
+  }
 
-	void CreateWindow(int width, int height, const std::string& title);
+  void CreateWindow(int width, int height, const std::string& title);
 
-	void CreateSurface(const VkInstance& instance);
-	void DestroySurface(const VkInstance& instance) const;
-	void DestroyWindow() const;
+  void CreateSurface(const VkInstance& instance);
+  void DestroySurface(const VkInstance& instance) const;
+  void DestroyWindow() const;
 
-	void OnRecreateSwapChain() const;
+  void OnRecreateSwapChain() const;
 };

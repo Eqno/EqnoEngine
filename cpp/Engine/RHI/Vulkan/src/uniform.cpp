@@ -110,19 +110,21 @@ void Descriptor::CreateUniformBuffer(const Device& device,
 
 void Descriptor::DestroyUniformBuffers(const VkDevice& device,
                                        const Render& render) const {
-  uniformBuffer.Destroy(device, render);
+  uniformBuffer.DestroyUniformBuffer(device, render);
 }
 
-void Descriptor::Create(const Device& device, const Render& render,
-                        const VkDescriptorSetLayout& descriptorSetLayout,
-                        const std::vector<Texture>& textures) {
+void Descriptor::CreateDescriptor(
+    const Device& device, const Render& render,
+    const VkDescriptorSetLayout& descriptorSetLayout,
+    const std::vector<Texture>& textures) {
   CreateUniformBuffer(device, render);
   CreateDescriptorPool(device.GetLogical(), render, textures.size());
   CreateDescriptorSets(device.GetLogical(), render, descriptorSetLayout,
                        textures);
 }
 
-void Descriptor::Destroy(const VkDevice& device, const Render& render) const {
+void Descriptor::DestroyDesciptor(const VkDevice& device,
+                                  const Render& render) const {
   vkDestroyDescriptorPool(device, descriptorPool, nullptr);
   DestroyUniformBuffers(device, render);
 }
@@ -152,16 +154,16 @@ void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) const {
       std::chrono::duration<float>(currentTime - startTime).count();
 
   UniformBufferObject ubo{
-      .model = *_owner->GetModelMatrix(),
-      .view = *_owner->GetViewMatrix(),
-      .proj = *_owner->GetProjMatrix(),
+      .model = *dynamic_cast<Descriptor*>(owner)->GetModelMatrix(),
+      .view = *dynamic_cast<Descriptor*>(owner)->GetViewMatrix(),
+      .proj = *dynamic_cast<Descriptor*>(owner)->GetProjMatrix(),
   };
   ubo.proj[1][1] *= -1;
   memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
 
-void UniformBuffer::Destroy(const VkDevice& device,
-                            const Render& render) const {
+void UniformBuffer::DestroyUniformBuffer(const VkDevice& device,
+                                         const Render& render) const {
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     vkDestroyBuffer(device, uniformBuffers[i], nullptr);
     vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
@@ -170,11 +172,11 @@ void UniformBuffer::Destroy(const VkDevice& device,
 
 // Update uniform buffer data
 const glm::mat4x4* Descriptor::GetModelMatrix() {
-  return _owner->GetModelMatrix();
+  return dynamic_cast<Mesh*>(owner)->GetModelMatrix();
 }
 const glm::mat4x4* Descriptor::GetViewMatrix() {
-  return _owner->GetViewMatrix();
+  return dynamic_cast<Mesh*>(owner)->GetViewMatrix();
 }
 const glm::mat4x4* Descriptor::GetProjMatrix() {
-  return _owner->GetProjMatrix();
+  return dynamic_cast<Mesh*>(owner)->GetProjMatrix();
 }

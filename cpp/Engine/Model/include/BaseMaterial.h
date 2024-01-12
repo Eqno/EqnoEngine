@@ -14,7 +14,7 @@ class BaseMaterial final : public BaseObject {
       : BaseObject(owner, root, file) {}
   ~BaseMaterial() override = default;
 
-  void OnCreate() override {
+  virtual void OnCreate() override {
     data.shader = JSON_CONFIG(String, "Shader");
     data.params = JsonUtils::ParseMaterialParams(GetRoot() + GetFile());
   }

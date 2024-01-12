@@ -69,6 +69,7 @@
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_truetype.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_voxel_render.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\base.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\buffer.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\config.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\data.h" />
@@ -104,6 +105,7 @@
     <ClCompile Include="Engine\Model\src\BaseTransform.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\base.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\buffer.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\data.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\depth.cpp" />

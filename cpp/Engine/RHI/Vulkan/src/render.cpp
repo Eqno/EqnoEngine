@@ -156,21 +156,21 @@ void Render::RecordCommandBuffer(
                       draw->GetGraphicsPipeline());
 
     for (const auto& mesh : draw->GetMeshes()) {
-      const VkBuffer vertexBuffers[] = {mesh.GetVertexBuffer()};
+      const VkBuffer vertexBuffers[] = {mesh->GetVertexBuffer()};
       constexpr VkDeviceSize offsets[] = {0};
       vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-      vkCmdBindIndexBuffer(commandBuffer, mesh.GetIndexBuffer(), 0,
+      vkCmdBindIndexBuffer(commandBuffer, mesh->GetIndexBuffer(), 0,
                            VK_INDEX_TYPE_UINT32);
 
       vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                               draw->GetPipelineLayout(), 0, 1,
-                              &mesh.GetDescriptorSetByIndex(currentFrame), 0,
+                              &mesh->GetDescriptorSetByIndex(currentFrame), 0,
                               nullptr);
 
       vkCmdDrawIndexed(commandBuffer,
-                       static_cast<uint32_t>(mesh.GetIndices().size()), 1, 0, 0,
-                       0);
+                       static_cast<uint32_t>(mesh->GetIndices().size()), 1, 0,
+                       0, 0);
     }
   }
   vkCmdEndRenderPass(commandBuffer);
@@ -243,9 +243,9 @@ void Render::DrawFrame(const Device& device,
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error("failed to acquire swap chain image!");
   }
-  for (const Draw* draw : draws | std::views::values) {
-    for (const Mesh& mesh : draw->GetMeshes()) {
-      mesh.UpdateUniformBuffer(currentFrame);
+  for (Draw* draw : draws | std::views::values) {
+    for (Mesh* mesh : draw->GetMeshes()) {
+      mesh->UpdateUniformBuffer(currentFrame);
     }
   }
   vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
@@ -340,7 +340,7 @@ void Render::DestroySyncObjects(const VkDevice& device) const {
   }
 }
 
-void Render::Destroy(const VkDevice& device) const {
+void Render::DestroyRenderResources(const VkDevice& device) const {
   DestroyRenderPass(device);
   DestroySyncObjects(device);
   DestroyCommandPool(device);

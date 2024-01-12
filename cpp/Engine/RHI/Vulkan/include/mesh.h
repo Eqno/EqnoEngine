@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Engine/Utility/include/TypeUtils.h"
+#include "base.h"
 #include "buffer.h"
 #include "data.h"
 #include "texture.h"
 #include "uniform.h"
 
-class Mesh {
+class Mesh : public Base {
   const MeshData* _meshData;
 
   Data data;
@@ -52,16 +53,20 @@ class Mesh {
     descriptor.UpdateUniformBuffer(currentImage);
   }
 
-  Mesh(const Device& device, const Render& render, const MeshData* data,
-       const VkDescriptorSetLayout& descriptorSetLayout) {
-    Create(device, render, data, descriptorSetLayout);
+  template <typename... Args>
+  explicit Mesh(Base* owner, Args&&... args) : Base(owner) {
+    CreateMesh(std::forward<Args>(args)...);
+  }
+  ~Mesh() override = default;
+  virtual void TriggerRegisterMember() override {
+    RegisterMember(data, buffer, descriptor);
   }
 
-  void Create(const Device& device, const Render& render,
-              const MeshData* inData,
-              const VkDescriptorSetLayout& descriptorSetLayout);
+  void CreateMesh(const Device& device, const Render& render,
+                  const MeshData* inData,
+                  const VkDescriptorSetLayout& descriptorSetLayout);
 
-  void Destroy(const VkDevice& device, const Render& render) const;
+  void DestroyMesh(const VkDevice& device, const Render& render) const;
 
   const glm::mat4x4* GetModelMatrix();
   const glm::mat4x4* GetViewMatrix();

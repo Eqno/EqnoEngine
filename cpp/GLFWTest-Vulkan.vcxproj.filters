@@ -348,6 +348,9 @@
     <ClInclude Include="Engine\Model\include\BaseTransform.h">
       <Filter>Engine\Model\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\base.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -445,6 +448,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Model\src\BaseTransform.cpp">
       <Filter>Engine\Model\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\RHI\Vulkan\src\base.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

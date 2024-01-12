@@ -26,9 +26,9 @@ class Application final : public BaseObject {
   void TriggerOnUpdate();
   void RunApplication();
 
-  void OnCreate() override;
-  void OnStart() override;
-  void OnUpdate() override;
-  void OnStop() override;
-  void OnDestroy() override;
+  virtual void OnCreate() override;
+  virtual void OnStart() override;
+  virtual void OnUpdate() override;
+  virtual void OnStop() override;
+  virtual void OnDestroy() override;
 };

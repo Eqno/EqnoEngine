@@ -115,7 +115,7 @@ void Buffer::CreateIndexBuffer(const Device& device,
 	vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
 }
 
-void Buffer::Create(const Device& device,
+void Buffer::CreateBuffers(const Device& device,
 	const std::vector<Vertex>& vertices,
 	const std::vector<uint32_t>& indices,
 	const Render& render) {
@@ -123,7 +123,7 @@ void Buffer::Create(const Device& device,
 	CreateIndexBuffer(device, indices, render);
 }
 
-void Buffer::Destroy(const VkDevice& device) const {
+void Buffer::DestroyBuffers(const VkDevice& device) const {
 	vkDestroyBuffer(device, indexBuffer, nullptr);
 	vkFreeMemory(device, indexBufferMemory, nullptr);
 

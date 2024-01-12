@@ -18,10 +18,9 @@ class BaseModel final : public SceneObject {
       : SceneObject(owner, root, file, parent), graphics(graphics) {}
   ~BaseModel() override = default;
 
-  void OnCreate() override;
-  void OnUpdate() override;
-  void OnDestroy() override;
-
-  void OnStart() override {}
-  void OnStop() override {}
+  virtual void OnCreate() override;
+  virtual void OnUpdate() override;
+  virtual void OnDestroy() override;
+  virtual void OnStart() override {}
+  virtual void OnStop() override {}
 };

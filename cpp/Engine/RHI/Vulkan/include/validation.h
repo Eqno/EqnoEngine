@@ -3,48 +3,45 @@
 #include <vulkan/vulkan_core.h>
 
 #include "Engine/Utility/include/TypeUtils.h"
+#include "base.h"
 
 using MessengerCreateInfo = VkDebugUtilsMessengerCreateInfoEXT;
 
-class Validation {
-	bool enabled;
-	CStrings layers;
-	MessengerCreateInfo messengerCreateInfo;
+class Validation : public Base {
+  bool enabled;
+  CStrings layers;
+  MessengerCreateInfo messengerCreateInfo;
 
-	VkDebugUtilsMessengerEXT debugMessenger {};
+  VkDebugUtilsMessengerEXT debugMessenger{};
 
-	static void DestroyMessengerEXT(const VkInstance& instance,
-		const VkDebugUtilsMessengerEXT& debugMessenger,
-		const VkAllocationCallbacks* pAllocator);
+  static void DestroyMessengerEXT(
+      const VkInstance& instance,
+      const VkDebugUtilsMessengerEXT& debugMessenger,
+      const VkAllocationCallbacks* pAllocator);
 
-	VkResult CreateMessengerEXT(const VkInstance& instance,
-		const VkAllocationCallbacks* pAllocator,
-		VkDebugUtilsMessengerEXT* pDebugMessenger) const;
+  VkResult CreateMessengerEXT(const VkInstance& instance,
+                              const VkAllocationCallbacks* pAllocator,
+                              VkDebugUtilsMessengerEXT* pDebugMessenger) const;
 
-public:
-	[[nodiscard]] const bool& GetEnabled() const {
-		return enabled;
-	}
+ public:
+  [[nodiscard]] const bool& GetEnabled() const { return enabled; }
 
-	[[nodiscard]] const CStrings& GetLayers() const {
-		return layers;
-	}
+  [[nodiscard]] const CStrings& GetLayers() const { return layers; }
 
-	Validation();
-	Validation(bool enabled,
-		CStrings layers,
-		const MessengerCreateInfo& messengerInfo);
+  Validation();
+  Validation(bool enabled, CStrings layers,
+             const MessengerCreateInfo& messengerInfo);
 
-	[[nodiscard]] const MessengerCreateInfo& GetMessengerCreateInfo() const {
-		return messengerCreateInfo;
-	}
+  [[nodiscard]] const MessengerCreateInfo& GetMessengerCreateInfo() const {
+    return messengerCreateInfo;
+  }
 
-	[[nodiscard]] const VkDebugUtilsMessengerEXT& GetDebugMessenger() const {
-		return debugMessenger;
-	}
+  [[nodiscard]] const VkDebugUtilsMessengerEXT& GetDebugMessenger() const {
+    return debugMessenger;
+  }
 
-	[[nodiscard]] bool CheckLayerSupport() const;
+  [[nodiscard]] bool CheckLayerSupport() const;
 
-	void SetupMessenger(const VkInstance& instance);
-	void DestroyMessenger(const VkInstance& instance) const;
+  void SetupMessenger(const VkInstance& instance);
+  void DestroyMessenger(const VkInstance& instance) const;
 };
