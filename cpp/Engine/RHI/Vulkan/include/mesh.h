@@ -8,7 +8,7 @@
 #include "uniform.h"
 
 class Mesh : public Base {
-  const MeshData* _meshData;
+  const MeshData* bridge;
 
   Data data;
   Buffer buffer;
@@ -68,6 +68,7 @@ class Mesh : public Base {
 
   void DestroyMesh(const VkDevice& device, const Render& render) const;
 
+  [[nodiscard]] const bool GetAlive() const { return bridge->state.alive; }
   const glm::mat4x4* GetModelMatrix();
   const glm::mat4x4* GetViewMatrix();
   const glm::mat4x4* GetProjMatrix();

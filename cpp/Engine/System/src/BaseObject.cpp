@@ -1,6 +1,6 @@
 #include "../include/BaseObject.h"
 
-std::unordered_map<std::string, std::unordered_set<BaseObject*>>
+std::unordered_map<std::string, std::list<BaseObject*>>
     BaseObject::_BaseObjects, BaseObject::BaseObjects;
 
 void BaseObject::OnCreate() {}

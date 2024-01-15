@@ -107,9 +107,9 @@ void Render::CreateCommandBuffers(const VkDevice& device) {
   }
 }
 
-void Render::RecordCommandBuffer(
-    const std::unordered_map<std::string, Draw*>& draws,
-    const SwapChain& swapChain, const uint32_t imageIndex) const {
+void Render::RecordCommandBuffer(std::unordered_map<std::string, Draw*>& draws,
+                                 const SwapChain& swapChain,
+                                 const uint32_t imageIndex) const {
   const VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
 
   constexpr VkCommandBufferBeginInfo beginInfo{
@@ -151,7 +151,7 @@ void Render::RecordCommandBuffer(
   };
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-  for (const Draw* draw : draws | std::views::values) {
+  for (Draw* draw : draws | std::views::values) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       draw->GetGraphicsPipeline());
 
@@ -182,51 +182,49 @@ void Render::RecordCommandBuffer(
 void Render::CopyCommandBuffer(const Device& device, const VkBuffer& srcBuffer,
                                const VkBuffer& dstBuffer,
                                const VkDeviceSize& size) const {
-  const VkCommandBuffer commandBuffer =
-      BeginSingleTimeCommands(device.GetLogical());
+  VkCommandBuffer commandBuffer;
+  BeginSingleTimeCommands(device.GetLogical(), &commandBuffer);
   const VkBufferCopy copyRegion{
       .size = size,
   };
   vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-  EndSingleTimeCommands(device, commandBuffer);
+  EndSingleTimeCommands(device, &commandBuffer);
 }
 
-VkCommandBuffer Render::BeginSingleTimeCommands(const VkDevice& device) const {
+void Render::BeginSingleTimeCommands(const VkDevice& device,
+                                     VkCommandBuffer* commandBuffer) const {
   const VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = commandPool,
       .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1,
   };
-  VkCommandBuffer commandBuffer{};
-  vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+  vkAllocateCommandBuffers(device, &allocInfo, commandBuffer);
 
   constexpr VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
   };
-  vkBeginCommandBuffer(commandBuffer, &beginInfo);
-  return commandBuffer;
+  vkBeginCommandBuffer(*commandBuffer, &beginInfo);
 }
 
 void Render::EndSingleTimeCommands(const Device& device,
-                                   VkCommandBuffer commandBuffer) const {
-  vkEndCommandBuffer(commandBuffer);
-
+                                   VkCommandBuffer* commandBuffer) const {
+  vkEndCommandBuffer(*commandBuffer);
   const VkSubmitInfo submitInfo{
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
       .commandBufferCount = 1,
-      .pCommandBuffers = &commandBuffer,
+      .pCommandBuffers = commandBuffer,
   };
 
   const auto& graphicsQueue = device.GetGraphicsQueue();
   vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
   vkQueueWaitIdle(graphicsQueue);
-  vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, &commandBuffer);
+  vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, commandBuffer);
 }
 
 void Render::DrawFrame(const Device& device,
-                       const std::unordered_map<std::string, Draw*>& draws,
+                       std::unordered_map<std::string, Draw*>& draws,
                        Depth& depth, Window& window, SwapChain& swapChain) {
   vkWaitForFences(device.GetLogical(), 1, &inFlightFences[currentFrame],
                   VK_TRUE, UINT64_MAX);
@@ -242,11 +240,6 @@ void Render::DrawFrame(const Device& device,
   }
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error("failed to acquire swap chain image!");
-  }
-  for (Draw* draw : draws | std::views::values) {
-    for (Mesh* mesh : draw->GetMeshes()) {
-      mesh->UpdateUniformBuffer(currentFrame);
-    }
   }
   vkResetFences(device.GetLogical(), 1, &inFlightFences[currentFrame]);
   vkResetCommandBuffer(commandBuffers[currentFrame],

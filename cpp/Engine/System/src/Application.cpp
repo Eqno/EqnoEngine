@@ -49,7 +49,7 @@ void Application::TriggerOnUpdate() {
     auto iter = val.begin();
     while (iter != val.end()) {
       if ((*iter)->_alive == true) {
-        BaseObject::BaseObjects[(*iter)->_name].insert(*iter);
+        BaseObject::BaseObjects[(*iter)->_name].emplace_back(*iter);
         (*iter)->OnStart();
       } else {
         (*iter)->OnDestroy();
@@ -63,7 +63,7 @@ void Application::TriggerOnUpdate() {
     while (iter != val.end()) {
       if ((*iter)->_alive == false) {
         (*iter)->OnStop();
-        BaseObject::_BaseObjects[(*iter)->_name].insert(*iter);
+        BaseObject::_BaseObjects[(*iter)->_name].emplace_back(*iter);
         iter = val.erase(iter);
       } else {
         (*iter)->OnUpdate();

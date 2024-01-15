@@ -12,12 +12,12 @@ class BaseObject {
   friend class Application;
 
   bool _alive;
-  static std::unordered_map<std::string, std::unordered_set<BaseObject*>>
+  static std::unordered_map<std::string, std::list<BaseObject*>>
       _BaseObjects;
 
  protected:
   BaseObject* _owner;
-  static std::unordered_map<std::string, std::unordered_set<BaseObject*>>
+  static std::unordered_map<std::string, std::list<BaseObject*>>
       BaseObjects;
 
   std::string _root = "Unset";
@@ -36,7 +36,7 @@ class BaseObject {
       typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type = 0>
   T* Create(Args&&... args) {
     T* ret = new T(this, std::forward<Args>(args)...);
-    _BaseObjects[ret->_name].insert(ret);
+    _BaseObjects[ret->_name].emplace_back(ret);
     ret->OnCreate();
     return ret;
   }
@@ -50,7 +50,7 @@ class BaseObject {
       typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type = 0>
   static T* CreateImmediately(Args&&... args) {
     T* ret = new T(std::forward<Args>(args)...);
-    _BaseObjects[ret->_name].insert(ret);
+    _BaseObjects[ret->_name].emplace_back(ret);
     ret->OnCreate();
     return ret;
   }
@@ -89,7 +89,7 @@ class BaseObject {
     return objects.empty() ? nullptr : *objects.begin();
   }
 
-  [[nodiscard]] static const std::unordered_set<BaseObject*>& GetObjectsByName(
+  [[nodiscard]] static const std::list<BaseObject*>& GetObjectsByName(
       const std::string& name) {
     return BaseObjects[name];
   }

@@ -10,7 +10,7 @@ class Render;
 class Draw : public Base {
   Shader shader;
   Pipeline pipeline;
-  std::vector<Mesh*> meshes;
+  std::list<Mesh*> meshes;
 
  public:
   [[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {
@@ -25,7 +25,7 @@ class Draw : public Base {
     return pipeline.GetDescriptorSetLayout();
   }
 
-  const std::vector<Mesh*>& GetMeshes() const { return meshes; }
+  std::list<Mesh*>& GetMeshes() { return meshes; }
 
   template <typename... Args>
   explicit Draw(Base* owner, Args&&... args) : Base(owner) {
@@ -42,5 +42,5 @@ class Draw : public Base {
   void LoadDrawResource(const Device& device, const Render& render,
                         const MeshData* data);
 
-  void DestroyDrawResource(const VkDevice& device, const Render& render) const;
+  void DestroyDrawResource(const VkDevice& device, const Render& render);
 };

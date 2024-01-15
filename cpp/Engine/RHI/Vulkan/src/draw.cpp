@@ -17,8 +17,7 @@ void Draw::LoadDrawResource(const Device& device, const Render& render,
   meshes.emplace_back(mesh);
 }
 
-void Draw::DestroyDrawResource(const VkDevice& device,
-                               const Render& render) const {
+void Draw::DestroyDrawResource(const VkDevice& device, const Render& render) {
   pipeline.DestroyPipeline(device);
   for (Mesh* mesh : meshes) {
     mesh->DestroyMesh(device, render);

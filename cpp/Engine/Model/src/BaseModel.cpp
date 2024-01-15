@@ -61,7 +61,8 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
                                                           mesh->mName.C_Str());
 
     // Parse Name
-    auto meshData = new MeshData{.name = mesh->mName.C_Str()};
+    auto meshData =
+        new MeshData{.state = {.alive = true}, .name = mesh->mName.C_Str()};
 
     // Parse Material
     auto* mat = modelScene->GetMaterialByPath(fst);
@@ -121,6 +122,14 @@ void BaseModel::OnCreate() {
 }
 
 void BaseModel::OnUpdate() {
+  static int count = 0;
+  if (count++ > 10000) {
+    for (MeshData* mesh : meshes) {
+      mesh->state.alive = false;
+    }
+  }
+
+
   glm::mat4x4 scale(0.05f);
   scale[3][3] = 1.0f;
 

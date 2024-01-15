@@ -9,7 +9,7 @@ class BaseModel final : public SceneObject {
   std::vector<MeshData*> meshes;
   GraphicsInterface* graphics;
 
-  void LoadFbxDatas(const std::string& fbxPath, unsigned parserFlags);
+  void LoadFbxDatas(const std::string& fbxPath, const unsigned int parserFlags);
 
  public:
   explicit BaseModel(BaseObject* owner, const std::string& root,

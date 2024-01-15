@@ -35,21 +35,21 @@ class Render : public Base {
   void CreateSyncObjects(const VkDevice& device);
 
   void CreateCommandBuffers(const VkDevice& device);
-  void RecordCommandBuffer(const std::unordered_map<std::string, Draw*>& draws,
+  void RecordCommandBuffer(std::unordered_map<std::string, Draw*>& draws,
                            const SwapChain& swapChain,
                            uint32_t imageIndex) const;
   void CopyCommandBuffer(const Device& device, const VkBuffer& srcBuffer,
                          const VkBuffer& dstBuffer,
                          const VkDeviceSize& size) const;
 
-  [[nodiscard]] VkCommandBuffer BeginSingleTimeCommands(
-      const VkDevice& device) const;
+  void BeginSingleTimeCommands(const VkDevice& device,
+                               VkCommandBuffer* commandBuffer) const;
   void EndSingleTimeCommands(const Device& device,
-                             VkCommandBuffer commandBuffer) const;
+                             VkCommandBuffer* commandBuffer) const;
 
   void DrawFrame(const Device& device,
-                 const std::unordered_map<std::string, Draw*>& draws,
-                 Depth& depth, Window& window, SwapChain& swapChain);
+                 std::unordered_map<std::string, Draw*>& draws, Depth& depth,
+                 Window& window, SwapChain& swapChain);
 
   void DestroyRenderResources(const VkDevice& device) const;
 
@@ -63,5 +63,6 @@ class Render : public Base {
     return commandBuffers;
   }
 
+  [[nodiscard]] int GetCurrentFrame() const { return currentFrame; }
   [[nodiscard]] int GetMaxFramesInFlight() const { return maxFramesInFlight; }
 };

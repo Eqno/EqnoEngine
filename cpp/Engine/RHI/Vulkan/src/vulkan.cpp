@@ -43,8 +43,34 @@ void Vulkan::RendererLoop() {
     glfwPollEvents();
     dynamic_cast<Application*>(_owner)->TriggerOnUpdate();
     render.DrawFrame(device, draws, depth, window, swapChain);
+    device.WaitIdle();
+
+    auto drawIter = draws.begin();
+    while (drawIter != draws.end()) {
+      auto& meshes = drawIter->second->GetMeshes();
+      auto meshIter = meshes.begin();
+      while (meshIter != meshes.end()) {
+        if ((*meshIter)->GetAlive() == false) {
+          // Destroy the mesh if not alive
+          (*meshIter)->DestroyMesh(device.GetLogical(), render);
+          (*meshIter)->Destroy();
+          meshIter = meshes.erase(meshIter);
+        } else {
+          // Update uniform buffer if mesh alive
+          (*meshIter)->UpdateUniformBuffer(render.GetCurrentFrame());
+          meshIter++;
+        }
+      }
+      if (meshes.empty()) {
+        // Destroy the draw if meshes empty
+        drawIter->second->DestroyDrawResource(device.GetLogical(), render);
+        drawIter->second->Destroy();
+        drawIter = draws.erase(drawIter);
+      } else {
+        drawIter++;
+      }
+    }
   }
-  device.WaitIdle();
 }
 
 Draw* Vulkan::GetDrawByShader(const std::string& shaderPath) {
@@ -58,6 +84,7 @@ Draw* Vulkan::GetDrawByShader(const std::string& shaderPath) {
 void Vulkan::CleanupGraphics() {
   for (const auto& val : draws | std::views::values) {
     val->DestroyDrawResource(device.GetLogical(), render);
+    val->Destroy();
   }
 
   depth.DestroyDepthResource(device.GetLogical());

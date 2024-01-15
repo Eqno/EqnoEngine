@@ -1,9 +1,9 @@
 #include "../include/mesh.h"
 
 void Mesh::CreateMesh(const Device& device, const Render& render,
-                  const MeshData* inData,
-                  const VkDescriptorSetLayout& descriptorSetLayout) {
-  _meshData = inData;
+                      const MeshData* inData,
+                      const VkDescriptorSetLayout& descriptorSetLayout) {
+  bridge = inData;
 
   ParseTextures(device, render);
   ParseVertexAndIndex();
@@ -19,7 +19,7 @@ void Mesh::DestroyMesh(const VkDevice& device, const Render& render) const {
 }
 
 void Mesh::ParseTextures(const Device& device, const Render& render) {
-  for (const auto& [width, height, channels, _data] : _meshData->textures) {
+  for (const auto& [width, height, channels, _data] : bridge->textures) {
     textures.emplace_back("NOSRPGB", device, render, width, height, channels,
                           _data);
   }
@@ -27,11 +27,11 @@ void Mesh::ParseTextures(const Device& device, const Render& render) {
 
 void Mesh::ParseVertexAndIndex() {
   std::vector<Vertex> vertices;
-  vertices.reserve(_meshData->vertices.size());
-  for (const auto& vert : _meshData->vertices) {
+  vertices.reserve(bridge->vertices.size());
+  for (const auto& vert : bridge->vertices) {
     vertices.emplace_back(vert);
   }
-  data.CreateData(_meshData->indices, vertices);
+  data.CreateData(bridge->indices, vertices);
 }
 
 void Mesh::ParseBufferAndDescriptor(
@@ -42,11 +42,7 @@ void Mesh::ParseBufferAndDescriptor(
 }
 
 const glm::mat4x4* Mesh::GetModelMatrix() {
-  return &_meshData->uniform.modelMatrix;
+  return &bridge->uniform.modelMatrix;
 }
-const glm::mat4x4* Mesh::GetViewMatrix() {
-  return &_meshData->uniform.viewMatrix;
-}
-const glm::mat4x4* Mesh::GetProjMatrix() {
-  return &_meshData->uniform.projMatrix;
-}
+const glm::mat4x4* Mesh::GetViewMatrix() { return &bridge->uniform.viewMatrix; }
+const glm::mat4x4* Mesh::GetProjMatrix() { return &bridge->uniform.projMatrix; }
