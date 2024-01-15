@@ -12,19 +12,17 @@ class BaseObject {
   friend class Application;
 
   bool _alive;
-  static std::unordered_map<std::string, std::list<BaseObject*>>
-      _BaseObjects;
+  static std::unordered_map<std::string, std::list<BaseObject*>> _BaseObjects;
 
  protected:
   BaseObject* _owner;
-  static std::unordered_map<std::string, std::list<BaseObject*>>
-      BaseObjects;
+  static std::unordered_map<std::string, std::list<BaseObject*>> BaseObjects;
 
   std::string _root = "Unset";
   std::string _file = "Unset";
   std::string _name = "Unset";
 
-  BaseObject(BaseObject* owner, std::string root, std::string file)
+  BaseObject(std::string root, std::string file, BaseObject* owner)
       : _alive(true),
         _owner(owner),
         _root(std::move(root)),
@@ -35,7 +33,7 @@ class BaseObject {
       typename T, typename... Args,
       typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type = 0>
   T* Create(Args&&... args) {
-    T* ret = new T(this, std::forward<Args>(args)...);
+    T* ret = new T(std::forward<Args>(args)..., this);
     _BaseObjects[ret->_name].emplace_back(ret);
     ret->OnCreate();
     return ret;

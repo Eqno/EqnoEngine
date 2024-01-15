@@ -12,10 +12,9 @@ class BaseModel final : public SceneObject {
   void LoadFbxDatas(const std::string& fbxPath, const unsigned int parserFlags);
 
  public:
-  explicit BaseModel(BaseObject* owner, const std::string& root,
-                     const std::string& file, SceneObject*& parent,
-                     GraphicsInterface* graphics)
-      : SceneObject(owner, root, file, parent), graphics(graphics) {}
+  template <typename... Args>
+  explicit BaseModel(GraphicsInterface* graphics, Args&&... args)
+      : graphics(graphics), SceneObject(std::forward<Args>(args)...) {}
   ~BaseModel() override = default;
 
   virtual void OnCreate() override;

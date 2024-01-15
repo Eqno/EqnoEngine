@@ -17,10 +17,9 @@ class BaseScene final : public BaseObject {
     }
     return materials[path];
   }
-
-  explicit BaseScene(BaseObject* owner, const std::string& root,
-                     const std::string& file, GraphicsInterface* graphics)
-      : BaseObject(owner, root, file), graphics(graphics) {}
+  template <typename... Args>
+  explicit BaseScene(GraphicsInterface* graphics, Args&&... args)
+      : graphics(graphics), BaseObject(std::forward<Args>(args)...) {}
   ~BaseScene() override = default;
 
   [[nodiscard]] GraphicsInterface* GetGraphics() const { return graphics; }

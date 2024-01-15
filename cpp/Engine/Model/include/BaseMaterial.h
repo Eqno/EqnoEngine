@@ -9,9 +9,9 @@ class BaseMaterial final : public BaseObject {
   MaterialData data;
 
  public:
-  explicit BaseMaterial(BaseObject* owner, const std::string& root,
-                        const std::string& file)
-      : BaseObject(owner, root, file) {}
+  template <typename... Args>
+  explicit BaseMaterial(Args&&... args)
+      : BaseObject(std::forward<Args>(args)...) {}
   ~BaseMaterial() override = default;
 
   virtual void OnCreate() override {

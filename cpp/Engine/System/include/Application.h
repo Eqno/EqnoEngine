@@ -20,9 +20,11 @@ class Application final : public BaseObject {
   void TerminateScene() const;
 
  public:
-  explicit Application(const std::string& root, const std::string& file)
-      : BaseObject(nullptr, root, file) {}
-  ~Application() override {}
+  template <typename... Args>
+  explicit Application(Args&&... args)
+      : BaseObject(std::forward<Args>(args)..., nullptr) {}
+  ~Application() override = default;
+
   void TriggerOnUpdate();
   void RunApplication();
 

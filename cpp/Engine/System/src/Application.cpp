@@ -20,7 +20,7 @@ void Application::CreateGraphics() {
 
 void Application::CreateLauncherScene() {
   const std::string scenePath = JSON_CONFIG(String, "LauncherScene");
-  scene = Create<BaseScene>(GetRoot(), scenePath, graphics);
+  scene = Create<BaseScene>(graphics, GetRoot(), scenePath);
 }
 
 void Application::CreateWindow() const {

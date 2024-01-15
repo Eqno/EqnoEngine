@@ -13,9 +13,9 @@ class SceneObject : public BaseObject {
   void AddToSons(SceneObject* son) { _sons.push_back(son); }
 
  public:
-  explicit SceneObject(BaseObject* owner, const std::string& root,
-                       const std::string& file, SceneObject*& parent)
-      : BaseObject(owner, root, file), _parent(parent) {
+  template <typename... Args>
+  explicit SceneObject(SceneObject*& parent, Args&&... args)
+      : _parent(parent), BaseObject(std::forward<Args>(args)...) {
     if (parent != nullptr) {
       parent->AddToSons(this);
     } else {

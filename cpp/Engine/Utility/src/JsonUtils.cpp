@@ -75,7 +75,7 @@ void TravelSceneObjectTree(BaseObject* owner, const Value& val,
   if (val.HasMember("Type") && val.HasMember("Path")) {
     if (strcmp(val["Type"].GetString(), "BaseModel") == 0) {
       SceneObject* object = BaseObject::CreateImmediately<BaseModel>(
-          owner, root, val["Path"].GetString(), parent, graphics);
+          graphics, parent, root, val["Path"].GetString(), owner);
       if (val.HasMember("Sons")) {
         const auto& values = val["Sons"];
         for (unsigned int i = 0; i < values.Size(); ++i) {

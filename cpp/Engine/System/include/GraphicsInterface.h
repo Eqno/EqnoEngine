@@ -7,7 +7,8 @@ struct MeshData;
 class GraphicsInterface : public BaseObject {
  public:
   template <typename... Args>
-  explicit GraphicsInterface(const Args&... args) : BaseObject(args...) {}
+  explicit GraphicsInterface(Args&&... args)
+      : BaseObject(std::forward<Args>(args)...) {}
   ~GraphicsInterface() override = default;
 
   virtual void CreateWindow(const std::string& title) = 0;
