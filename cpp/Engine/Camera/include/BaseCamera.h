@@ -27,7 +27,7 @@ class BaseCamera : public SceneObject {
     aspect = width / height;
   }
 
-  virtual void OnCreate() {
+  virtual void OnCreate() override {
     SceneObject::OnCreate();
     CameraMap[name] = this;
 
@@ -35,6 +35,10 @@ class BaseCamera : public SceneObject {
     fovy = JSON_CONFIG(Float, "FOVy");
     near = JSON_CONFIG(Float, "Near");
     far = JSON_CONFIG(Float, "Far");
+  }
+
+  virtual void OnUpdate() override {
+    SceneObject::OnUpdate();
   }
 
   glm::mat4x4 GetViewMatrix();

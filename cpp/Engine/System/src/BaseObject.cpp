@@ -8,3 +8,6 @@ void BaseObject::OnStart() {}
 void BaseObject::OnUpdate() {}
 void BaseObject::OnStop() {}
 void BaseObject::OnDestroy() {}
+
+void BaseObject::OnActive() {}
+void BaseObject::OnDeactive() {}

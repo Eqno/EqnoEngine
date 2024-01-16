@@ -12,7 +12,7 @@ class Application;
 class BaseObject {
   friend class Application;
 
-  bool _alive;
+  bool _alive, _active, _locked;
   static std::unordered_map<std::string, std::list<BaseObject*>> _BaseObjects;
 
  protected:
@@ -25,6 +25,8 @@ class BaseObject {
 
   BaseObject(std::string root, std::string file, BaseObject* owner)
       : _alive(true),
+        _active(true),
+        _locked(false),
         _root(std::move(root)),
         _file(std::move(file)),
         _owner(owner),
@@ -54,7 +56,26 @@ class BaseObject {
     return ret;
   }
 
-  void Destroy() { _alive = false; }
+  void Active() {
+    if (_alive == true && _active == false) {
+      _active = true;
+      OnActive();
+      if (_locked == false) {
+        _BaseObjects[_name].emplace_back(this);
+      }
+    }
+  }
+
+  void Deactive() {
+    if (_alive == true && _active == true) {
+      _active = false;
+    }
+  }
+
+  void Destroy() {
+    _alive = false;
+    _active = false;
+  }
   void DestroyImmediately() {
     if (this != nullptr) {
       OnStop();
@@ -74,6 +95,9 @@ class BaseObject {
   virtual void OnUpdate();
   virtual void OnStop();
   virtual void OnDestroy();
+
+  virtual void OnActive();
+  virtual void OnDeactive();
 
   [[nodiscard]] BaseObject* GetOwner() const { return _owner; }
 

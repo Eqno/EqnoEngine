@@ -5,6 +5,8 @@
 #include <Engine/Scene/include/StartScene.h>
 #include <Engine/System/include/GraphicsInterface.h>
 
+#include <ranges>
+
 void Application::CreateGraphics() {
   const std::string apiPath = JSON_CONFIG(String, "GraphicsConfig");
   if (const std::string rhiType = JsonUtils::ReadStringFromFile(
@@ -45,46 +47,42 @@ void Application::RunApplication() {
 }
 
 void Application::TriggerOnUpdate() {
-  {
-    auto& _map = BaseObject::_BaseObjects;
-    auto mapIter = _map.begin();
-    while (mapIter != _map.end()) {
-      auto& _list = mapIter->second;
-      auto listIter = _list.begin();
-      while (listIter != _list.end()) {
-        if ((*listIter)->_alive == true) {
-          BaseObject::BaseObjects[(*listIter)->_name].emplace_back(*listIter);
-          (*listIter)->OnStart();
-        } else {
-          (*listIter)->OnDestroy();
-          delete *listIter;
-        }
-        listIter = _list.erase(listIter);
+  for (const auto& val : BaseObject::_BaseObjects | std::views::values) {
+    for (BaseObject* obj : val) {
+      if (obj->_alive == false) {
+        obj->OnDestroy();
+        delete obj;
+      } else if (obj->_active) {
+        obj->OnStart();
+        BaseObject::BaseObjects[obj->_name].emplace_back(obj);
+      } else {
+        obj->OnDeactive();
+        obj->_locked = false;
       }
-      mapIter = _map.erase(mapIter);
     }
   }
-  {
-    auto& _map = BaseObject::BaseObjects;
-    auto mapIter = _map.begin();
-    while (mapIter != _map.end()) {
-      auto& _list = mapIter->second;
-      auto listIter = _list.begin();
-      while (listIter != _list.end()) {
-        if ((*listIter)->_alive == false) {
-          (*listIter)->OnStop();
-          BaseObject::_BaseObjects[(*listIter)->_name].emplace_back(*listIter);
-          listIter = _list.erase(listIter);
-        } else {
-          (*listIter)->OnUpdate();
-          listIter++;
-        }
-      }
-      if (_list.empty()) {
-        mapIter = _map.erase(mapIter);
+  BaseObject::_BaseObjects.clear();
+
+  auto& _map = BaseObject::BaseObjects;
+  auto mapIter = _map.begin();
+  while (mapIter != _map.end()) {
+    auto& _list = mapIter->second;
+    auto listIter = _list.begin();
+    while (listIter != _list.end()) {
+      if ((*listIter)->_alive && (*listIter)->_active) {
+        (*listIter)->OnUpdate();
+        listIter++;
       } else {
-        mapIter++;
+        (*listIter)->OnStop();
+        (*listIter)->_locked = true;
+        BaseObject::_BaseObjects[(*listIter)->_name].emplace_back(*listIter);
+        listIter = _list.erase(listIter);
       }
+    }
+    if (_list.empty()) {
+      mapIter = _map.erase(mapIter);
+    } else {
+      mapIter++;
     }
   }
 }

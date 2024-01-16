@@ -26,5 +26,8 @@ class BaseModel final : public SceneObject {
   virtual void OnStart() override { SceneObject::OnStart(); }
   virtual void OnStop() override { SceneObject::OnStop(); }
 
+  virtual void OnActive() override { SceneObject::OnActive(); }
+  virtual void OnDeactive() override { SceneObject::OnDeactive(); }
+
   void SetCamera(const std::string& cameraName);
 };
