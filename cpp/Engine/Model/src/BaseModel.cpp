@@ -1,15 +1,15 @@
 #include "../include/BaseModel.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#include <Engine/Camera/include/BaseCamera.h>
+#include <Engine/Model/include/BaseMaterial.h>
+#include <Engine/Utility/include/FileUtils.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/types.h>
 #include <stb_image.h>
 
 #include <assimp/Importer.hpp>
-
-#include "Engine/Model/include/BaseMaterial.h"
-#include "Engine/Utility/include/FileUtils.h"
 
 // std::unordered_map<std::string, aiMaterial*> defaultMaterialDatas;
 // void BaseModel::ParseFbxMaterials(const aiScene* scene) {
@@ -125,18 +125,12 @@ void BaseModel::OnCreate() {
 void BaseModel::OnUpdate() {
   SceneObject::OnUpdate();
 
-  glm::mat4x4 view =
-      lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-             glm::vec3(0.0f, 1.0f, 0.0f));
-
-  glm::mat4x4 proj = glm::perspective(
-      glm::radians(45.0f), graphics->GetViewportAspect(), 0.1f, 1000.0f);
-
   for (MeshData* mesh : meshes) {
-    transform.absoluteForward;
     mesh->uniform.modelMatrix = GetAbsoluteTransform();
-    mesh->uniform.viewMatrix = view;
-    mesh->uniform.projMatrix = proj;
+    mesh->uniform.viewMatrix =
+        camera ? camera->GetViewMatrix() : glm::mat4x4(0);
+    mesh->uniform.projMatrix =
+        camera ? camera->GetProjMatrix() : glm::mat4x4(0);
   }
 }
 
@@ -147,4 +141,8 @@ void BaseModel::OnDestroy() {
   for (const MeshData* mesh : meshes) {
     delete mesh;
   }
+}
+
+void BaseModel::SetCamera(const std::string& cameraName) {
+  camera = BaseCamera::CameraMap[cameraName];
 }

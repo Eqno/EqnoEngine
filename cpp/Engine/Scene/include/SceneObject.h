@@ -10,7 +10,6 @@ class SceneObject : public BaseObject {
   std::list<SceneObject*> sons;
 
   BaseTransform transform;
-
   void AddToSons(SceneObject* son) { sons.push_back(son); }
 
  public:

@@ -2,6 +2,7 @@
     "Name": "CommonCamera",
     "FOVy": 45,
     "Aspect": "Auto",
+    "_Aspect": "16:9",
     "Near": 0.1,
     "Far": 1000
 }

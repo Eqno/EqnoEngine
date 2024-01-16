@@ -5,9 +5,12 @@
 #include "Engine/System/include/BaseObject.h"
 #include "Engine/Utility/include/TypeUtils.h"
 
+class BaseCamera;
+
 class BaseModel final : public SceneObject {
   std::vector<MeshData*> meshes;
   GraphicsInterface* graphics;
+  BaseCamera* camera = nullptr;
 
   void LoadFbxDatas(const std::string& fbxPath, const unsigned int parserFlags);
 
@@ -22,4 +25,6 @@ class BaseModel final : public SceneObject {
   virtual void OnDestroy() override;
   virtual void OnStart() override { SceneObject::OnStart(); }
   virtual void OnStop() override { SceneObject::OnStop(); }
+
+  void SetCamera(const std::string& cameraName);
 };
