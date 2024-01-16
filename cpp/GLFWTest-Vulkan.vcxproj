@@ -97,6 +97,7 @@
     <ClInclude Include="Engine\System\include\GraphicsInterface.h" />
     <ClInclude Include="Engine\Utility\include\FileUtils.h" />
     <ClInclude Include="Engine\Utility\include\JsonUtils.h" />
+    <ClInclude Include="Engine\Utility\include\MathUtils.h" />
     <ClInclude Include="Engine\Utility\include\TypeUtils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +132,7 @@
     <ClCompile Include="Engine\System\src\GraphicsInterface.cpp" />
     <ClCompile Include="Engine\Utility\src\FileUtils.cpp" />
     <ClCompile Include="Engine\Utility\src\JsonUtils.cpp" />
+    <ClCompile Include="Engine\Utility\src\MathUtils.cpp" />
     <ClCompile Include="Engine\Utility\src\TypeUtils.cpp" />
     <ClCompile Include="Games\Test\main.cpp" />
   </ItemGroup>

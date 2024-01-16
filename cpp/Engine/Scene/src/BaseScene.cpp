@@ -10,11 +10,13 @@ void DestroyObjects(SceneObject* root) {
 }
 
 void BaseScene::OnCreate() {
+  BaseObject::OnCreate();
   JsonUtils::ParseSceneObjectTree(this, GetRoot() + GetFile(), GetRoot(),
                                   rootObject, graphics);
 }
 
 void BaseScene::OnDestroy() {
+  BaseObject::OnDestroy();
   DestroyObjects(rootObject);
   for (const BaseMaterial* material : materials | std::views::values) {
     delete material;

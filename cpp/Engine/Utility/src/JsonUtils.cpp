@@ -69,13 +69,46 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
   return {};
 }
 
+glm::vec3 ParseGLMVec3(const std::string& content) {
+  glm::vec3 ret;
+  int count = 0;
+  std::string part;
+  for (const char c : content) {
+    if (c == ',') {
+      ret[count++] = stof(part);
+      part.clear();
+    } else {
+      part.push_back(c);
+    }
+  }
+  ret[count++] = stof(part);
+  return ret;
+}
+
 void TravelSceneObjectTree(BaseObject* owner, const Value& val,
                            const std::string& root, SceneObject*& parent,
                            GraphicsInterface* graphics) {
   if (val.HasMember("Type") && val.HasMember("Path")) {
     if (strcmp(val["Type"].GetString(), "BaseModel") == 0) {
       SceneObject* object = BaseObject::CreateImmediately<BaseModel>(
-          graphics, parent, root, val["Path"].GetString(), owner);
+          graphics, parent,
+          val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
+          val["Path"].GetString(), owner);
+
+      if (val.HasMember("Transform")) {
+        const auto& trans = val["Transform"];
+        if (trans.HasMember("Scale")) {
+          object->SetRelativeScale(ParseGLMVec3(trans["Scale"].GetString()));
+        }
+        if (trans.HasMember("Rotation")) {
+          object->SetRelativeRotation(
+              ParseGLMVec3(trans["Rotation"].GetString()));
+        }
+        if (trans.HasMember("Position")) {
+          object->SetRelativePosition(
+              ParseGLMVec3(trans["Position"].GetString()));
+        }
+      }
       if (val.HasMember("Sons")) {
         const auto& values = val["Sons"];
         for (unsigned int i = 0; i < values.Size(); ++i) {

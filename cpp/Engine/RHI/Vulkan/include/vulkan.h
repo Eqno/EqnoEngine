@@ -36,11 +36,12 @@ class Vulkan final : public GraphicsInterface, public Base {
   float GetViewportAspect() override;
 
   virtual void OnCreate() override {
+    GraphicsInterface::OnCreate();
     RegisterMember(depth, device, window, render, instance, swapChain,
                    validation);
   }
-  virtual void OnStart() override {}
-  virtual void OnUpdate() override {}
-  virtual void OnStop() override {}
-  virtual void OnDestroy() override {}
+  virtual void OnStart() override { GraphicsInterface::OnStart(); }
+  virtual void OnUpdate() override { GraphicsInterface::OnUpdate(); }
+  virtual void OnStop() override { GraphicsInterface::OnStop(); }
+  virtual void OnDestroy() override { GraphicsInterface::OnDestroy(); }
 };

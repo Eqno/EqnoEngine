@@ -111,6 +111,7 @@ void BaseModel::LoadFbxDatas(const std::string& fbxPath,
 
 void BaseModel::OnCreate() {
   SceneObject::OnCreate();
+
   if (JSON_CONFIG(String, "Type") == "FBX") {
     LoadFbxDatas(JSON_CONFIG(String, "File"),
                  aiProcess_Triangulate | aiProcess_GenSmoothNormals |
@@ -122,16 +123,14 @@ void BaseModel::OnCreate() {
 }
 
 void BaseModel::OnUpdate() {
+  SceneObject::OnUpdate();
+
   static int count = 0;
   if (count++ > 10000) {
     for (MeshData* mesh : meshes) {
       mesh->state.alive = false;
     }
   }
-
-
-  glm::mat4x4 scale(0.05f);
-  scale[3][3] = 1.0f;
 
   glm::mat4x4 view =
       lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
@@ -141,13 +140,16 @@ void BaseModel::OnUpdate() {
       glm::radians(45.0f), graphics->GetViewportAspect(), 0.1f, 1000.0f);
 
   for (MeshData* mesh : meshes) {
-    mesh->uniform.modelMatrix = scale;
+    transform.absoluteForward;
+    mesh->uniform.modelMatrix = transform.getAbsoluteTransform();
     mesh->uniform.viewMatrix = view;
     mesh->uniform.projMatrix = proj;
   }
 }
 
 void BaseModel::OnDestroy() {
+  SceneObject::OnDestroy();
+
   SceneObject::OnDestroy();
   for (const MeshData* mesh : meshes) {
     delete mesh;

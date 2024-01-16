@@ -25,8 +25,8 @@ class BaseScene final : public BaseObject {
   [[nodiscard]] GraphicsInterface* GetGraphics() const { return graphics; }
 
   virtual void OnCreate() override;
-  virtual void OnStart() override {}
-  virtual void OnUpdate() override {}
-  virtual void OnStop() override {}
+  virtual void OnStart() override { BaseObject::OnStart(); }
+  virtual void OnUpdate() override { BaseObject::OnUpdate(); }
+  virtual void OnStop() override { BaseObject::OnStop(); }
   virtual void OnDestroy() override;
 };

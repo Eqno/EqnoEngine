@@ -351,6 +351,9 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\base.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Utility\include\MathUtils.h">
+      <Filter>Engine\Scene\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -451,6 +454,9 @@
     </ClCompile>
     <ClCompile Include="Engine\RHI\Vulkan\src\base.cpp">
       <Filter>Engine\RHI\Vulkan\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Utility\src\MathUtils.cpp">
+      <Filter>Engine\Scene\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -45,39 +45,60 @@ void Application::RunApplication() {
 }
 
 void Application::TriggerOnUpdate() {
-  for (auto& val : BaseObject::_BaseObjects | std::views::values) {
-    auto iter = val.begin();
-    while (iter != val.end()) {
-      if ((*iter)->_alive == true) {
-        BaseObject::BaseObjects[(*iter)->_name].emplace_back(*iter);
-        (*iter)->OnStart();
-      } else {
-        (*iter)->OnDestroy();
-        delete *iter;
+  {
+    auto& _map = BaseObject::_BaseObjects;
+    auto mapIter = _map.begin();
+    while (mapIter != _map.end()) {
+      auto& _list = mapIter->second;
+      auto listIter = _list.begin();
+      while (listIter != _list.end()) {
+        if ((*listIter)->_alive == true) {
+          BaseObject::BaseObjects[(*listIter)->_name].emplace_back(*listIter);
+          (*listIter)->OnStart();
+        } else {
+          (*listIter)->OnDestroy();
+          delete *listIter;
+        }
+        listIter = _list.erase(listIter);
       }
-      iter = val.erase(iter);
+      mapIter = _map.erase(mapIter);
     }
   }
-  for (auto& val : BaseObject::BaseObjects | std::views::values) {
-    auto iter = val.begin();
-    while (iter != val.end()) {
-      if ((*iter)->_alive == false) {
-        (*iter)->OnStop();
-        BaseObject::_BaseObjects[(*iter)->_name].emplace_back(*iter);
-        iter = val.erase(iter);
+  {
+    auto& _map = BaseObject::BaseObjects;
+    auto mapIter = _map.begin();
+    while (mapIter != _map.end()) {
+      auto& _list = mapIter->second;
+      auto listIter = _list.begin();
+      while (listIter != _list.end()) {
+        if ((*listIter)->_alive == false) {
+          (*listIter)->OnStop();
+          BaseObject::_BaseObjects[(*listIter)->_name].emplace_back(*listIter);
+          listIter = _list.erase(listIter);
+        } else {
+          (*listIter)->OnUpdate();
+          listIter++;
+        }
+      }
+      if (_list.empty()) {
+        mapIter = _map.erase(mapIter);
       } else {
-        (*iter)->OnUpdate();
-        iter++;
+        mapIter++;
       }
     }
   }
 }
 
-void Application::OnCreate() { CreateGraphics(); }
-void Application::OnStart() {}
-void Application::OnUpdate() {}
-void Application::OnStop() {}
+void Application::OnCreate() {
+  BaseObject::OnCreate();
+  CreateGraphics();
+}
+void Application::OnStart() { BaseObject::OnStart(); }
+void Application::OnUpdate() { BaseObject::OnUpdate(); }
+void Application::OnStop() { BaseObject::OnStop(); }
 void Application::OnDestroy() {
+  BaseObject::OnDestroy();
+
   graphics->DestroyImmediately();
   JsonUtils::ClearDocumentCache();
 }

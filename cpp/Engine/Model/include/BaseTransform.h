@@ -6,24 +6,22 @@
 class SceneObject;
 
 class BaseTransform {
-	glm::vec3 relativeForward;
-	glm::vec3 absoluteForward;
+  SceneObject* _owner = nullptr;
 
-	glm::vec3 relativeRight;
-	glm::vec3 absoluteRight;
+ public:
+  void RegisterOwner(SceneObject* other) { _owner = other; }
 
-	glm::vec3 relativeUp;
-	glm::vec3 absoluteUp;
+  glm::vec3 relativeRight = glm::vec3(1, 0, 0);
+  glm::vec3 absoluteRight = glm::vec3(1, 0, 0);
 
-	glm::vec3 relativePosition;
-	glm::vec3 absolutePosition;
+  glm::vec3 relativeUp = glm::vec3(0, 1, 0);
+  glm::vec3 absoluteUp = glm::vec3(0, 1, 0);
 
-	SceneObject* _owner = nullptr;
+  glm::vec3 relativeForward = glm::vec3(0, 0, 1);
+  glm::vec3 absoluteForward = glm::vec3(0, 0, 1);
 
-public:
-	void RegisterOwner(SceneObject* other) {
-		_owner = other;
-	}
+  glm::vec3 relativePosition = glm::vec3(0);
+  glm::vec3 absolutePosition = glm::vec3(0);
 
-	
+  glm::mat4x4 getAbsoluteTransform();
 };

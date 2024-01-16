@@ -24,9 +24,9 @@ class BaseObject {
 
   BaseObject(std::string root, std::string file, BaseObject* owner)
       : _alive(true),
-        _owner(owner),
         _root(std::move(root)),
         _file(std::move(file)),
+        _owner(owner),
         _name(JSON_CONFIG(String, "Name")) {}
 
   template <
