@@ -112,6 +112,12 @@
     <Filter Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl">
       <UniqueIdentifier>{b7c1ee04-0992-413f-ba5b-c5d9771b0708}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Camera\include">
+      <UniqueIdentifier>{882d9261-30bd-4062-9f79-035007b99ae7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Camera\src">
+      <UniqueIdentifier>{c2b4ea5f-652f-4ee2-97c5-1f9a66832f32}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
@@ -354,6 +360,9 @@
     <ClInclude Include="Engine\Utility\include\MathUtils.h">
       <Filter>Engine\Scene\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Camera\include\BaseCamera.h">
+      <Filter>Engine\Camera\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -457,6 +466,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Utility\src\MathUtils.cpp">
       <Filter>Engine\Scene\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Camera\src\BaseCamera.cpp">
+      <Filter>Engine\Camera\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

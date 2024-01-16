@@ -11,8 +11,8 @@ void DestroyObjects(SceneObject* root) {
 
 void BaseScene::OnCreate() {
   BaseObject::OnCreate();
-  JsonUtils::ParseSceneObjectTree(this, GetRoot() + GetFile(), GetRoot(),
-                                  rootObject, graphics);
+  JsonUtils::ParseSceneObjectTree(graphics, rootObject, this,
+                                  GetRoot() + GetFile(), GetRoot());
 }
 
 void BaseScene::OnDestroy() {

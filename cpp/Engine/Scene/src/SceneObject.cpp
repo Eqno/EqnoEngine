@@ -48,6 +48,13 @@ void SceneObject::SetRelativeScale(const glm::vec3& sca) {
   UpdateAbsoluteTransform();
 }
 
+glm::mat4x4 SceneObject::GetAbsoluteTransform() {
+  return glm::mat4x4(glm::vec4(transform.absoluteRight, 0),
+                     glm::vec4(transform.absoluteUp, 0),
+                     glm::vec4(transform.absoluteForward, 0),
+                     glm::vec4(transform.absolutePosition, 1));
+}
+
 void SceneObject::OnCreate() {
   BaseObject::OnCreate();
   transform.RegisterOwner(this);

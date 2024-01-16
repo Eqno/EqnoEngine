@@ -1,0 +1,7 @@
+{
+    "Name": "CommonCamera",
+    "FOVy": 45,
+    "Aspect": "Auto",
+    "Near": 0.1,
+    "Far": 1000
+}

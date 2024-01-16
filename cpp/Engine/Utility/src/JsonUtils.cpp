@@ -85,9 +85,9 @@ glm::vec3 ParseGLMVec3(const std::string& content) {
   return ret;
 }
 
-void TravelSceneObjectTree(BaseObject* owner, const Value& val,
-                           const std::string& root, SceneObject*& parent,
-                           GraphicsInterface* graphics) {
+void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
+                           BaseObject* owner, const Value& val,
+                           const std::string& root) {
   if (val.HasMember("Type") && val.HasMember("Path")) {
     if (strcmp(val["Type"].GetString(), "BaseModel") == 0) {
       SceneObject* object = BaseObject::CreateImmediately<BaseModel>(
@@ -112,7 +112,7 @@ void TravelSceneObjectTree(BaseObject* owner, const Value& val,
       if (val.HasMember("Sons")) {
         const auto& values = val["Sons"];
         for (unsigned int i = 0; i < values.Size(); ++i) {
-          TravelSceneObjectTree(owner, values[i], root, object, graphics);
+          TravelSceneObjectTree(graphics, object, owner, values[i], root);
         }
       }
     }
@@ -121,15 +121,18 @@ void TravelSceneObjectTree(BaseObject* owner, const Value& val,
   }
 }
 
-void JsonUtils::ParseSceneObjectTree(BaseObject* owner,
-                                     const std::string& filePath,
-                                     const std::string& root,
-                                     SceneObject*& parent,
-                                     GraphicsInterface* graphics) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
+                                     SceneObject*& parent, BaseObject* owner,
+                                     const std::string& path,
+                                     const std::string& root
+
+) {
+  if (Document* doc = GetJsonDocFromFile(path);
       doc->HasMember("SceneObjects")) {
-    const Value& val = (*doc)["SceneObjects"];
-    TravelSceneObjectTree(owner, val, root, parent, graphics);
+    const auto& values = (*doc)["SceneObjects"];
+    for (unsigned int i = 0; i < values.Size(); ++i) {
+      TravelSceneObjectTree(graphics, parent, owner, values[i], root);
+    }
   }
 }
 

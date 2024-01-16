@@ -21,9 +21,9 @@ float ReadFloatFromFile(const std::string& filePath, const std::string& key);
 
 int ReadIntFromFile(const std::string& filePath, const std::string& key);
 
-void ParseSceneObjectTree(BaseObject* owner, const std::string& filePath,
-                          const std::string& root, SceneObject*& parent,
-                          GraphicsInterface* graphics);
+void ParseSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
+                          BaseObject* owner, const std::string& path,
+                          const std::string& root);
 
 std::pair<std::string, std::vector<std::string>> ParseMeshDataInfos(
     const std::string& filePath, const std::string& meshName);

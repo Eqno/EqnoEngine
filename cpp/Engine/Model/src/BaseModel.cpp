@@ -125,13 +125,6 @@ void BaseModel::OnCreate() {
 void BaseModel::OnUpdate() {
   SceneObject::OnUpdate();
 
-  static int count = 0;
-  if (count++ > 10000) {
-    for (MeshData* mesh : meshes) {
-      mesh->state.alive = false;
-    }
-  }
-
   glm::mat4x4 view =
       lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
              glm::vec3(0.0f, 1.0f, 0.0f));
@@ -141,7 +134,7 @@ void BaseModel::OnUpdate() {
 
   for (MeshData* mesh : meshes) {
     transform.absoluteForward;
-    mesh->uniform.modelMatrix = transform.getAbsoluteTransform();
+    mesh->uniform.modelMatrix = GetAbsoluteTransform();
     mesh->uniform.viewMatrix = view;
     mesh->uniform.projMatrix = proj;
   }

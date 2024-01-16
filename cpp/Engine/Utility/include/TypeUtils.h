@@ -6,10 +6,13 @@
 #include <assimp/vector3.h>
 #include <stb_image.h>
 
+#include <functional>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class Vertex;
@@ -60,4 +63,20 @@ struct MeshData {
   std::vector<uint32_t> indices;
   std::vector<VertexData> vertices;
   std::vector<TextureData> textures;
+};
+
+template <typename... Args>
+class Reflection {
+  static std::unordered_map<std::string, std::function<void*(Args&&...)>>
+      classMap;
+
+  static void* classFromName(std::string name, Args&&... args) {
+    if (classMap.find(name) == classMap.end()) return nullptr;
+    return classMap[name](std::forward<Args>(args)...);
+  }
+
+ public:
+  Reflection(std::string name, std::function<void*(Args&&...)> func) {
+    classMap.insert(std::make_pair(name, func));
+  }
 };
