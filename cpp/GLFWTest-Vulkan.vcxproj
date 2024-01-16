@@ -94,6 +94,7 @@
     <ClInclude Include="Engine\Scene\include\SceneObject.h" />
     <ClInclude Include="Engine\Scene\include\StartScene.h" />
     <ClInclude Include="Engine\System\include\Application.h" />
+    <ClInclude Include="Engine\System\include\BaseInput.h" />
     <ClInclude Include="Engine\System\include\BaseObject.h" />
     <ClInclude Include="Engine\System\include\GraphicsInterface.h" />
     <ClInclude Include="Engine\Utility\include\FileUtils.h" />
@@ -130,6 +131,7 @@
     <ClCompile Include="Engine\Scene\src\SceneObject.cpp" />
     <ClCompile Include="Engine\Scene\src\StartScene.cpp" />
     <ClCompile Include="Engine\System\src\Application.cpp" />
+    <ClCompile Include="Engine\System\src\BaseInput.cpp" />
     <ClCompile Include="Engine\System\src\BaseObject.cpp" />
     <ClCompile Include="Engine\System\src\GraphicsInterface.cpp" />
     <ClCompile Include="Engine\Utility\src\FileUtils.cpp" />

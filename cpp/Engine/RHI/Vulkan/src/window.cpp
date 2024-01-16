@@ -1,8 +1,11 @@
 #include "../include/window.h"
 
+#include <Engine/System/include/BaseInput.h>
+
 #include <stdexcept>
 
 #include "../include/config.h"
+using namespace Input;
 
 void FrameBufferResizeCallback([[maybe_unused]] GLFWwindow* window,
                                [[maybe_unused]] int width,
@@ -31,6 +34,10 @@ void Window::CreateWindow(const int width, const int height,
   window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
   glfwSetWindowUserPointer(window, this);
   glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
+
+  glfwSetKeyCallback(window, Key::ButtonCallback);
+  glfwSetCursorPosCallback(window, Mouse::PositionCallback);
+  glfwSetMouseButtonCallback(window, Mouse::ButtonCallback);
 }
 
 void Window::CreateSurface(const VkInstance& instance) {

@@ -1,6 +1,7 @@
 #include "../include/vulkan.h"
 
 #include <Engine/System/include/Application.h>
+#include <Engine/System/include/BaseInput.h>
 #include <Engine/Utility/include/JsonUtils.h>
 
 #include <ranges>
@@ -41,10 +42,11 @@ void Vulkan::InitGraphics() {
 void Vulkan::RendererLoop() {
   while (!glfwWindowShouldClose(window.window)) {
     glfwPollEvents();
-    dynamic_cast<Application*>(_owner)->TriggerOnUpdate();
     render.DrawFrame(device, draws, depth, window, swapChain);
     device.WaitIdle();
 
+    Input::RecordDownUpFlags();
+    dynamic_cast<Application*>(_owner)->TriggerOnUpdate();
     auto drawIter = draws.begin();
     while (drawIter != draws.end()) {
       auto& meshes = drawIter->second->GetMeshes();
@@ -71,6 +73,7 @@ void Vulkan::RendererLoop() {
       }
     }
   }
+  Input::ResetDownUpFlags();
 }
 
 Draw* Vulkan::GetDrawByShader(const std::string& shaderPath) {

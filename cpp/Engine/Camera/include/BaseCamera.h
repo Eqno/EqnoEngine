@@ -36,10 +36,7 @@ class BaseCamera : public SceneObject {
     near = JSON_CONFIG(Float, "Near");
     far = JSON_CONFIG(Float, "Far");
   }
-
-  virtual void OnUpdate() override {
-    SceneObject::OnUpdate();
-  }
+  virtual void OnUpdate() override;
 
   glm::mat4x4 GetViewMatrix();
   glm::mat4x4 GetProjMatrix();

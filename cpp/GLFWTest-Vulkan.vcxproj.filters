@@ -363,6 +363,9 @@
     <ClInclude Include="Engine\Camera\include\BaseCamera.h">
       <Filter>Engine\Camera\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\System\include\BaseInput.h">
+      <Filter>Engine\System\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -469,6 +472,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Camera\src\BaseCamera.cpp">
       <Filter>Engine\Camera\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\src\BaseInput.cpp">
+      <Filter>Engine\System\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
