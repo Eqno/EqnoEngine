@@ -19,29 +19,35 @@ glm::mat4x4 BaseCamera::GetProjMatrix() {
 
 void BaseCamera::OnUpdate() {
   SceneObject::OnUpdate();
+  PerformRotation();
+  PerformTraslation();
+}
 
-  if (Input::Key::wDown) {
-    puts("W down!");
-  }
-  if (Input::Key::aDown) {
-    puts("A down!");
-  }
-  if (Input::Key::sDown) {
-    puts("S down!");
-  }
-  if (Input::Key::dDown) {
-    puts("D down!");
-  }
+void BaseCamera::PerformTraslation() {
   if (Input::Key::w) {
-    puts("W press!");
+    AddRelativePosition(transform.absoluteForward * 0.01f);
   }
   if (Input::Key::a) {
-    puts("A press!");
+    AddRelativePosition(-transform.absoluteRight * 0.01f);
   }
   if (Input::Key::s) {
-    puts("S press!");
+    AddRelativePosition(-transform.absoluteForward * 0.01f);
   }
   if (Input::Key::d) {
-    puts("D press!");
+    AddRelativePosition(transform.absoluteRight * 0.01f);
+  }
+}
+
+void BaseCamera::PerformRotation() {
+  static float mouseLastPosX = 0;
+  static float mouseLastPosY = 0;
+  float mouseDeltaX = Input::Mouse::posX - mouseLastPosX;
+  float mouseDeltaY = Input::Mouse::posY - mouseLastPosY;
+  mouseLastPosX = Input::Mouse::posX;
+  mouseLastPosY = Input::Mouse::posY;
+
+  if (Input::Mouse::left || Input::Mouse::right) {
+    AddRelativeRotation(
+        glm::vec3(sensitivityY * mouseDeltaY, sensitivityX * mouseDeltaX, 0));
   }
 }

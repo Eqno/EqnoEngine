@@ -4,5 +4,9 @@
     "Aspect": "Auto",
     "_Aspect": "16:9",
     "Near": 0.1,
-    "Far": 1000
+    "Far": 1000,
+
+    "SensitivityX": 0.001,
+    "SensitivityY": 0.001,
+    "SensitivityZ": 1
 }

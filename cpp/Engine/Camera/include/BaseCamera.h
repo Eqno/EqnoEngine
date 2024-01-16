@@ -10,6 +10,10 @@ class BaseCamera : public SceneObject {
   float aspect = -1;
   float near = 0.1;
   float far = 1000;
+
+  float sensitivityX = 1;
+  float sensitivityY = 1;
+  float sensitivityZ = 1;
   GraphicsInterface* graphics;
 
  public:
@@ -35,9 +39,16 @@ class BaseCamera : public SceneObject {
     fovy = JSON_CONFIG(Float, "FOVy");
     near = JSON_CONFIG(Float, "Near");
     far = JSON_CONFIG(Float, "Far");
+
+    sensitivityX = JSON_CONFIG(Float, "SensitivityX");
+    sensitivityY = JSON_CONFIG(Float, "SensitivityY");
+    sensitivityZ = JSON_CONFIG(Float, "SensitivityZ");
   }
   virtual void OnUpdate() override;
 
   glm::mat4x4 GetViewMatrix();
   glm::mat4x4 GetProjMatrix();
+
+  void PerformRotation();
+  void PerformTraslation();
 };
