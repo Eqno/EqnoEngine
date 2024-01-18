@@ -25,16 +25,16 @@ void BaseCamera::OnUpdate() {
 
 void BaseCamera::PerformTraslation() {
   if (Input::Key::w) {
-    AddRelativePosition(transform.absoluteForward * 0.01f);
+    AddRelativePosition(-transform.relativeForward * 0.01f);
   }
   if (Input::Key::a) {
-    AddRelativePosition(-transform.absoluteRight * 0.01f);
+    AddRelativePosition(-transform.relativeRight * 0.01f);
   }
   if (Input::Key::s) {
-    AddRelativePosition(-transform.absoluteForward * 0.01f);
+    AddRelativePosition(transform.relativeForward * 0.01f);
   }
   if (Input::Key::d) {
-    AddRelativePosition(transform.absoluteRight * 0.01f);
+    AddRelativePosition(transform.relativeRight * 0.01f);
   }
 }
 
