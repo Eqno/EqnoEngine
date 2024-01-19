@@ -6,7 +6,9 @@
     "Near": 0.1,
     "Far": 1000,
 
-    "SensitivityX": 0.001,
-    "SensitivityY": 0.001,
-    "SensitivityZ": 1
+    "SensitivityX": 0.1,
+    "SensitivityY": 0.1,
+    
+    "MoveSpeed": 0.005,
+    "speedIncreasingRate": 0.001
 }

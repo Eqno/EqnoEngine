@@ -13,7 +13,12 @@ class BaseCamera : public SceneObject {
 
   float sensitivityX = 1;
   float sensitivityY = 1;
-  float sensitivityZ = 1;
+
+  float moveSpeed = 0;
+  float speedIncreasingRate = 0;
+
+  float rotateX = 0;
+  float rotateY = 0;
   GraphicsInterface* graphics;
 
  public:
@@ -42,7 +47,14 @@ class BaseCamera : public SceneObject {
 
     sensitivityX = JSON_CONFIG(Float, "SensitivityX");
     sensitivityY = JSON_CONFIG(Float, "SensitivityY");
-    sensitivityZ = JSON_CONFIG(Float, "SensitivityZ");
+
+    moveSpeed = JSON_CONFIG(Float, "MoveSpeed");
+    speedIncreasingRate = JSON_CONFIG(Float, "speedIncreasingRate");
+  }
+
+  virtual void InitRotation(const glm::vec3& rot) {
+    rotateX = rot.y;
+    rotateY = rot.x;
   }
   virtual void OnUpdate() override;
 

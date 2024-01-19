@@ -5,7 +5,8 @@
 std::unordered_map<std::string, BaseCamera*> BaseCamera::CameraMap;
 
 glm::mat4x4 BaseCamera::GetViewMatrix() {
-  return lookAt(transform.absolutePosition, transform.absoluteForward,
+  return lookAt(transform.absolutePosition,
+                transform.absolutePosition + transform.absoluteForward,
                 transform.absoluteUp);
 }
 glm::mat4x4 BaseCamera::GetProjMatrix() {
@@ -25,29 +26,44 @@ void BaseCamera::OnUpdate() {
 
 void BaseCamera::PerformTraslation() {
   if (Input::Key::w) {
-    AddRelativePosition(-transform.relativeForward * 0.01f);
+    SetRelativePosition(transform.relativePosition +
+                        transform.relativeForward * moveSpeed);
   }
   if (Input::Key::a) {
-    AddRelativePosition(-transform.relativeRight * 0.01f);
+    SetRelativePosition(transform.relativePosition +
+                        transform.relativeLeft * moveSpeed);
   }
   if (Input::Key::s) {
-    AddRelativePosition(transform.relativeForward * 0.01f);
+    SetRelativePosition(transform.relativePosition -
+                        transform.relativeForward * moveSpeed);
   }
   if (Input::Key::d) {
-    AddRelativePosition(transform.relativeRight * 0.01f);
+    SetRelativePosition(transform.relativePosition -
+                        transform.relativeLeft * moveSpeed);
+  }
+  if (Input::Key::q) {
+    SetRelativePosition(transform.relativePosition -
+                        transform.relativeUp * moveSpeed);
+  }
+  if (Input::Key::e) {
+    SetRelativePosition(transform.relativePosition +
+                        transform.relativeUp * moveSpeed);
   }
 }
 
 void BaseCamera::PerformRotation() {
   static float mouseLastPosX = 0;
   static float mouseLastPosY = 0;
+
   float mouseDeltaX = Input::Mouse::posX - mouseLastPosX;
   float mouseDeltaY = Input::Mouse::posY - mouseLastPosY;
+
   mouseLastPosX = Input::Mouse::posX;
   mouseLastPosY = Input::Mouse::posY;
 
   if (Input::Mouse::left || Input::Mouse::right) {
-    AddRelativeRotation(
-        glm::vec3(sensitivityY * mouseDeltaY, sensitivityX * mouseDeltaX, 0));
+    rotateY += sensitivityY * mouseDeltaY;
+    rotateX -= sensitivityX * mouseDeltaX;
+    SetRelativeRotation(glm::vec3(rotateY, rotateX, 0));
   }
 }

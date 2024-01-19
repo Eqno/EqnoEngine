@@ -86,8 +86,8 @@ glm::vec3 ParseGLMVec3(const std::string& content) {
 }
 
 void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
-                           BaseObject* owner, const Value& val,
-                           const std::string& root) {
+                           const Value& val, const std::string& root,
+                           BaseObject* owner) {
   if (val.HasMember("Type") && val.HasMember("Path")) {
     SceneObject* object = nullptr;
     if (strcmp(val["Type"].GetString(), "BaseModel") == 0) {
@@ -103,6 +103,10 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
           graphics, parent,
           val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
           val["Path"].GetString(), owner);
+      if (val.HasMember("Transform")) {
+        dynamic_cast<BaseCamera*>(object)->InitRotation(
+            ParseGLMVec3(val["Transform"]["Rotation"].GetString()));
+      }
     } else {
       throw std::runtime_error("unknown scene object type!");
     }
@@ -123,7 +127,7 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
     if (val.HasMember("Sons")) {
       const auto& values = val["Sons"];
       for (unsigned int i = 0; i < values.Size(); ++i) {
-        TravelSceneObjectTree(graphics, object, owner, values[i], root);
+        TravelSceneObjectTree(graphics, object, values[i], root, owner);
       }
     }
   } else {
@@ -132,16 +136,15 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
 }
 
 void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
-                                     SceneObject*& parent, BaseObject* owner,
+                                     SceneObject*& parent,
                                      const std::string& path,
-                                     const std::string& root
-
-) {
+                                     const std::string& root,
+                                     BaseObject* owner) {
   if (Document* doc = GetJsonDocFromFile(path);
       doc->HasMember("SceneObjects")) {
     const auto& values = (*doc)["SceneObjects"];
     for (unsigned int i = 0; i < values.Size(); ++i) {
-      TravelSceneObjectTree(graphics, parent, owner, values[i], root);
+      TravelSceneObjectTree(graphics, parent, values[i], root, owner);
     }
   }
 }

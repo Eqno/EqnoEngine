@@ -11,8 +11,8 @@ class BaseTransform {
  public:
   void RegisterOwner(SceneObject* other) { _owner = other; }
 
-  glm::vec3 relativeRight = glm::vec3(1, 0, 0);
-  glm::vec3 absoluteRight = glm::vec3(1, 0, 0);
+  glm::vec3 relativeLeft = glm::vec3(1, 0, 0);
+  glm::vec3 absoluteLeft = glm::vec3(1, 0, 0);
 
   glm::vec3 relativeUp = glm::vec3(0, 1, 0);
   glm::vec3 absoluteUp = glm::vec3(0, 1, 0);

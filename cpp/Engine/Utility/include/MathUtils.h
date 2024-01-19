@@ -20,6 +20,9 @@ vec3 rotateZ(const vec3 p, const float a) {
   return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z);
 }
 vec3 rotate(vec3 point, const vec3 angles) {
-  return rotateZ(rotateY(rotateX(point, angles.x), angles.y), angles.z);
+  point = rotateX(point, angles.x);
+  point = rotateY(point, angles.y);
+  point = rotateZ(point, angles.z);
+  return point;
 }
 }  // namespace MathUtils

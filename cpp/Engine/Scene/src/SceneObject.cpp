@@ -2,10 +2,10 @@
 
 #include <Engine/Utility/include/MathUtils.h>
 
-#define VecInSubSpace(member)                                               \
-  transform.absolute##member =                                              \
-      parent->GetTransform().absoluteRight * transform.relative##member.x + \
-      parent->GetTransform().absoluteUp * transform.relative##member.y +    \
+#define VecInSubSpace(member)                                              \
+  transform.absolute##member =                                             \
+      parent->GetTransform().absoluteLeft * transform.relative##member.x + \
+      parent->GetTransform().absoluteUp * transform.relative##member.y +   \
       parent->GetTransform().absoluteForward * transform.relative##member.z;
 
 #define VecInGlobSpace(member) \
@@ -13,12 +13,12 @@
 
 void SceneObject::UpdateAbsoluteTransform() {
   if (parent != nullptr) {
-    VecInSubSpace(Right);
+    VecInSubSpace(Left);
     VecInSubSpace(Up);
     VecInSubSpace(Forward);
     VecInSubSpace(Position);
   } else {
-    VecInGlobSpace(Right);
+    VecInGlobSpace(Left);
     VecInGlobSpace(Up);
     VecInGlobSpace(Forward);
     VecInGlobSpace(Position);
@@ -33,45 +33,34 @@ void SceneObject::SetRelativePosition(const glm::vec3& pos) {
   UpdateAbsoluteTransform();
 }
 void SceneObject::SetRelativeRotation(const glm::vec3& rot) {
-  transform.relativeRight = MathUtils::rotate(
-      glm::vec3(glm::length(transform.relativeRight), 0, 0), rot);
+  transform.relativeLeft = MathUtils::rotate(
+      glm::vec3(glm::length(transform.relativeLeft), 0, 0), radians(rot));
   transform.relativeUp = MathUtils::rotate(
-      glm::vec3(0, glm::length(transform.relativeUp), 0), rot);
+      glm::vec3(0, glm::length(transform.relativeUp), 0), radians(rot));
   transform.relativeForward = MathUtils::rotate(
-      glm::vec3(0, 0, glm::length(transform.relativeForward)), rot);
+      glm::vec3(0, 0, glm::length(transform.relativeForward)), radians(rot));
   UpdateAbsoluteTransform();
 }
 void SceneObject::SetRelativeScale(const glm::vec3& sca) {
-  transform.relativeRight = glm::normalize(transform.relativeRight) * sca.x;
+  transform.relativeLeft = glm::normalize(transform.relativeLeft) * sca.x;
   transform.relativeUp = glm::normalize(transform.relativeUp) * sca.y;
   transform.relativeForward = glm::normalize(transform.relativeForward) * sca.z;
   UpdateAbsoluteTransform();
 }
 
-void SceneObject::AddRelativePosition(const glm::vec3& pos) {
-  transform.relativePosition += pos;
-  UpdateAbsoluteTransform();
-}
-
-void SceneObject::AddRelativeRotation(const glm::vec3& rot) {
-  transform.relativeRight = MathUtils::rotate(transform.relativeRight, rot);
-  transform.relativeUp = MathUtils::rotate(transform.relativeUp, rot);
-  transform.relativeForward = MathUtils::rotate(transform.relativeForward, rot);
-  UpdateAbsoluteTransform();
-}
-
-void SceneObject::AddRelativeScale(const glm::vec3& sca) {
-  transform.relativeRight = glm::normalize(transform.relativeRight) *
-                            (glm::length(transform.relativeRight) + sca.x);
-  transform.relativeUp = glm::normalize(transform.relativeUp) *
-                         (glm::length(transform.relativeUp) + sca.y);
-  transform.relativeForward = glm::normalize(transform.relativeForward) *
-                              (glm::length(transform.relativeForward) + sca.z);
-  UpdateAbsoluteTransform();
+void SceneObject::PrintSons() {
+  std::cout << "Parent: " << _name << ", Sons: ";
+  for (SceneObject* son : sons) {
+    std::cout << son->_name << ", ";
+  }
+  std::cout << std::endl;
+  for (SceneObject* son : sons) {
+    son->PrintSons();
+  }
 }
 
 glm::mat4x4 SceneObject::GetAbsoluteTransform() {
-  return glm::mat4x4(glm::vec4(transform.absoluteRight, 0),
+  return glm::mat4x4(glm::vec4(transform.absoluteLeft, 0),
                      glm::vec4(transform.absoluteUp, 0),
                      glm::vec4(transform.absoluteForward, 0),
                      glm::vec4(transform.absolutePosition, 1));
