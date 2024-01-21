@@ -19,6 +19,8 @@ glm::mat4x4 BaseCamera::GetProjMatrix() {
 }
 
 void BaseCamera::OnUpdate() {
+  std::cout << DeltaTime << std::endl;
+
   SceneObject::OnUpdate();
   PerformRotation();
   PerformTraslation();
@@ -27,27 +29,27 @@ void BaseCamera::OnUpdate() {
 void BaseCamera::PerformTraslation() {
   if (Input::Key::w) {
     SetRelativePosition(transform.relativePosition +
-                        transform.relativeForward * moveSpeed);
+                        transform.relativeForward * moveSpeed * DeltaTime);
   }
   if (Input::Key::a) {
     SetRelativePosition(transform.relativePosition +
-                        transform.relativeLeft * moveSpeed);
+                        transform.relativeLeft * moveSpeed * DeltaTime);
   }
   if (Input::Key::s) {
     SetRelativePosition(transform.relativePosition -
-                        transform.relativeForward * moveSpeed);
+                        transform.relativeForward * moveSpeed * DeltaTime);
   }
   if (Input::Key::d) {
     SetRelativePosition(transform.relativePosition -
-                        transform.relativeLeft * moveSpeed);
+                        transform.relativeLeft * moveSpeed * DeltaTime);
   }
   if (Input::Key::q) {
     SetRelativePosition(transform.relativePosition -
-                        transform.relativeUp * moveSpeed);
+                        transform.relativeUp * moveSpeed * DeltaTime);
   }
   if (Input::Key::e) {
     SetRelativePosition(transform.relativePosition +
-                        transform.relativeUp * moveSpeed);
+                        transform.relativeUp * moveSpeed * DeltaTime);
   }
 }
 
@@ -62,8 +64,8 @@ void BaseCamera::PerformRotation() {
   mouseLastPosY = Input::Mouse::posY;
 
   if (Input::Mouse::left || Input::Mouse::right) {
-    rotateY += sensitivityY * mouseDeltaY;
-    rotateX -= sensitivityX * mouseDeltaX;
+    rotateY += sensitivityY * mouseDeltaY * DeltaTime;
+    rotateX -= sensitivityX * mouseDeltaX * DeltaTime;
     SetRelativeRotation(glm::vec3(rotateY, rotateX, 0));
   }
 }

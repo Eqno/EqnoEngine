@@ -17,6 +17,7 @@ class BaseObject {
 
  protected:
   BaseObject* _owner;
+  static float DeltaTime;
   static std::unordered_map<std::string, std::list<BaseObject*>> BaseObjects;
 
   std::string _root = "Unset";

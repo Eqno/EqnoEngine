@@ -4,8 +4,6 @@
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/Utility/include/JsonUtils.h>
 
-#include <ranges>
-
 void Vulkan::CreateWindow(const std::string& title) {
   int width = JSON_CONFIG(Int, "DefaultWindowWidth");
   int height = JSON_CONFIG(Int, "DefaultWindowHeight");
@@ -41,6 +39,13 @@ void Vulkan::InitGraphics() {
 
 void Vulkan::RendererLoop() {
   while (!glfwWindowShouldClose(window.window)) {
+    static auto lastTime = std::chrono::steady_clock::now();
+    auto nowTime = std::chrono::steady_clock::now();
+
+    seconds duration = nowTime - lastTime;
+    DeltaTime = duration.count();
+    lastTime = nowTime;
+
     glfwPollEvents();
     render.DrawFrame(device, draws, depth, window, swapChain);
     device.WaitIdle();
@@ -72,8 +77,8 @@ void Vulkan::RendererLoop() {
         drawIter++;
       }
     }
+    Input::ResetDownUpFlags();
   }
-  Input::ResetDownUpFlags();
 }
 
 Draw* Vulkan::GetDrawByShader(const std::string& shaderPath) {

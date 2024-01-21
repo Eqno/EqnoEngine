@@ -6,6 +6,7 @@
 #include <assimp/vector3.h>
 #include <stb_image.h>
 
+#include <chrono>
 #include <functional>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,6 +25,11 @@ using UIntegers = std::vector<uint32_t>;
 using Strings = std::vector<std::string>;
 using CStrings = std::vector<const char*>;
 using StringSet = std::set<std::string>;
+
+using seconds = std::chrono::duration<float>;
+using milliseconds = std::chrono::duration<float, std::milli>;
+using microseconds = std::chrono::duration<float, std::micro>;
+using nanoseconds = std::chrono::duration<float, std::nano>;
 
 struct VertexData {
   aiVector3D pos;
