@@ -19,7 +19,7 @@ glm::mat4x4 BaseCamera::GetProjMatrix() {
 }
 
 void BaseCamera::OnUpdate() {
-  std::cout << DeltaTime << std::endl;
+  // std::cout << DeltaTime << std::endl;
 
   SceneObject::OnUpdate();
   PerformRotation();

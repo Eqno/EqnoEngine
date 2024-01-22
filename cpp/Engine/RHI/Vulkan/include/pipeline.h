@@ -17,7 +17,7 @@ class Pipeline : public Base {
   void CreateGraphicsPipeline(const VkDevice& device, const Shader& shader,
                               const std::string& shaderPath,
                               const VkRenderPass& renderPass);
-  void CreateDescriptorSetLayout(const VkDevice& device);
+  void CreateDescriptorSetLayout(const VkDevice& device, int texCount);
 
  public:
   [[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {
@@ -34,6 +34,6 @@ class Pipeline : public Base {
 
   void CreatePipeline(const Device& device, const Shader& shader,
                       const std::string& shaderPath,
-                      const VkRenderPass& renderPass);
+                      const VkRenderPass& renderPass, int texCount);
   void DestroyPipeline(const VkDevice& device) const;
 };

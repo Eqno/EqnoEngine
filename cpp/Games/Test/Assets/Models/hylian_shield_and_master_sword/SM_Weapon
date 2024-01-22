@@ -6,19 +6,28 @@
         "Shield_low": {
             "Material": "Assets/Materials/SMWeaponMaterial",
             "Textures": [
-                "Assets/Textures/hylian_shield_and_master_sword/M_Shield_Base_Color.tga.png"
+                "Assets/Textures/hylian_shield_and_master_sword/M_Shield_Base_Color.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Shield_Roughness.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Shield_Metallic.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Shield_Normal_DirectX.tga.png"
             ]
         },
         "Steath_low": {
             "Material": "Assets/Materials/SMWeaponMaterial",
             "Textures": [
-                "Assets/Textures/hylian_shield_and_master_sword/M_Steath_Base_Color.tga.png"
+                "Assets/Textures/hylian_shield_and_master_sword/M_Steath_Base_Color.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Steath_Roughness.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Steath_Metallic.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Steath_Normal_DirectX.tga.png"
             ]
         },
         "Sword_low": {
             "Material": "Assets/Materials/SMWeaponMaterial",
             "Textures": [
-                "Assets/Textures/hylian_shield_and_master_sword/M_Sword_Base_Color.tga.png"
+                "Assets/Textures/hylian_shield_and_master_sword/M_Sword_Base_Color.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Sword_Roughness.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Sword_Metallic.tga.png",
+                "Assets/Textures/hylian_shield_and_master_sword/M_Sword_Normal_DirectX.tga.png"
             ]
         }
     }

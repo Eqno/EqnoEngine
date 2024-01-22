@@ -6,8 +6,9 @@
 
 void Draw::CreateDrawResource(const Device& device,
                               const std::string& shaderPath,
-                              const VkRenderPass& renderPass) {
-  pipeline.CreatePipeline(device, shader, shaderPath, renderPass);
+                              const VkRenderPass& renderPass,
+                              const int texCount) {
+  pipeline.CreatePipeline(device, shader, shaderPath, renderPass, texCount);
 }
 
 void Draw::LoadDrawResource(const Device& device, const Render& render,

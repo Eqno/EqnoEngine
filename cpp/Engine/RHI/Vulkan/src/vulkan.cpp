@@ -81,10 +81,11 @@ void Vulkan::RendererLoop() {
   }
 }
 
-Draw* Vulkan::GetDrawByShader(const std::string& shaderPath) {
+Draw* Vulkan::GetDrawByShader(const std::string& shaderPath,
+                              const MeshData* data) {
   if (!draws.contains(shaderPath)) {
-    draws[shaderPath] =
-        Base::Create<Draw>(device, shaderPath, render.GetRenderPass());
+    draws[shaderPath] = Base::Create<Draw>(
+        device, shaderPath, render.GetRenderPass(), data->textures.size());
   }
   return draws[shaderPath];
 }
@@ -109,7 +110,7 @@ void Vulkan::CleanupGraphics() {
 
 void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
   for (const MeshData* data : meshDatas) {
-    Draw* draw = GetDrawByShader(GetRoot() + data->material.shader);
+    Draw* draw = GetDrawByShader(GetRoot() + data->material.shader, data);
     draw->LoadDrawResource(device, render, data);
   }
 }

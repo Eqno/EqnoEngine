@@ -1,6 +1,7 @@
 #include "../include/pipeline.h"
 
 #include <stdexcept>
+#include <vector>
 
 #include "../include/depth.h"
 #include "../include/device.h"
@@ -114,7 +115,7 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
   shader.DestroyModules(device);
 }
 
-void Pipeline::CreateDescriptorSetLayout(const VkDevice& device) {
+void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
   constexpr VkDescriptorSetLayoutBinding uboLayoutBinding{
       .binding = 0,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -123,15 +124,16 @@ void Pipeline::CreateDescriptorSetLayout(const VkDevice& device) {
       .pImmutableSamplers = nullptr,
   };
 
-  constexpr VkDescriptorSetLayoutBinding samplerLayoutBinding{
-      .binding = 1,
-      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-      .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .pImmutableSamplers = nullptr,
-  };
-
-  std::array bindings = {uboLayoutBinding, samplerLayoutBinding};
+  std::vector<VkDescriptorSetLayoutBinding> bindings({uboLayoutBinding});
+  for (unsigned int i = 0; i < texCount; i++) {
+    bindings.emplace_back(VkDescriptorSetLayoutBinding{
+        .binding = i + 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .pImmutableSamplers = nullptr,
+    });
+  }
 
   VkDescriptorSetLayoutCreateInfo layoutInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
@@ -147,8 +149,8 @@ void Pipeline::CreateDescriptorSetLayout(const VkDevice& device) {
 
 void Pipeline::CreatePipeline(const Device& device, const Shader& shader,
                               const std::string& shaderPath,
-                              const VkRenderPass& renderPass) {
-  CreateDescriptorSetLayout(device.GetLogical());
+                              const VkRenderPass& renderPass, int texCount) {
+  CreateDescriptorSetLayout(device.GetLogical(), texCount);
   CreateGraphicsPipeline(device.GetLogical(), shader, shaderPath, renderPass);
 }
 

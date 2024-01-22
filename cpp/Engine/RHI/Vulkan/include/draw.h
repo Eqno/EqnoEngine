@@ -37,7 +37,7 @@ class Draw : public Base {
   }
 
   void CreateDrawResource(const Device& device, const std::string& shaderPath,
-                          const VkRenderPass& renderPass);
+                          const VkRenderPass& renderPass, const int texCount);
 
   void LoadDrawResource(const Device& device, const Render& render,
                         const MeshData* data);
