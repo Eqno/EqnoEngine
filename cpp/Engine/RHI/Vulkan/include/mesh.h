@@ -72,4 +72,7 @@ class Mesh : public Base {
   const glm::mat4x4* GetModelMatrix();
   const glm::mat4x4* GetViewMatrix();
   const glm::mat4x4* GetProjMatrix();
+  const glm::vec4* GetBaseColor();
+  const float GetRoughness();
+  const float GetMetallic();
 };

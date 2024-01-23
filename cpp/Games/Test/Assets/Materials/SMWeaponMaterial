@@ -2,11 +2,9 @@
     "Name": "SMWeaponMaterial",
     
     "Shader": "Assets/Shaders/SMWeaponShader/glsl",
-    "Params": [
-        {
-            "Key": "BaseColor",
-            "Type": "Color4D",
-            "Value": "(1, 1, 1, 1)"
-        }
-    ]
+    "Params": {
+        "Color": "1,1,1,1",
+        "Roughness": 1,
+        "Metallic": 1
+    }
 }

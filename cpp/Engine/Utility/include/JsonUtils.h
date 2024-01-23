@@ -6,6 +6,7 @@
 class SceneObject;
 class BaseObject;
 class GraphicsInterface;
+struct MaterialData;
 
 #define JSON_CONFIG(type, key) \
   JsonUtils::Read##type##FromFile(GetRoot() + GetFile(), key)
@@ -28,7 +29,7 @@ void ParseSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
 std::pair<std::string, std::vector<std::string>> ParseMeshDataInfos(
     const std::string& filePath, const std::string& meshName);
 
-std::vector<std::string> ParseMaterialParams(const std::string& filePath);
+void ParseMaterialParams(const std::string& filePath, MaterialData& matData);
 
 void WriteStringToFile(const std::string& filePath, const std::string& key,
                        const std::string& value);

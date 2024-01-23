@@ -11,18 +11,6 @@
 
 #include <assimp/Importer.hpp>
 
-// std::unordered_map<std::string, aiMaterial*> defaultMaterialDatas;
-// void BaseModel::ParseFbxMaterials(const aiScene* scene) {
-// 	std::vector<std::string> materials;
-// 	for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
-// 		if (aiMaterial* material = scene->mMaterials[i]) {
-// 			aiString name;
-// 			aiGetMaterialString(material, AI_MATKEY_NAME, &name);
-// 			defaultMaterialDatas[name.C_Str()] = material;
-// 		}
-// 	}
-// }
-
 void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
                   MeshData* meshData) {
   for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
@@ -66,7 +54,7 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
 
     // Parse Material
     auto* mat = modelScene->GetMaterialByPath(fst);
-    meshData->material = {mat->GetShader(), mat->GetParams()};
+    meshData->material = mat->GetData();
 
     // Parse Data
     ParseFbxData(nodeTransform, mesh, meshData);

@@ -16,12 +16,13 @@ class BaseMaterial final : public BaseObject {
 
   virtual void OnCreate() override {
     data.shader = JSON_CONFIG(String, "Shader");
-    data.params = JsonUtils::ParseMaterialParams(GetRoot() + GetFile());
+    JsonUtils::ParseMaterialParams(GetRoot() + GetFile(), data);
   }
 
-  const std::string& GetShader() { return data.shader; }
+  const std::string& GetShader() const { return data.shader; }
+  const const MaterialData& GetData() { return data; }
 
-  const std::vector<std::string>& GetParams() { return data.params; }
-
-  std::vector<std::string> ParseFbxMaterials(const aiScene* scene);
+  const glm::vec4& GetColor() const { return data.color; }
+  const float GetRoughness() const { return data.roughness; }
+  const float GetMetallic() const { return data.metallic; }
 };

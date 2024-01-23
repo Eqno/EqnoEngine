@@ -69,21 +69,26 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
   return {};
 }
 
-glm::vec3 ParseGLMVec3(const std::string& content) {
-  glm::vec3 ret;
-  int count = 0;
-  std::string part;
-  for (const char c : content) {
-    if (c == ',') {
-      ret[count++] = stof(part);
-      part.clear();
-    } else {
-      part.push_back(c);
-    }
+#define DEFINE_ParseGLMVec_NUM(num)                            \
+  glm::vec##num ParseGLMVec##num(const std::string& content) { \
+    glm::vec##num ret;                                         \
+    int count = 0;                                             \
+    std::string part;                                          \
+    for (const char c : content) {                             \
+      if (c == ',') {                                          \
+        ret[count++] = stof(part);                             \
+        part.clear();                                          \
+      } else {                                                 \
+        part.push_back(c);                                     \
+      }                                                        \
+    }                                                          \
+    ret[count++] = stof(part);                                 \
+    return ret;                                                \
   }
-  ret[count++] = stof(part);
-  return ret;
-}
+DEFINE_ParseGLMVec_NUM(2);
+DEFINE_ParseGLMVec_NUM(3);
+DEFINE_ParseGLMVec_NUM(4);
+#undef DEFINE_ParseGLMVec_NUM
 
 void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
                            const Value& val, const std::string& root,
@@ -169,22 +174,20 @@ std::pair<std::string, std::vector<std::string>> JsonUtils::ParseMeshDataInfos(
   return infos;
 }
 
-std::vector<std::string> JsonUtils::ParseMaterialParams(
-    const std::string& filePath) {
-  std::vector<std::string> outParams;
+void JsonUtils::ParseMaterialParams(const std::string& filePath,
+                                    MaterialData& matData) {
   if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Params")) {
-    const Value& params = (*doc)["Params"];
-    for (unsigned int i = 0; i < params.Size(); ++i) {
-      if (params[i].HasMember("Key") && params[i].HasMember("Type") &&
-          params[i].HasMember("Value")) {
-        const Value& param = params[i];
-        outParams.emplace_back(param["Key"].GetString());
-        outParams.emplace_back(param["Type"].GetString());
-        outParams.emplace_back(param["Value"].GetString());
-      }
+    const auto& params = (*doc)["Params"];
+    if (params.HasMember("Color")) {
+      matData.color = ParseGLMVec4(params["Color"].GetString());
+    }
+    if (params.HasMember("Roughness")) {
+      matData.roughness = params["Roughness"].GetFloat();
+    }
+    if (params.HasMember("Metallic")) {
+      matData.metallic = params["Metallic"].GetFloat();
     }
   }
-  return outParams;
 }
 
 void JsonUtils::WriteStringToFile(const std::string& filePath,

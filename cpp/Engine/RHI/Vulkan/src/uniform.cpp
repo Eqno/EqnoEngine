@@ -157,6 +157,9 @@ void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) const {
       .model = *dynamic_cast<Descriptor*>(owner)->GetModelMatrix(),
       .view = *dynamic_cast<Descriptor*>(owner)->GetViewMatrix(),
       .proj = *dynamic_cast<Descriptor*>(owner)->GetProjMatrix(),
+      .color = *dynamic_cast<Descriptor*>(owner)->GetBaseColor(),
+      .roughness = dynamic_cast<Descriptor*>(owner)->GetRoughness(),
+      .metallic = dynamic_cast<Descriptor*>(owner)->GetMetallic(),
   };
   ubo.proj[1][1] *= -1;
   memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
@@ -179,4 +182,13 @@ const glm::mat4x4* Descriptor::GetViewMatrix() {
 }
 const glm::mat4x4* Descriptor::GetProjMatrix() {
   return dynamic_cast<Mesh*>(owner)->GetProjMatrix();
+}
+const glm::vec4* Descriptor::GetBaseColor() {
+  return dynamic_cast<Mesh*>(owner)->GetBaseColor();
+}
+const float Descriptor::GetRoughness() {
+  return dynamic_cast<Mesh*>(owner)->GetRoughness();
+}
+const float Descriptor::GetMetallic() {
+  return dynamic_cast<Mesh*>(owner)->GetMetallic();
 }

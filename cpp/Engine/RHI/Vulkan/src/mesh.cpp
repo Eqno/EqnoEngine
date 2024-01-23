@@ -46,3 +46,6 @@ const glm::mat4x4* Mesh::GetModelMatrix() {
 }
 const glm::mat4x4* Mesh::GetViewMatrix() { return &bridge->uniform.viewMatrix; }
 const glm::mat4x4* Mesh::GetProjMatrix() { return &bridge->uniform.projMatrix; }
+const glm::vec4* Mesh::GetBaseColor() { return &bridge->material.color; }
+const float Mesh::GetRoughness() { return bridge->material.roughness; }
+const float Mesh::GetMetallic() { return bridge->material.metallic; }

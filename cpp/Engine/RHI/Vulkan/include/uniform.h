@@ -20,6 +20,9 @@ struct UniformBufferObject {
   alignas(16) glm::mat4 model;
   alignas(16) glm::mat4 view;
   alignas(16) glm::mat4 proj;
+  alignas(16) glm::vec4 color;
+  alignas(16) float roughness;
+  alignas(16) float metallic;
 };
 
 class UniformBuffer : public Base {
@@ -107,4 +110,7 @@ class Descriptor : public Base {
   const glm::mat4x4* GetModelMatrix();
   const glm::mat4x4* GetViewMatrix();
   const glm::mat4x4* GetProjMatrix();
+  const glm::vec4* GetBaseColor();
+  const float GetRoughness();
+  const float GetMetallic();
 };

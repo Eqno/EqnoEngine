@@ -48,7 +48,9 @@ struct TextureData {
 
 struct MaterialData {
   std::string shader;
-  std::vector<std::string> params;
+  glm::vec4 color;
+  float roughness;
+  float metallic;
 };
 
 struct UniformData {
