@@ -9,6 +9,10 @@
 #include "../include/render.h"
 #include "../include/texture.h"
 
+#define UniformBufferNum 2
+#define TransformBufferIndex(i) (i * UniformBufferNum)
+#define MaterialBufferIndex(i) (i * UniformBufferNum + 1)
+
 void Descriptor::CreateDescriptorSets(
     const VkDevice& device, const Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout,
@@ -31,12 +35,12 @@ void Descriptor::CreateDescriptorSets(
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     std::vector<VkWriteDescriptorSet> descriptorWrites;
-    descriptorWrites.resize(textures.size() + 1);
+    descriptorWrites.resize(textures.size() + UniformBufferNum);
 
-    VkDescriptorBufferInfo bufferInfo{
-        .buffer = GetUniformBufferByIndex(i),
+    VkDescriptorBufferInfo transformBufferInfo{
+        .buffer = GetUniformBufferByIndex(TransformBufferIndex(i)),
         .offset = 0,
-        .range = sizeof(UniformBufferObject),
+        .range = sizeof(TransformBufferObject),
     };
     descriptorWrites[0] = {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -45,7 +49,22 @@ void Descriptor::CreateDescriptorSets(
         .dstArrayElement = 0,
         .descriptorCount = 1,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .pBufferInfo = &bufferInfo,
+        .pBufferInfo = &transformBufferInfo,
+    };
+
+    VkDescriptorBufferInfo materialBufferInfo{
+        .buffer = GetUniformBufferByIndex(MaterialBufferIndex(i)),
+        .offset = 0,
+        .range = sizeof(MaterialBufferObject),
+    };
+    descriptorWrites[1] = {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = descriptorSets[i],
+        .dstBinding = 1,
+        .dstArrayElement = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = &materialBufferInfo,
     };
 
     std::vector<VkDescriptorImageInfo> imageInfos;
@@ -57,10 +76,10 @@ void Descriptor::CreateDescriptorSets(
           .imageView = textures[j].GetTextureImageView(),
           .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       };
-      descriptorWrites[j + 1] = {
+      descriptorWrites[j + UniformBufferNum] = {
           .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
           .dstSet = descriptorSets[i],
-          .dstBinding = static_cast<uint32_t>(j + 1),
+          .dstBinding = static_cast<uint32_t>(j + UniformBufferNum),
           .dstArrayElement = 0,
           .descriptorCount = 1,
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -77,15 +96,20 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
                                       const Render& render,
                                       const size_t textureNum) {
   std::vector<VkDescriptorPoolSize> poolSizes;
-  poolSizes.resize(textureNum + 1);
+  poolSizes.resize(textureNum + 2);
 
   poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   poolSizes[0].descriptorCount =
       static_cast<uint32_t>(render.GetMaxFramesInFlight());
 
+  poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  poolSizes[1].descriptorCount =
+      static_cast<uint32_t>(render.GetMaxFramesInFlight());
+
   for (size_t i = 0; i < textureNum; i++) {
-    poolSizes[i + 1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[i + 1].descriptorCount =
+    poolSizes[i + UniformBufferNum].type =
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[i + UniformBufferNum].descriptorCount =
         static_cast<uint32_t>(render.GetMaxFramesInFlight());
   }
 
@@ -131,43 +155,57 @@ void Descriptor::DestroyDesciptor(const VkDevice& device,
 
 void UniformBuffer::CreateUniformBuffers(const Device& device,
                                          const Render& render) {
-  uniformBuffers.resize(render.GetMaxFramesInFlight());
-  uniformBuffersMemory.resize(render.GetMaxFramesInFlight());
-  uniformBuffersMapped.resize(render.GetMaxFramesInFlight());
+  uniformBuffers.resize(render.GetMaxFramesInFlight() * UniformBufferNum);
+  uniformBuffersMemory.resize(render.GetMaxFramesInFlight() * UniformBufferNum);
+  uniformBuffersMapped.resize(render.GetMaxFramesInFlight() * UniformBufferNum);
 
   for (int i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    Buffer::CreateBuffer(device, sizeof(UniformBufferObject),
+    Buffer::CreateBuffer(device, sizeof(TransformBufferObject),
                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                              VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         uniformBuffers[i], uniformBuffersMemory[i]);
+                         uniformBuffers[TransformBufferIndex(i)],
+                         uniformBuffersMemory[TransformBufferIndex(i)]);
 
-    vkMapMemory(device.GetLogical(), uniformBuffersMemory[i], 0,
-                sizeof(UniformBufferObject), 0, &uniformBuffersMapped[i]);
+    Buffer::CreateBuffer(device, sizeof(MaterialBufferObject),
+                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                         uniformBuffers[MaterialBufferIndex(i)],
+                         uniformBuffersMemory[MaterialBufferIndex(i)]);
+
+    vkMapMemory(device.GetLogical(),
+                uniformBuffersMemory[TransformBufferIndex(i)], 0,
+                sizeof(TransformBufferObject), 0,
+                &uniformBuffersMapped[TransformBufferIndex(i)]);
+    vkMapMemory(device.GetLogical(),
+                uniformBuffersMemory[MaterialBufferIndex(i)], 0,
+                sizeof(MaterialBufferObject), 0,
+                &uniformBuffersMapped[MaterialBufferIndex(i)]);
   }
 }
 
 void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) const {
-  static auto startTime = std::chrono::high_resolution_clock::now();
-  const auto currentTime = std::chrono::high_resolution_clock::now();
-  const auto time =
-      std::chrono::duration<float>(currentTime - startTime).count();
-
-  UniformBufferObject ubo{
+  TransformBufferObject transform{
       .model = *dynamic_cast<Descriptor*>(owner)->GetModelMatrix(),
       .view = *dynamic_cast<Descriptor*>(owner)->GetViewMatrix(),
       .proj = *dynamic_cast<Descriptor*>(owner)->GetProjMatrix(),
+  };
+  transform.proj[1][1] *= -1;
+  MaterialBufferObject material{
       .color = *dynamic_cast<Descriptor*>(owner)->GetBaseColor(),
       .roughness = dynamic_cast<Descriptor*>(owner)->GetRoughness(),
       .metallic = dynamic_cast<Descriptor*>(owner)->GetMetallic(),
   };
-  ubo.proj[1][1] *= -1;
-  memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+  memcpy(uniformBuffersMapped[TransformBufferIndex(currentImage)], &transform,
+         sizeof(transform));
+  memcpy(uniformBuffersMapped[MaterialBufferIndex(currentImage)], &material,
+         sizeof(material));
 }
 
 void UniformBuffer::DestroyUniformBuffer(const VkDevice& device,
                                          const Render& render) const {
-  for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
+  for (auto i = 0; i < render.GetMaxFramesInFlight() * UniformBufferNum; i++) {
     vkDestroyBuffer(device, uniformBuffers[i], nullptr);
     vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
   }
@@ -192,3 +230,7 @@ const float Descriptor::GetRoughness() {
 const float Descriptor::GetMetallic() {
   return dynamic_cast<Mesh*>(owner)->GetMetallic();
 }
+
+#undef UniformBufferNum
+#undef TransformBufferIndex
+#undef MaterialBufferIndex

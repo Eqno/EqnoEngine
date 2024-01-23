@@ -3,7 +3,7 @@
     
     "Shader": "Assets/Shaders/SMWeaponShader/glsl",
     "Params": {
-        "Color": "1,1,1,1",
+        "Color": "0.1,1,1,1",
         "Roughness": 1,
         "Metallic": 1
     }

@@ -16,10 +16,13 @@ using UniformBuffers = std::vector<VkBuffer>;
 using UniformMemories = std::vector<VkDeviceMemory>;
 using DescriptorSets = std::vector<VkDescriptorSet>;
 
-struct UniformBufferObject {
+struct TransformBufferObject {
   alignas(16) glm::mat4 model;
   alignas(16) glm::mat4 view;
   alignas(16) glm::mat4 proj;
+};
+
+struct MaterialBufferObject {
   alignas(16) glm::vec4 color;
   alignas(16) float roughness;
   alignas(16) float metallic;
@@ -41,9 +44,7 @@ class UniformBuffer : public Base {
   }
 
   void CreateUniformBuffers(const Device& device, const Render& render);
-
   void UpdateUniformBuffer(uint32_t currentImage) const;
-
   void DestroyUniformBuffer(const VkDevice& device, const Render& render) const;
 };
 

@@ -116,18 +116,26 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
 }
 
 void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
-  constexpr VkDescriptorSetLayoutBinding uboLayoutBinding{
+  constexpr VkDescriptorSetLayoutBinding transformLayoutBinding{
       .binding = 0,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .descriptorCount = 1,
       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
       .pImmutableSamplers = nullptr,
   };
+  constexpr VkDescriptorSetLayoutBinding materialLayoutBinding{
+      .binding = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+      .pImmutableSamplers = nullptr,
+  };
 
-  std::vector<VkDescriptorSetLayoutBinding> bindings({uboLayoutBinding});
+  std::vector<VkDescriptorSetLayoutBinding> bindings(
+      {transformLayoutBinding, materialLayoutBinding});
   for (unsigned int i = 0; i < texCount; i++) {
     bindings.emplace_back(VkDescriptorSetLayoutBinding{
-        .binding = i + 1,
+        .binding = i + 2,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .descriptorCount = 1,
         .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
