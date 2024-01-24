@@ -154,9 +154,13 @@ void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
   }
 }
 
-std::pair<std::string, std::vector<std::string>> JsonUtils::ParseMeshDataInfos(
+std::pair<std::string, Strings> JsonUtils::ParseMeshDataInfos(
     const std::string& filePath, const std::string& meshName) {
-  std::pair<std::string, std::vector<std::string>> infos;
+  std::pair<std::string, Strings> infos("Unset", Strings());
+  if (Document* doc = GetJsonDocFromFile(filePath);
+      doc->HasMember("Material")) {
+    infos.first = (*doc)["Material"].GetString();
+  }
   if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Meshes")) {
     if (const Value& val = (*doc)["Meshes"]; val.HasMember(meshName.c_str())) {
       const Value& info = (*doc)["Meshes"][meshName.c_str()];

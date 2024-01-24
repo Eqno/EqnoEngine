@@ -6,8 +6,8 @@
     "Near": 0.1,
     "Far": 1000,
 
-    "SensitivityX": 20,
-    "SensitivityY": 20,
+    "SensitivityX": 100,
+    "SensitivityY": 100,
     
     "MoveSpeed": 10,
     "speedIncreasingRate": 2

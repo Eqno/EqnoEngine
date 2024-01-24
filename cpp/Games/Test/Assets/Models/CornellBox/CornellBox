@@ -1,0 +1,50 @@
+{
+    "Name": "CornellBox",
+    "Type": "FBX",
+    "File": "Assets/Models/CornellBox/CornellBox.fbx",
+    "Material": "Assets/Materials/CornellBoxMaterial",
+    "Meshes": {
+        "Bottom": {
+            "Material": "Assets/Materials/CornellBoxMaterial",
+            "Textures": [
+                "Assets/Textures/CornellBox/White.png"
+            ]
+        },
+        "Left": {
+            "Material": "Assets/Materials/CornellBoxMaterial",
+            "Textures": [
+                "Assets/Textures/CornellBox/Green.jpg"
+            ]
+        },
+        "Right": {
+            "Material": "Assets/Materials/CornellBoxMaterial",
+            "Textures": [
+                "Assets/Textures/CornellBox/Red.jpg"
+            ]
+        },
+        "Back": {
+            "Material": "Assets/Materials/CornellBoxMaterial",
+            "Textures": [
+                "Assets/Textures/CornellBox/White.png"
+            ]
+        },
+        "Top": {
+            "Material": "Assets/Materials/CornellBoxMaterial",
+            "Textures": [
+                "Assets/Textures/CornellBox/White.png"
+            ]
+        },
+        "Small": {
+            "Material": "Assets/Materials/CornellBoxMaterial",
+            "Textures": [
+                "Assets/Textures/CornellBox/White.png"
+            ]
+        },
+        "Big": {
+            "Material": "Assets/Materials/CornellBoxMaterial",
+            "Textures": [
+                "Assets/Textures/CornellBox/White.png"
+            ]
+        }
+    }
+}

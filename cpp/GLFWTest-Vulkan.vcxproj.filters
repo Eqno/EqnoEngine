@@ -118,6 +118,12 @@
     <Filter Include="Engine\Camera\src">
       <UniqueIdentifier>{c2b4ea5f-652f-4ee2-97c5-1f9a66832f32}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Games\Test\Assets\Shaders\CornellBox">
+      <UniqueIdentifier>{62f2a250-d30f-4fd2-8537-8b2d29561512}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Games\Test\Assets\Shaders\CornellBox\glsl">
+      <UniqueIdentifier>{0825f149-767b-4da8-8fa1-029bd01e11c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
@@ -491,6 +497,12 @@
     </None>
     <None Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl\hello_triangle.frag">
       <Filter>Games\Test\Assets\Shaders\SMWeaponShader\glsl</Filter>
+    </None>
+    <None Include="Games\Test\Assets\Shaders\CornellBox\glsl\hello_triangle.frag">
+      <Filter>Games\Test\Assets\Shaders\CornellBox\glsl</Filter>
+    </None>
+    <None Include="Games\Test\Assets\Shaders\CornellBox\glsl\hello_triangle.vert">
+      <Filter>Games\Test\Assets\Shaders\CornellBox\glsl</Filter>
     </None>
   </ItemGroup>
 </Project>

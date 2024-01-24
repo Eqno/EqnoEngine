@@ -4,12 +4,40 @@
 #include <Engine/Camera/include/BaseCamera.h>
 #include <Engine/Model/include/BaseMaterial.h>
 #include <Engine/Utility/include/FileUtils.h>
+#include <Engine/Utility/include/JsonUtils.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/types.h>
 #include <stb_image.h>
 
 #include <assimp/Importer.hpp>
+
+#define LoadPNGTexture(path, textures)                                 \
+  {                                                                    \
+    int width, height, channels;                                       \
+    stbi_uc* data =                                                    \
+        stbi_load((path), &width, &height, &channels, STBI_rgb_alpha); \
+    if (!data) {                                                       \
+      throw std::runtime_error("failed to load texture image!");       \
+    }                                                                  \
+    (textures).emplace_back(width, height, channels, data);            \
+  }
+
+void ParseFbxTextures(aiMaterial* material, MeshData* meshData) {
+  for (int i = 0; i <= aiTextureType::AI_TEXTURE_TYPE_MAX; i++) {
+    int textureCount = material->GetTextureCount(static_cast<aiTextureType>(i));
+    for (int j = 0; j < textureCount; j++) {
+      aiString path;
+      if (material->GetTexture(static_cast<aiTextureType>(i), j, &path) ==
+          AI_SUCCESS) {
+        LoadPNGTexture(path.C_Str(), meshData->textures);
+      }
+    }
+  }
+  if (meshData->textures.empty()) {
+    throw std::runtime_error("please set textures for model or mesh!");
+  }
+}
 
 void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
                   MeshData* meshData) {
@@ -52,22 +80,21 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
     auto meshData =
         new MeshData{.state = {.alive = true}, .name = mesh->mName.C_Str()};
 
+    // Parse Data
+    ParseFbxData(nodeTransform, mesh, meshData);
+
     // Parse Material
     auto* mat = modelScene->GetMaterialByPath(fst);
     meshData->material = mat->GetData();
 
-    // Parse Data
-    ParseFbxData(nodeTransform, mesh, meshData);
-
-    // Parse Textures
-    for (const std::string& texPath : snd) {
-      int width, height, channels;
-      stbi_uc* data = stbi_load((rootPath + texPath).c_str(), &width, &height,
-                                &channels, STBI_rgb_alpha);
-      if (!data) {
-        throw std::runtime_error("failed to load texture image!");
+    if (snd.empty()) {
+      // Parse Textures
+      ParseFbxTextures(scene->mMaterials[mesh->mMaterialIndex], meshData);
+    } else {
+      // Parse Textures
+      for (const std::string& texPath : snd) {
+        LoadPNGTexture((rootPath + texPath).c_str(), meshData->textures);
       }
-      meshData->textures.emplace_back(width, height, channels, data);
     }
     modelMeshes.emplace_back(meshData);
   }

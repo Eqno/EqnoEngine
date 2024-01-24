@@ -12,7 +12,10 @@ class BaseScene final : public BaseObject {
 
  public:
   BaseMaterial* GetMaterialByPath(const std::string& path) {
-    if (!materials.contains(path)) {
+    if (path == "Unset") {
+      throw std::runtime_error("please set material for model or mesh!");
+    }
+    if (materials.contains(path) == false) {
       materials[path] = Create<BaseMaterial>(GetRoot(), path);
     }
     return materials[path];

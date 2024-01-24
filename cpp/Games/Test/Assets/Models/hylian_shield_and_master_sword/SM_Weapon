@@ -2,6 +2,7 @@
     "Name": "SM_Weapon",
     "Type": "FBX",
     "File": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon.fbx",
+    "Material": "Assets/Materials/SMWeaponMaterial",
     "Meshes": {
         "Shield_low": {
             "Material": "Assets/Materials/SMWeaponMaterial",

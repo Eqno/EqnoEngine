@@ -1,0 +1,10 @@
+{
+    "Name": "CornellBoxMaterial",
+    
+    "Shader": "Assets/Shaders/CornellBox/glsl",
+    "Params": {
+        "Color": "1,1,1,1",
+        "Roughness": 1,
+        "Metallic": 1
+    }
+}

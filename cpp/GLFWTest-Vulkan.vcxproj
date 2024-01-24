@@ -145,6 +145,8 @@
     <Image Include="Games\Test\Assets\Textures\viking_room.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Games\Test\Assets\Shaders\CornellBox\glsl\hello_triangle.frag" />
+    <None Include="Games\Test\Assets\Shaders\CornellBox\glsl\hello_triangle.vert" />
     <None Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl\hello_triangle.frag" />
     <None Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl\hello_triangle.vert" />
   </ItemGroup>
