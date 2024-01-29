@@ -12,6 +12,12 @@ layout(binding = 1) uniform MaterialBufferObject {
     float metallic;
 } material;
 
+layout(binding = 2) uniform LightBufferObject {
+    vec4 color;
+    float roughness;
+    float metallic;
+} lights[500];
+
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
 layout(location = 2) in vec3 inNormal;

@@ -22,4 +22,6 @@ class BaseTransform {
 
   glm::vec3 relativePosition = glm::vec3(0);
   glm::vec3 absolutePosition = glm::vec3(0);
+
+  glm::mat4x4 absoluteTransform = glm::mat4x4(1);
 };

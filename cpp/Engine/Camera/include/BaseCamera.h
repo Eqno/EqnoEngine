@@ -6,6 +6,9 @@ class GraphicsInterface;
 
 class BaseCamera : public SceneObject {
  protected:
+  glm::mat4x4 ViewMatrix = glm::mat4x4(1);
+  glm::mat4x4 ProjMatrix = glm::mat4x4(1);
+
   float fovy = 45;
   float aspect = -1;
   float near = 0.1;
@@ -41,8 +44,11 @@ class BaseCamera : public SceneObject {
   }
   virtual void OnUpdate() override;
 
-  glm::mat4x4 GetViewMatrix();
-  glm::mat4x4 GetProjMatrix();
+  void UpdateViewMatrix();
+  void UpdateProjMatrix();
+
+  glm::mat4x4& GetViewMatrix();
+  glm::mat4x4& GetProjMatrix();
 
   void PerformRotation();
   void PerformTraslation();

@@ -1,16 +1,40 @@
 #pragma once
 #pragma once
 
+#include <glm/glm.hpp>
 #include <string>
 #include <vector>
 
 class SceneObject;
 class BaseObject;
+class BaseScene;
 class GraphicsInterface;
+
 struct MaterialData;
 
 #define JSON_CONFIG(type, key) \
   JsonUtils::Read##type##FromFile(GetRoot() + GetFile(), key)
+
+#define DEFINE_ParseGLMVec_NUM(num)                                   \
+  inline glm::vec##num ParseGLMVec##num(const std::string& content) { \
+    glm::vec##num ret;                                                \
+    int count = 0;                                                    \
+    std::string part;                                                 \
+    for (const char c : content) {                                    \
+      if (c == ',') {                                                 \
+        ret[count++] = stof(part);                                    \
+        part.clear();                                                 \
+      } else {                                                        \
+        part.push_back(c);                                            \
+      }                                                               \
+    }                                                                 \
+    ret[count++] = stof(part);                                        \
+    return ret;                                                       \
+  }
+DEFINE_ParseGLMVec_NUM(2);
+DEFINE_ParseGLMVec_NUM(3);
+DEFINE_ParseGLMVec_NUM(4);
+#undef DEFINE_ParseGLMVec_NUM
 
 namespace JsonUtils {
 std::string ReadStringFromFile(const std::string& filePath,
@@ -22,14 +46,15 @@ float ReadFloatFromFile(const std::string& filePath, const std::string& key);
 int ReadIntFromFile(const std::string& filePath, const std::string& key);
 
 void ParseSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
-                          const std::string& path, const std::string& root,
+                          const std::string& root, const std::string& file,
                           BaseObject* owner);
-void ParseSceneLightChannels(const std::string& path, const std::string& root,
-                             BaseObject* owner);
+void ParseSceneLightChannels(const std::string& root, const std::string& file,
+                             BaseScene* owner);
 
 std::pair<std::string, std::vector<std::string>> ParseMeshDataInfos(
     const std::string& filePath, const std::string& meshName);
-void ParseMaterialParams(const std::string& filePath, MaterialData& matData);
+void ParseMaterialParams(const std::string& filePath, glm::vec4& color,
+                         float& roughness, float& metallic);
 
 void WriteStringToFile(const std::string& filePath, const std::string& key,
                        const std::string& value);
@@ -37,6 +62,5 @@ void WriteStringsToFile(const std::string& filePath, const std::string& key,
                         const std::vector<std::string>& values);
 void AppendStringToFile(const std::string& filePath, const std::string& key,
                         const std::string& value);
-
 void ClearDocumentCache();
 }  // namespace JsonUtils

@@ -4,23 +4,25 @@
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/System/include/GraphicsInterface.h>
 
-glm::mat4x4 BaseCamera::GetViewMatrix() {
-  return lookAt(transform.absolutePosition,
-                transform.absolutePosition + transform.absoluteForward,
-                transform.absoluteUp);
+void BaseCamera::UpdateViewMatrix() {
+  ViewMatrix = lookAt(transform.absolutePosition,
+                      transform.absolutePosition + transform.absoluteForward,
+                      transform.absoluteUp);
 }
-glm::mat4x4 BaseCamera::GetProjMatrix() {
+void BaseCamera::UpdateProjMatrix() {
   if (aspect < 0) {
-    return glm::perspective(glm::radians(fovy), graphics->GetViewportAspect(),
-                            near, far);
+    ProjMatrix = glm::perspective(glm::radians(fovy),
+                                  graphics->GetViewportAspect(), near, far);
   } else {
-    return glm::perspective(glm::radians(fovy), aspect, near, far);
+    ProjMatrix = glm::perspective(glm::radians(fovy), aspect, near, far);
   }
 }
+glm::mat4x4& BaseCamera::GetViewMatrix() { return ViewMatrix; }
+glm::mat4x4& BaseCamera::GetProjMatrix() { return ProjMatrix; }
 
 void BaseCamera::OnCreate() {
   SceneObject::OnCreate();
-  scene->AddCamera(name, this);
+  scene->RegisterCamera(name, this);
 
   ParseAspect(JSON_CONFIG(String, "Aspect"));
   fovy = JSON_CONFIG(Float, "FOVy");
@@ -35,11 +37,11 @@ void BaseCamera::OnCreate() {
 }
 
 void BaseCamera::OnUpdate() {
-  // std::cout << DeltaTime << std::endl;
-
   SceneObject::OnUpdate();
   PerformRotation();
   PerformTraslation();
+  UpdateViewMatrix();
+  UpdateProjMatrix();
 }
 
 void BaseCamera::PerformTraslation() {

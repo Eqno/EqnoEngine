@@ -89,7 +89,8 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
 
     // Parse Material
     auto* mat = modelScene->GetMaterialByPath(fst);
-    meshData->material = mat->GetData();
+    meshData->uniform.material = {&mat->GetShader(), &mat->GetColor(),
+                                  &mat->GetRoughness(), &mat->GetMetallic()};
 
     if (snd.empty()) {
       // Parse Textures
@@ -141,24 +142,32 @@ void BaseModel::OnCreate() {
   scene->GetGraphics()->ParseMeshDatas(meshes);
 }
 
-void BaseModel::OnUpdate() {
-  SceneObject::OnUpdate();
+void BaseModel::OnStart() {
+  SceneObject::OnStart();
 
+  BaseCamera* camera = GetCamera();
   for (MeshData* mesh : meshes) {
-    BaseCamera* camera = GetCamera();
+    mesh->uniform.transform.modelMatrix = &GetAbsoluteTransform();
+    mesh->uniform.transform.viewMatrix =
+        camera ? &camera->GetViewMatrix() : &Mat4x4Zero;
+    mesh->uniform.transform.projMatrix =
+        camera ? &camera->GetProjMatrix() : &Mat4x4Zero;
 
-    mesh->uniform.modelMatrix = GetAbsoluteTransform();
-    mesh->uniform.viewMatrix =
-        camera ? camera->GetViewMatrix() : glm::mat4x4(0);
-    mesh->uniform.projMatrix =
-        camera ? camera->GetProjMatrix() : glm::mat4x4(0);
+    LightChannel* channel = GetLightChannel();
+    for (BaseLight* light : channel->GetLights()) {
+      mesh->uniform.lights.emplace_back(
+          &light->GetType(), &light->GetIntensity(),
+          &light->GetAbsolutePosition(), &light->GetColor(),
+          &light->GetAbsoluteForward());
+    }
   }
 }
+
+void BaseModel::OnUpdate() { SceneObject::OnUpdate(); }
 
 void BaseModel::OnDestroy() {
   SceneObject::OnDestroy();
 
-  SceneObject::OnDestroy();
   for (const MeshData* mesh : meshes) {
     delete mesh;
   }

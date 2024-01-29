@@ -60,11 +60,20 @@ void SceneObject::PrintSons() {
   }
 }
 
-glm::mat4x4 SceneObject::GetAbsoluteTransform() {
-  return glm::mat4x4(glm::vec4(transform.absoluteLeft, 0),
-                     glm::vec4(transform.absoluteUp, 0),
-                     glm::vec4(transform.absoluteForward, 0),
-                     glm::vec4(transform.absolutePosition, 1));
+glm::mat4x4& SceneObject::GetAbsoluteTransform() {
+  transform.absoluteTransform = glm::mat4x4(
+      glm::vec4(transform.absoluteLeft, 0), glm::vec4(transform.absoluteUp, 0),
+      glm::vec4(transform.absoluteForward, 0),
+      glm::vec4(transform.absolutePosition, 1));
+  return transform.absoluteTransform;
+}
+
+glm::vec3& SceneObject::GetAbsolutePosition() {
+  return transform.absolutePosition;
+}
+
+glm::vec3& SceneObject::GetAbsoluteForward() {
+  return transform.absoluteForward;
 }
 
 void SceneObject::OnCreate() {
@@ -75,5 +84,3 @@ void SceneObject::OnCreate() {
   }
   transform.RegisterOwner(this);
 }
-
-void SceneObject::OnUpdate() {}

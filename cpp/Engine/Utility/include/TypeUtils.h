@@ -31,6 +31,16 @@ using milliseconds = std::chrono::duration<float, std::milli>;
 using microseconds = std::chrono::duration<float, std::micro>;
 using nanoseconds = std::chrono::duration<float, std::nano>;
 
+inline glm::mat4x4 Mat4x4Zero = glm::mat4x4(0);
+inline std::string StringUnset = "Unset";
+
+enum class LightType {
+  Unset = 0,
+  Direct = 1,
+  Point = 2,
+  Spot = 3,
+};
+
 struct VertexData {
   aiVector3D pos;
   aiColor4D color;
@@ -46,17 +56,31 @@ struct TextureData {
   stbi_uc* data;
 };
 
+struct LightData {
+  LightType* type;
+  float* intensity;
+  glm::vec3* pos;
+  glm::vec4* color;
+  glm::vec3* normal;
+};
+
 struct MaterialData {
-  std::string shader;
-  glm::vec4 color;
-  float roughness;
-  float metallic;
+  std::string* shader;
+  glm::vec4* color;
+  float* roughness;
+  float* metallic;
+};
+
+struct TransformData {
+  glm::mat4x4* modelMatrix;
+  glm::mat4x4* viewMatrix;
+  glm::mat4x4* projMatrix;
 };
 
 struct UniformData {
-  glm::mat4x4 modelMatrix;
-  glm::mat4x4 viewMatrix;
-  glm::mat4x4 projMatrix;
+  MaterialData material;
+  TransformData transform;
+  std::vector<LightData> lights;
 };
 
 struct StateData {
@@ -67,7 +91,6 @@ struct MeshData {
   StateData state;
   std::string name;
   UniformData uniform;
-  MaterialData material;
   std::vector<uint32_t> indices;
   std::vector<VertexData> vertices;
   std::vector<TextureData> textures;

@@ -6,7 +6,11 @@
 #include "Engine/Utility/include/TypeUtils.h"
 
 class BaseMaterial final : public BaseObject {
-  MaterialData data;
+ protected:
+  std::string shader;
+  glm::vec4 color;
+  float roughness;
+  float metallic;
 
  public:
   template <typename... Args>
@@ -15,14 +19,15 @@ class BaseMaterial final : public BaseObject {
   ~BaseMaterial() override = default;
 
   virtual void OnCreate() override {
-    data.shader = JSON_CONFIG(String, "Shader");
-    JsonUtils::ParseMaterialParams(GetRoot() + GetFile(), data);
+    BaseObject::OnCreate();
+
+    shader = JSON_CONFIG(String, "Shader");
+    JsonUtils::ParseMaterialParams(GetRoot() + GetFile(), color, roughness,
+                                   metallic);
   }
 
-  const std::string& GetShader() const { return data.shader; }
-  const const MaterialData& GetData() { return data; }
-
-  const glm::vec4& GetColor() const { return data.color; }
-  const float GetRoughness() const { return data.roughness; }
-  const float GetMetallic() const { return data.metallic; }
+  std::string& GetShader() { return shader; }
+  glm::vec4& GetColor() { return color; }
+  float& GetRoughness() { return roughness; }
+  float& GetMetallic() { return metallic; }
 };

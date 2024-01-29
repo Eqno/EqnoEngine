@@ -70,27 +70,6 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
   return {};
 }
 
-#define DEFINE_ParseGLMVec_NUM(num)                            \
-  glm::vec##num ParseGLMVec##num(const std::string& content) { \
-    glm::vec##num ret;                                         \
-    int count = 0;                                             \
-    std::string part;                                          \
-    for (const char c : content) {                             \
-      if (c == ',') {                                          \
-        ret[count++] = stof(part);                             \
-        part.clear();                                          \
-      } else {                                                 \
-        part.push_back(c);                                     \
-      }                                                        \
-    }                                                          \
-    ret[count++] = stof(part);                                 \
-    return ret;                                                \
-  }
-DEFINE_ParseGLMVec_NUM(2);
-DEFINE_ParseGLMVec_NUM(3);
-DEFINE_ParseGLMVec_NUM(4);
-#undef DEFINE_ParseGLMVec_NUM
-
 void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
                            const Value& val, const std::string& root,
                            BaseObject* owner) {
@@ -151,10 +130,10 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
 
 void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
                                      SceneObject*& parent,
-                                     const std::string& path,
                                      const std::string& root,
+                                     const std::string& file,
                                      BaseObject* owner) {
-  if (Document* doc = GetJsonDocFromFile(path);
+  if (Document* doc = GetJsonDocFromFile(root + file);
       doc->HasMember("SceneObjects")) {
     const auto& values = (*doc)["SceneObjects"];
     for (unsigned int i = 0; i < values.Size(); ++i) {
@@ -163,14 +142,20 @@ void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
   }
 }
 
-void JsonUtils::ParseSceneLightChannels(const std::string& path,
-                                        const std::string& root,
-                                        BaseObject* owner) {
-  if (Document* doc = GetJsonDocFromFile(path);
+void JsonUtils::ParseSceneLightChannels(const std::string& root,
+                                        const std::string& file,
+                                        BaseScene* owner) {
+  if (Document* doc = GetJsonDocFromFile(root + file);
       doc->HasMember("LightChannels")) {
     const auto& channels = (*doc)["LightChannels"];
     for (auto iter = channels.MemberBegin(); iter != channels.MemberEnd();
          ++iter) {
+      LightChannel* object = BaseObject::CreateImmediately<LightChannel>(
+          iter->name.GetString(), root, file, owner);
+      for (unsigned int i = 0; i < iter->value.Size(); ++i) {
+        object->AddLightToChannel(
+            owner->GetLightByName(iter->value[i].GetString()));
+      }
     }
   }
 }
@@ -200,17 +185,18 @@ std::pair<std::string, Strings> JsonUtils::ParseMeshDataInfos(
 }
 
 void JsonUtils::ParseMaterialParams(const std::string& filePath,
-                                    MaterialData& matData) {
+                                    glm::vec4& color, float& roughness,
+                                    float& metallic) {
   if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Params")) {
     const auto& params = (*doc)["Params"];
     if (params.HasMember("Color")) {
-      matData.color = ParseGLMVec4(params["Color"].GetString());
+      color = ParseGLMVec4(params["Color"].GetString());
     }
     if (params.HasMember("Roughness")) {
-      matData.roughness = params["Roughness"].GetFloat();
+      roughness = params["Roughness"].GetFloat();
     }
     if (params.HasMember("Metallic")) {
-      matData.metallic = params["Metallic"].GetFloat();
+      metallic = params["Metallic"].GetFloat();
     }
   }
 }

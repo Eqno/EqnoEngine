@@ -6,6 +6,7 @@
 #include "../include/depth.h"
 #include "../include/device.h"
 #include "../include/shader.h"
+#include "../include/uniform.h"
 #include "../include/vertex.h"
 
 void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
@@ -116,26 +117,26 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
 }
 
 void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
-  constexpr VkDescriptorSetLayoutBinding transformLayoutBinding{
-      .binding = 0,
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+  for (unsigned int i = 0; i < UniformBufferNum - 1; i++) {
+    bindings.push_back({
+        .binding = i,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+        .pImmutableSamplers = nullptr,
+    });
+  }
+  bindings.push_back({
+      .binding = UniformBufferNum - 1,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .descriptorCount = 1,
       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
       .pImmutableSamplers = nullptr,
-  };
-  constexpr VkDescriptorSetLayoutBinding materialLayoutBinding{
-      .binding = 1,
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .pImmutableSamplers = nullptr,
-  };
-
-  std::vector<VkDescriptorSetLayoutBinding> bindings(
-      {transformLayoutBinding, materialLayoutBinding});
+  });
   for (unsigned int i = 0; i < texCount; i++) {
     bindings.emplace_back(VkDescriptorSetLayoutBinding{
-        .binding = i + 2,
+        .binding = i + UniformBufferNum,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .descriptorCount = 1,
         .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -148,7 +149,6 @@ void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
       .bindingCount = static_cast<uint32_t>(bindings.size()),
       .pBindings = bindings.data(),
   };
-
   if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                   &descriptorSetLayout) != VK_SUCCESS) {
     throw std::runtime_error("Failed to create descriptor set layout!");

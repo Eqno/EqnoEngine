@@ -7,4 +7,9 @@ class SpotLight : public BaseLight {
   template <typename... Args>
   explicit SpotLight(Args&&... args) : BaseLight(std::forward<Args>(args)...) {}
   ~SpotLight() override = default;
+
+  virtual void OnCreate() override {
+    BaseLight::OnCreate();
+    type = LightType::Spot;
+  }
 };

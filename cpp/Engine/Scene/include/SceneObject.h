@@ -39,8 +39,9 @@ class SceneObject : public BaseObject {
   virtual void SetRelativeScale(const glm::vec3& scale);
 
   virtual void PrintSons();
-  virtual glm::mat4x4 GetAbsoluteTransform();
+  virtual glm::mat4x4& GetAbsoluteTransform();
+  virtual glm::vec3& GetAbsolutePosition();
+  virtual glm::vec3& GetAbsoluteForward();
 
   virtual void OnCreate() override;
-  virtual void OnUpdate() override;
 };

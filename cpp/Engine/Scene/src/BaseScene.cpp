@@ -1,6 +1,7 @@
 #include "../include/BaseScene.h"
 
 #include <Engine/Camera/include/BaseCamera.h>
+#include <Engine/Light/include/BaseLight.h>
 #include <Engine/Light/include/LightChannel.h>
 #include <Engine/Model/include/BaseMaterial.h>
 #include <Engine/Scene/include/SceneObject.h>
@@ -18,9 +19,9 @@ void BaseScene::OnCreate() {
   BaseObject::OnCreate();
   rootObject =
       Create<SceneObject>(rootObject, "RootObject", GetRoot(), GetFile());
-  JsonUtils::ParseSceneObjectTree(graphics, rootObject, GetRoot() + GetFile(),
-                                  GetRoot(), this);
-  JsonUtils::ParseSceneLightChannels(GetRoot() + GetFile(), GetRoot(), this);
+  JsonUtils::ParseSceneObjectTree(graphics, rootObject, GetRoot(), GetFile(),
+                                  this);
+  JsonUtils::ParseSceneLightChannels(GetRoot(), GetFile(), this);
 }
 
 void BaseScene::OnStart() {
@@ -53,13 +54,19 @@ BaseMaterial* BaseScene::GetMaterialByPath(const std::string& path) {
 BaseCamera* BaseScene::GetCameraByName(const std::string& name) {
   return cameras[name];
 }
+BaseLight* BaseScene::GetLightByName(const std::string& name) {
+  return lights[name];
+}
 LightChannel* BaseScene::GetLightChannelByName(const std::string& name) {
   return lightChannels[name];
 }
-void BaseScene::AddCamera(const std::string& name, BaseCamera* camera) {
+void BaseScene::RegisterCamera(const std::string& name, BaseCamera* camera) {
   cameras[name] = camera;
 }
-void BaseScene::AddLightChannel(const std::string& name,
+void BaseScene::RegisterLight(const std::string& name, BaseLight* light) {
+  lights[name] = light;
+}
+void BaseScene::RegisterLightChannel(const std::string& name,
                                 LightChannel* channel) {
   lightChannels[name] = channel;
 }

@@ -5,6 +5,9 @@
 #include "Engine/Utility/include/TypeUtils.h"
 #include "base.h"
 
+#define UniformBufferNum 3
+#define MaxLightNum 500
+
 class Mesh;
 class Device;
 class Render;
@@ -24,16 +27,27 @@ struct TransformBufferObject {
 
 struct MaterialBufferObject {
   alignas(16) glm::vec4 color;
-  alignas(16) float roughness;
-  alignas(16) float metallic;
+  alignas(4) float roughness;
+  alignas(4) float metallic;
+};
+
+struct LightBufferObject {
+  alignas(4) unsigned int type;
+  alignas(4) float intensity;
+  alignas(16) glm::vec3 pos;
+  alignas(16) glm::vec4 color;
+  alignas(16) glm::vec3 normal;
 };
 
 class UniformBuffer : public Base {
+  const MeshData* bridge = nullptr;
+
   UniformBuffers uniformBuffers;
   UniformMemories uniformBuffersMemory;
   UniformMapped uniformBuffersMapped;
 
  public:
+  const MeshData* GetBridgeData();
   [[nodiscard]] const UniformBuffers& GetUniformBuffers() const {
     return uniformBuffers;
   }
@@ -44,11 +58,13 @@ class UniformBuffer : public Base {
   }
 
   void CreateUniformBuffers(const Device& device, const Render& render);
-  void UpdateUniformBuffer(uint32_t currentImage) const;
+  void UpdateUniformBuffer(uint32_t currentImage);
   void DestroyUniformBuffer(const VkDevice& device, const Render& render) const;
 };
 
 class Descriptor : public Base {
+  const MeshData* bridge = nullptr;
+
   UniformBuffer uniformBuffer;
   VkDescriptorPool descriptorPool;
   DescriptorSets descriptorSets;
@@ -76,7 +92,7 @@ class Descriptor : public Base {
     RegisterMember(uniformBuffer);
   }
 
-  void UpdateUniformBuffer(const uint32_t currentImage) const {
+  void UpdateUniformBuffer(const uint32_t currentImage) {
     uniformBuffer.UpdateUniformBuffer(currentImage);
   }
 
@@ -106,12 +122,5 @@ class Descriptor : public Base {
                         const VkDescriptorSetLayout& descriptorSetLayout,
                         const std::vector<Texture>& textures);
   void DestroyDesciptor(const VkDevice& device, const Render& render) const;
-
-  // Update uniform buffer data
-  const glm::mat4x4* GetModelMatrix();
-  const glm::mat4x4* GetViewMatrix();
-  const glm::mat4x4* GetProjMatrix();
-  const glm::vec4* GetBaseColor();
-  const float GetRoughness();
-  const float GetMetallic();
+  const MeshData* GetBridgeData();
 };

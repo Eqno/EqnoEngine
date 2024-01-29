@@ -40,12 +40,3 @@ void Mesh::ParseBufferAndDescriptor(
   buffer.CreateBuffers(device, data.GetVertices(), data.GetIndices(), render);
   descriptor.CreateDescriptor(device, render, descriptorSetLayout, textures);
 }
-
-const glm::mat4x4* Mesh::GetModelMatrix() {
-  return &bridge->uniform.modelMatrix;
-}
-const glm::mat4x4* Mesh::GetViewMatrix() { return &bridge->uniform.viewMatrix; }
-const glm::mat4x4* Mesh::GetProjMatrix() { return &bridge->uniform.projMatrix; }
-const glm::vec4* Mesh::GetBaseColor() { return &bridge->material.color; }
-const float Mesh::GetRoughness() { return bridge->material.roughness; }
-const float Mesh::GetMetallic() { return bridge->material.metallic; }

@@ -2,6 +2,7 @@
 
 #include <Engine/System/include/BaseObject.h>
 
+class BaseLight;
 class BaseCamera;
 class SceneObject;
 class LightChannel;
@@ -14,15 +15,18 @@ class BaseScene final : public BaseObject {
 
   std::unordered_map<std::string, BaseMaterial*> materials;
   std::unordered_map<std::string, BaseCamera*> cameras;
+  std::unordered_map<std::string, BaseLight*> lights;
   std::unordered_map<std::string, LightChannel*> lightChannels;
 
  public:
   BaseMaterial* GetMaterialByPath(const std::string& path);
   BaseCamera* GetCameraByName(const std::string& name);
+  BaseLight* GetLightByName(const std::string& name);
   LightChannel* GetLightChannelByName(const std::string& name);
 
-  void AddCamera(const std::string& name, BaseCamera* camera);
-  void AddLightChannel(const std::string& name, LightChannel* channel);
+  void RegisterCamera(const std::string& name, BaseCamera* camera);
+  void RegisterLight(const std::string& name, BaseLight* light);
+  void RegisterLightChannel(const std::string& name, LightChannel* channel);
 
   template <typename... Args>
   explicit BaseScene(GraphicsInterface* graphics, Args&&... args)

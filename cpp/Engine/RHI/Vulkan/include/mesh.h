@@ -49,7 +49,7 @@ class Mesh : public Base {
     return descriptor.GetDescriptorSetByIndex(index);
   }
 
-  void UpdateUniformBuffer(const uint32_t currentImage) const {
+  void UpdateUniformBuffer(const uint32_t currentImage) {
     descriptor.UpdateUniformBuffer(currentImage);
   }
 
@@ -69,10 +69,5 @@ class Mesh : public Base {
   void DestroyMesh(const VkDevice& device, const Render& render) const;
 
   [[nodiscard]] const bool GetAlive() const { return bridge->state.alive; }
-  const glm::mat4x4* GetModelMatrix();
-  const glm::mat4x4* GetViewMatrix();
-  const glm::mat4x4* GetProjMatrix();
-  const glm::vec4* GetBaseColor();
-  const float GetRoughness();
-  const float GetMetallic();
+  const MeshData* GetBridgeData() { return bridge; }
 };
