@@ -1,5 +1,6 @@
 #include "../include/SceneObject.h"
 
+#include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Utility/include/MathUtils.h>
 
 #define VecInSubSpace(member)                                              \
@@ -68,6 +69,10 @@ glm::mat4x4 SceneObject::GetAbsoluteTransform() {
 
 void SceneObject::OnCreate() {
   BaseObject::OnCreate();
+  scene = dynamic_cast<BaseScene*>(_owner);
+  if (scene == nullptr) {
+    throw std::runtime_error("please create camera through scene method!");
+  }
   transform.RegisterOwner(this);
 }
 

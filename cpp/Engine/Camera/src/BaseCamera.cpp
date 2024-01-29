@@ -1,8 +1,8 @@
 #include <Engine/Camera/include/BaseCamera.h>
+#include <Engine/Scene/include/BaseScene.h>
+#include <Engine/Scene/include/SceneObject.h>
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/System/include/GraphicsInterface.h>
-
-std::unordered_map<std::string, BaseCamera*> BaseCamera::BaseCameras;
 
 glm::mat4x4 BaseCamera::GetViewMatrix() {
   return lookAt(transform.absolutePosition,
@@ -16,6 +16,22 @@ glm::mat4x4 BaseCamera::GetProjMatrix() {
   } else {
     return glm::perspective(glm::radians(fovy), aspect, near, far);
   }
+}
+
+void BaseCamera::OnCreate() {
+  SceneObject::OnCreate();
+  scene->AddCamera(name, this);
+
+  ParseAspect(JSON_CONFIG(String, "Aspect"));
+  fovy = JSON_CONFIG(Float, "FOVy");
+  near = JSON_CONFIG(Float, "Near");
+  far = JSON_CONFIG(Float, "Far");
+
+  sensitivityX = JSON_CONFIG(Float, "SensitivityX");
+  sensitivityY = JSON_CONFIG(Float, "SensitivityY");
+
+  moveSpeed = JSON_CONFIG(Float, "MoveSpeed");
+  speedIncreasingRate = JSON_CONFIG(Float, "speedIncreasingRate");
 }
 
 void BaseCamera::OnUpdate() {

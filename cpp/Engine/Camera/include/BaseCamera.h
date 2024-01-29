@@ -22,8 +22,6 @@ class BaseCamera : public SceneObject {
   GraphicsInterface* graphics;
 
  public:
-  static std::unordered_map<std::string, BaseCamera*> BaseCameras;
-
   template <typename... Args>
   explicit BaseCamera(GraphicsInterface* graphics, Args&&... args)
       : graphics(graphics), SceneObject(std::forward<Args>(args)...) {}
@@ -36,22 +34,7 @@ class BaseCamera : public SceneObject {
     aspect = width / height;
   }
 
-  virtual void OnCreate() override {
-    SceneObject::OnCreate();
-    BaseCameras[name] = this;
-
-    ParseAspect(JSON_CONFIG(String, "Aspect"));
-    fovy = JSON_CONFIG(Float, "FOVy");
-    near = JSON_CONFIG(Float, "Near");
-    far = JSON_CONFIG(Float, "Far");
-
-    sensitivityX = JSON_CONFIG(Float, "SensitivityX");
-    sensitivityY = JSON_CONFIG(Float, "SensitivityY");
-
-    moveSpeed = JSON_CONFIG(Float, "MoveSpeed");
-    speedIncreasingRate = JSON_CONFIG(Float, "speedIncreasingRate");
-  }
-
+  virtual void OnCreate() override;
   virtual void InitRotation(const glm::vec3& rot) {
     rotateX = rot.y;
     rotateY = rot.x;

@@ -1,25 +1,29 @@
 #pragma once
 
-#include <Engine/Model/include/BaseMaterial.h>
-#include <Engine/Scene/include/SceneObject.h>
 #include <Engine/System/include/BaseObject.h>
-#include <Engine/System/include/GraphicsInterface.h>
+
+class BaseCamera;
+class SceneObject;
+class LightChannel;
+class BaseMaterial;
+class GraphicsInterface;
 
 class BaseScene final : public BaseObject {
   SceneObject* rootObject = nullptr;
   GraphicsInterface* graphics = nullptr;
+
   std::unordered_map<std::string, BaseMaterial*> materials;
+  std::unordered_map<std::string, BaseCamera*> cameras;
+  std::unordered_map<std::string, LightChannel*> lightChannels;
 
  public:
-  BaseMaterial* GetMaterialByPath(const std::string& path) {
-    if (path == "Unset") {
-      throw std::runtime_error("please set material for model or mesh!");
-    }
-    if (materials.contains(path) == false) {
-      materials[path] = Create<BaseMaterial>(false, GetRoot(), path);
-    }
-    return materials[path];
-  }
+  BaseMaterial* GetMaterialByPath(const std::string& path);
+  BaseCamera* GetCameraByName(const std::string& name);
+  LightChannel* GetLightChannelByName(const std::string& name);
+
+  void AddCamera(const std::string& name, BaseCamera* camera);
+  void AddLightChannel(const std::string& name, LightChannel* channel);
+
   template <typename... Args>
   explicit BaseScene(GraphicsInterface* graphics, Args&&... args)
       : graphics(graphics), BaseObject(std::forward<Args>(args)...) {}
@@ -28,12 +32,7 @@ class BaseScene final : public BaseObject {
   [[nodiscard]] GraphicsInterface* GetGraphics() const { return graphics; }
 
   virtual void OnCreate() override;
-  virtual void OnStart() override {
-    BaseObject::OnStart();
-    puts("--- Scene Model ---");
-    rootObject->PrintSons();
-    puts("--- Model Loaded ---");
-  }
+  virtual void OnStart() override;
   virtual void OnUpdate() override { BaseObject::OnUpdate(); }
   virtual void OnStop() override { BaseObject::OnStop(); }
   virtual void OnDestroy() override;

@@ -1,11 +1,15 @@
 #pragma once
 
-#include "Engine/Model/include/BaseTransform.h"
-#include "Engine/System/include/BaseObject.h"
+#include <Engine/Model/include/BaseTransform.h>
+#include <Engine/System/include/BaseObject.h>
+
+class BaseScene;
 
 class SceneObject : public BaseObject {
  protected:
+  BaseScene* scene = nullptr;
   SceneObject* parent = nullptr;
+
   std::string name;
   std::list<SceneObject*> sons;
 

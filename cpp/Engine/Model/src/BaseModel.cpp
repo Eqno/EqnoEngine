@@ -1,8 +1,12 @@
 #include "../include/BaseModel.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <Engine/Camera/include/BaseCamera.h>
 #include <Engine/Model/include/BaseMaterial.h>
+#include <Engine/Scene/include/BaseScene.h>
+#include <Engine/Scene/include/SceneObject.h>
+#include <Engine/System/include/GraphicsInterface.h>
 #include <Engine/Utility/include/FileUtils.h>
 #include <Engine/Utility/include/JsonUtils.h>
 #include <assimp/postprocess.h>
@@ -134,13 +138,15 @@ void BaseModel::OnCreate() {
   } else if (JSON_CONFIG(String, "Type") == "OBJ") {
     // LoadObjDatas(JSON_CONFIG(String, "File"), 0);
   }
-  dynamic_cast<BaseScene*>(_owner)->GetGraphics()->ParseMeshDatas(meshes);
+  scene->GetGraphics()->ParseMeshDatas(meshes);
 }
 
 void BaseModel::OnUpdate() {
   SceneObject::OnUpdate();
 
   for (MeshData* mesh : meshes) {
+    BaseCamera* camera = GetCamera();
+
     mesh->uniform.modelMatrix = GetAbsoluteTransform();
     mesh->uniform.viewMatrix =
         camera ? camera->GetViewMatrix() : glm::mat4x4(0);
@@ -159,5 +165,25 @@ void BaseModel::OnDestroy() {
 }
 
 void BaseModel::SetCamera(const std::string& cameraName) {
-  camera = BaseCamera::BaseCameras[cameraName];
+  _cameraName = cameraName;
 }
+void BaseModel::SetLightChannel(const std::string& lightChannelName) {
+  _lightChannelName = lightChannelName;
+}
+
+BaseCamera* BaseModel::GetCamera() {
+  if (_camera != nullptr) {
+    return _camera;
+  } else {
+    return scene->GetCameraByName(_cameraName);
+  }
+}
+LightChannel* BaseModel::GetLightChannel() {
+  if (_lightChannel != nullptr) {
+    return _lightChannel;
+  } else {
+    return scene->GetLightChannelByName(_lightChannelName);
+  }
+}
+
+#undef LoadPNGTexture

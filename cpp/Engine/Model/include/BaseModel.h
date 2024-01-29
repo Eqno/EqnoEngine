@@ -12,9 +12,14 @@ class BaseModel final : public SceneObject {
   std::vector<MeshData*> meshes;
   GraphicsInterface* graphics;
 
-  BaseCamera* camera = nullptr;
-  LightChannel* lightChannel = nullptr;
-  void LoadFbxDatas(const std::string& fbxPath, const unsigned int parserFlags);
+  std::string _cameraName = "Unset";
+  BaseCamera* _camera = nullptr;
+
+  std::string _lightChannelName = "Unset";
+  LightChannel* _lightChannel = nullptr;
+
+  virtual void LoadFbxDatas(const std::string& fbxPath,
+                            const unsigned int parserFlags);
 
  public:
   template <typename... Args>
@@ -31,5 +36,9 @@ class BaseModel final : public SceneObject {
   virtual void OnActive() override { SceneObject::OnActive(); }
   virtual void OnDeactive() override { SceneObject::OnDeactive(); }
 
-  void SetCamera(const std::string& cameraName);
+  virtual void SetCamera(const std::string& cameraName);
+  virtual void SetLightChannel(const std::string& lightChannelName);
+
+  virtual BaseCamera* GetCamera();
+  virtual LightChannel* GetLightChannel();
 };

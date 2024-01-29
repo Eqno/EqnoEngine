@@ -104,6 +104,10 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
       if (val.HasMember("Camera")) {
         dynamic_cast<BaseModel*>(object)->SetCamera(val["Camera"].GetString());
       }
+      if (val.HasMember("LightChannel")) {
+        dynamic_cast<BaseModel*>(object)->SetLightChannel(
+            val["LightChannel"].GetString());
+      }
     } else if (strcmp(val["Type"].GetString(), "BaseCamera") == 0) {
       object = BaseObject::CreateImmediately<BaseCamera>(
           graphics, parent,
@@ -155,6 +159,18 @@ void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
     const auto& values = (*doc)["SceneObjects"];
     for (unsigned int i = 0; i < values.Size(); ++i) {
       TravelSceneObjectTree(graphics, parent, values[i], root, owner);
+    }
+  }
+}
+
+void JsonUtils::ParseSceneLightChannels(const std::string& path,
+                                        const std::string& root,
+                                        BaseObject* owner) {
+  if (Document* doc = GetJsonDocFromFile(path);
+      doc->HasMember("LightChannels")) {
+    const auto& channels = (*doc)["LightChannels"];
+    for (auto iter = channels.MemberBegin(); iter != channels.MemberEnd();
+         ++iter) {
     }
   }
 }

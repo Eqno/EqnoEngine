@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <string>
 #include <vector>
@@ -14,29 +15,26 @@ struct MaterialData;
 namespace JsonUtils {
 std::string ReadStringFromFile(const std::string& filePath,
                                const std::string& key);
-
 std::vector<std::string> ReadStringsFromFile(const std::string& filePath,
                                              const std::string& key);
 
 float ReadFloatFromFile(const std::string& filePath, const std::string& key);
-
 int ReadIntFromFile(const std::string& filePath, const std::string& key);
 
 void ParseSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
                           const std::string& path, const std::string& root,
                           BaseObject* owner);
+void ParseSceneLightChannels(const std::string& path, const std::string& root,
+                             BaseObject* owner);
 
 std::pair<std::string, std::vector<std::string>> ParseMeshDataInfos(
     const std::string& filePath, const std::string& meshName);
-
 void ParseMaterialParams(const std::string& filePath, MaterialData& matData);
 
 void WriteStringToFile(const std::string& filePath, const std::string& key,
                        const std::string& value);
-
 void WriteStringsToFile(const std::string& filePath, const std::string& key,
                         const std::vector<std::string>& values);
-
 void AppendStringToFile(const std::string& filePath, const std::string& key,
                         const std::string& value);
 
