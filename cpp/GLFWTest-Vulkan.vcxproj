@@ -20,6 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Camera\include\BaseCamera.h" />
+    <ClInclude Include="Engine\Light\include\BaseLight.h" />
+    <ClInclude Include="Engine\Light\include\LightChannel.h" />
+    <ClInclude Include="Engine\Light\include\SpotLight.h" />
     <ClInclude Include="Engine\Model\include\BaseTransform.h" />
     <ClInclude Include="Engine\Model\include\ModelConfig.h" />
     <ClInclude Include="Engine\Model\include\BaseMaterial.h" />
@@ -104,6 +107,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Camera\src\BaseCamera.cpp" />
+    <ClCompile Include="Engine\Light\src\BaseLight.cpp" />
+    <ClCompile Include="Engine\Light\src\LightChannel.cpp" />
+    <ClCompile Include="Engine\Light\src\SpotLight.cpp" />
     <ClCompile Include="Engine\Model\src\BaseMaterial.cpp" />
     <ClCompile Include="Engine\Model\src\BaseModel.cpp" />
     <ClCompile Include="Engine\Model\src\BaseTransform.cpp" />

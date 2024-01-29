@@ -1,6 +1,7 @@
 #include "../include/JsonUtils.h"
 
 #include <Engine/Camera/include/BaseCamera.h>
+#include <Engine/Light/include/SpotLight.h>
 #include <Engine/Model/include/BaseModel.h>
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Scene/include/SceneObject.h>
@@ -112,6 +113,10 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
         dynamic_cast<BaseCamera*>(object)->InitRotation(
             ParseGLMVec3(val["Transform"]["Rotation"].GetString()));
       }
+    } else if (strcmp(val["Type"].GetString(), "SpotLight") == 0) {
+      object = BaseObject::CreateImmediately<SpotLight>(
+          parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",
+          root, val["Path"].GetString(), owner);
     } else {
       throw std::runtime_error("unknown scene object type!");
     }

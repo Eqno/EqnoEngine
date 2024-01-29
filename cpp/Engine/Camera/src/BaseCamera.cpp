@@ -2,7 +2,7 @@
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/System/include/GraphicsInterface.h>
 
-std::unordered_map<std::string, BaseCamera*> BaseCamera::CameraMap;
+std::unordered_map<std::string, BaseCamera*> BaseCamera::BaseCameras;
 
 glm::mat4x4 BaseCamera::GetViewMatrix() {
   return lookAt(transform.absolutePosition,

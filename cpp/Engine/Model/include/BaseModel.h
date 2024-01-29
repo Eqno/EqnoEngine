@@ -1,17 +1,19 @@
 #pragma once
 
-#include "Engine/Scene/include/BaseScene.h"
-#include "Engine/Scene/include/SceneObject.h"
-#include "Engine/System/include/BaseObject.h"
-#include "Engine/Utility/include/TypeUtils.h"
+#include <Engine/Light/include/LightChannel.h>
+#include <Engine/Scene/include/BaseScene.h>
+#include <Engine/Scene/include/SceneObject.h>
+#include <Engine/System/include/BaseObject.h>
+#include <Engine/Utility/include/TypeUtils.h>
 
 class BaseCamera;
 
 class BaseModel final : public SceneObject {
   std::vector<MeshData*> meshes;
   GraphicsInterface* graphics;
-  BaseCamera* camera = nullptr;
 
+  BaseCamera* camera = nullptr;
+  LightChannel* lightChannel = nullptr;
   void LoadFbxDatas(const std::string& fbxPath, const unsigned int parserFlags);
 
  public:

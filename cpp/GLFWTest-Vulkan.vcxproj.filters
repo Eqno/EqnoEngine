@@ -124,6 +124,15 @@
     <Filter Include="Games\Test\Assets\Shaders\CornellBox\glsl">
       <UniqueIdentifier>{0825f149-767b-4da8-8fa1-029bd01e11c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Light">
+      <UniqueIdentifier>{61a604bf-31de-4600-a5b2-11d52ce583c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Light\include">
+      <UniqueIdentifier>{ec34a28e-a69e-455e-9558-c6eba7a41c7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Light\src">
+      <UniqueIdentifier>{7d6abcc3-8d5e-4674-8823-fe14f3570a81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
@@ -372,6 +381,15 @@
     <ClInclude Include="Engine\System\include\BaseInput.h">
       <Filter>Engine\System\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Light\include\BaseLight.h">
+      <Filter>Engine\Light\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Light\include\SpotLight.h">
+      <Filter>Engine\Light\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Light\include\LightChannel.h">
+      <Filter>Engine\Light\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -481,6 +499,15 @@
     </ClCompile>
     <ClCompile Include="Engine\System\src\BaseInput.cpp">
       <Filter>Engine\System\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Light\src\BaseLight.cpp">
+      <Filter>Engine\Light\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Light\src\SpotLight.cpp">
+      <Filter>Engine\Light\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Light\src\LightChannel.cpp">
+      <Filter>Engine\Light\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

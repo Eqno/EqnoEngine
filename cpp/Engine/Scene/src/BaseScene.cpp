@@ -5,7 +5,7 @@
 void DestroyObjects(SceneObject* root) {
   for (SceneObject* son : root->GetSons()) {
     DestroyObjects(son);
-    son->Destroy();
+    son->DestroyImmediately();
   }
 }
 
@@ -19,8 +19,11 @@ void BaseScene::OnCreate() {
 
 void BaseScene::OnDestroy() {
   BaseObject::OnDestroy();
+
   DestroyObjects(rootObject);
-  for (const BaseMaterial* material : materials | std::views::values) {
-    delete material;
+  rootObject->DestroyImmediately();
+
+  for (BaseMaterial* material : materials | std::views::values) {
+    material->DestroyImmediately();
   }
 }

@@ -1,5 +1,6 @@
 {
-    "Name": "CommonCamera",
+    "Name": "BaseCamera",
+
     "FOVy": 45,
     "Aspect": "Auto",
     "_Aspect": "16:9",

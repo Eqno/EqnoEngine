@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Engine/Model/include/BaseMaterial.h"
-#include "Engine/System/include/BaseObject.h"
-#include "Engine/System/include/GraphicsInterface.h"
-#include "SceneObject.h"
+#include <Engine/Model/include/BaseMaterial.h>
+#include <Engine/Scene/include/SceneObject.h>
+#include <Engine/System/include/BaseObject.h>
+#include <Engine/System/include/GraphicsInterface.h>
 
 class BaseScene final : public BaseObject {
   SceneObject* rootObject = nullptr;
@@ -16,7 +16,7 @@ class BaseScene final : public BaseObject {
       throw std::runtime_error("please set material for model or mesh!");
     }
     if (materials.contains(path) == false) {
-      materials[path] = Create<BaseMaterial>(GetRoot(), path);
+      materials[path] = Create<BaseMaterial>(false, GetRoot(), path);
     }
     return materials[path];
   }

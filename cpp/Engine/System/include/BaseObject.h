@@ -33,12 +33,23 @@ class BaseObject {
         _owner(owner),
         _name(JSON_CONFIG(String, "Name")) {}
 
+  BaseObject(bool active, std::string root, std::string file, BaseObject* owner)
+      : _alive(true),
+        _active(false),
+        _locked(false),
+        _root(std::move(root)),
+        _file(std::move(file)),
+        _owner(owner),
+        _name(JSON_CONFIG(String, "Name")) {}
+
   template <
       typename T, typename... Args,
       typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type = 0>
   T* Create(Args&&... args) {
     T* ret = new T(std::forward<Args>(args)..., this);
-    _BaseObjects[ret->_name].emplace_back(ret);
+    if (ret->_active == true) {
+      _BaseObjects[ret->_name].emplace_back(ret);
+    }
     ret->OnCreate();
     return ret;
   }
@@ -79,7 +90,9 @@ class BaseObject {
   }
   void DestroyImmediately() {
     if (this != nullptr) {
-      OnStop();
+      if (_active == true) {
+        OnStop();
+      }
       OnDestroy();
       delete this;
     }

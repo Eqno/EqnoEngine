@@ -22,7 +22,7 @@ class BaseCamera : public SceneObject {
   GraphicsInterface* graphics;
 
  public:
-  static std::unordered_map<std::string, BaseCamera*> CameraMap;
+  static std::unordered_map<std::string, BaseCamera*> BaseCameras;
 
   template <typename... Args>
   explicit BaseCamera(GraphicsInterface* graphics, Args&&... args)
@@ -38,7 +38,7 @@ class BaseCamera : public SceneObject {
 
   virtual void OnCreate() override {
     SceneObject::OnCreate();
-    CameraMap[name] = this;
+    BaseCameras[name] = this;
 
     ParseAspect(JSON_CONFIG(String, "Aspect"));
     fovy = JSON_CONFIG(Float, "FOVy");

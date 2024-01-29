@@ -159,5 +159,5 @@ void BaseModel::OnDestroy() {
 }
 
 void BaseModel::SetCamera(const std::string& cameraName) {
-  camera = BaseCamera::CameraMap[cameraName];
+  camera = BaseCamera::BaseCameras[cameraName];
 }

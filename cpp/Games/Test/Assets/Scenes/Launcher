@@ -1,8 +1,22 @@
 {
     "Name": "TestScene",
     
+    "LightChannels": {
+        "All": [
+            "MainLight"
+        ]
+    },
     "SceneObjects": [
         {
+            "Name": "MainLight",
+            "Type": "SpotLight",
+            "Path": "Assets/Lights/MainLight",
+            "Transform": {
+                "Position": "0,0,0",
+                "Rotation": "0,0,0",
+                "Scale": "1,1,1"
+            }
+        }, {
             "Name": "MainCamera",
             "Type": "BaseCamera",
             "Path": "Assets/Cameras/MainCamera",
@@ -16,6 +30,7 @@
             "Type": "BaseModel",
             "Path": "Assets/Models/viking_room/viking_room",
             "Camera": "MainCamera",
+            "LightChannel": "All",
             "Transform": {
                 "Position": "0,0,0",
                 "Rotation": "0,0,0",
@@ -27,6 +42,7 @@
                     "Type": "BaseModel",
                     "Path": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon",
                     "Camera": "MainCamera",
+                    "LightChannel": "All",
                     "Transform": {
                         "Position": "0,0,0",
                         "Rotation": "0,0,0",
@@ -39,6 +55,7 @@
             "Type": "BaseModel",
             "Path": "Assets/Models/CornellBox/CornellBox",
             "Camera": "MainCamera",
+            "LightChannel": "All",
             "Transform": {
                 "Position": "0,-10,-30",
                 "Rotation": "0,-90,0",
