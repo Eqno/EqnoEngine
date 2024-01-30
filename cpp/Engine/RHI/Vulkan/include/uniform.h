@@ -6,7 +6,6 @@
 #include "base.h"
 
 #define UniformBufferNum 3
-#define MaxLightNum 500
 
 class Mesh;
 class Device;
@@ -18,31 +17,6 @@ using UniformMapped = std::vector<void*>;
 using UniformBuffers = std::vector<VkBuffer>;
 using UniformMemories = std::vector<VkDeviceMemory>;
 using DescriptorSets = std::vector<VkDescriptorSet>;
-
-struct TransformBufferObject {
-  alignas(16) glm::mat4 model;
-  alignas(16) glm::mat4 view;
-  alignas(16) glm::mat4 proj;
-};
-
-struct MaterialBufferObject {
-  alignas(16) glm::vec4 color;
-  alignas(4) float roughness;
-  alignas(4) float metallic;
-};
-
-struct LightBufferObject {
-  alignas(4) unsigned int type;
-  alignas(4) float intensity;
-  alignas(16) glm::vec3 pos;
-  alignas(16) glm::vec4 color;
-  alignas(16) glm::vec3 normal;
-};
-
-struct LightsBufferObject {
-  alignas(4) unsigned int num;
-  alignas(16) LightBufferObject object[MaxLightNum];
-};
 
 class UniformBuffer : public Base {
   const MeshData* bridge = nullptr;
@@ -63,7 +37,7 @@ class UniformBuffer : public Base {
   }
 
   void CreateUniformBuffers(const Device& device, const Render& render);
-  void UpdateUniformBuffer(uint32_t currentImage);
+  void UpdateUniformBuffer(const uint32_t currentImage);
   void DestroyUniformBuffer(const VkDevice& device, const Render& render) const;
 };
 
@@ -92,6 +66,8 @@ class Descriptor : public Base {
   }
   Descriptor() = default;
   ~Descriptor() override = default;
+
+  const MeshData* GetBridgeData();
   virtual void TriggerRegisterMember() override {
     this;
     RegisterMember(uniformBuffer);
@@ -127,5 +103,4 @@ class Descriptor : public Base {
                         const VkDescriptorSetLayout& descriptorSetLayout,
                         const std::vector<Texture>& textures);
   void DestroyDesciptor(const VkDevice& device, const Render& render) const;
-  const MeshData* GetBridgeData();
 };

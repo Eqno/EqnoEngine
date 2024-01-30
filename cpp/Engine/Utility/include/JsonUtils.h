@@ -53,8 +53,7 @@ void ParseSceneLightChannels(const std::string& root, const std::string& file,
 
 std::pair<std::string, std::vector<std::string>> ParseMeshDataInfos(
     const std::string& filePath, const std::string& meshName);
-void ParseMaterialParams(const std::string& filePath, glm::vec4& color,
-                         float& roughness, float& metallic);
+void ParseMaterialParams(const std::string& filePath, MaterialData& params);
 
 void WriteStringToFile(const std::string& filePath, const std::string& key,
                        const std::string& value);

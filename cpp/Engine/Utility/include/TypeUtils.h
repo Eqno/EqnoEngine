@@ -33,13 +33,7 @@ using nanoseconds = std::chrono::duration<float, std::nano>;
 
 inline glm::mat4x4 Mat4x4Zero = glm::mat4x4(0);
 inline std::string StringUnset = "Unset";
-
-enum class LightType {
-  Unset = 0,
-  Direct = 1,
-  Point = 2,
-  Spot = 3,
-};
+inline constexpr int MaxLightNum = 500;
 
 struct VertexData {
   aiVector3D pos;
@@ -56,31 +50,45 @@ struct TextureData {
   stbi_uc* data;
 };
 
-struct LightData {
-  LightType* type;
-  float* intensity;
-  glm::vec3* pos;
-  glm::vec4* color;
-  glm::vec3* normal;
-};
-
-struct MaterialData {
-  std::string* shader;
-  glm::vec4* color;
-  float* roughness;
-  float* metallic;
+enum class LightType {
+  Unset = 0,
+  Direct = 1,
+  Point = 2,
+  Spot = 3,
 };
 
 struct TransformData {
-  glm::mat4x4* modelMatrix;
-  glm::mat4x4* viewMatrix;
-  glm::mat4x4* projMatrix;
+  alignas(16) glm::mat4 model;
+  alignas(16) glm::mat4 view;
+  alignas(16) glm::mat4 proj;
+};
+
+struct MaterialData {
+  alignas(16) glm::vec4 color;
+  alignas(4) float roughness;
+  alignas(4) float metallic;
+};
+
+struct LightData {
+  alignas(4) LightType type;
+  alignas(4) float intensity;
+  alignas(16) glm::vec3 pos;
+  alignas(16) glm::vec4 color;
+  alignas(16) glm::vec3 normal;
+};
+
+struct LightsData {
+  alignas(4) unsigned int num;
+  alignas(16) LightData object[MaxLightNum];
 };
 
 struct UniformData {
-  MaterialData material;
-  TransformData transform;
-  std::vector<LightData> lights;
+  std::string* shader;
+  glm::mat4* model;
+  glm::mat4* view;
+  glm::mat4* proj;
+  MaterialData* material;
+  std::vector<LightData*> lights;
 };
 
 struct StateData {

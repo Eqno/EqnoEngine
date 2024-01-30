@@ -89,8 +89,8 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
 
     // Parse Material
     auto* mat = modelScene->GetMaterialByPath(fst);
-    meshData->uniform.material = {&mat->GetShader(), &mat->GetColor(),
-                                  &mat->GetRoughness(), &mat->GetMetallic()};
+    meshData->uniform.shader = &mat->GetShader();
+    meshData->uniform.material = &mat->GetParams();
 
     if (snd.empty()) {
       // Parse Textures
@@ -146,19 +146,15 @@ void BaseModel::OnStart() {
   SceneObject::OnStart();
 
   BaseCamera* camera = GetCamera();
-  for (MeshData* mesh : meshes) {
-    mesh->uniform.transform.modelMatrix = &GetAbsoluteTransform();
-    mesh->uniform.transform.viewMatrix =
-        camera ? &camera->GetViewMatrix() : &Mat4x4Zero;
-    mesh->uniform.transform.projMatrix =
-        camera ? &camera->GetProjMatrix() : &Mat4x4Zero;
+  LightChannel* channel = GetLightChannel();
 
-    LightChannel* channel = GetLightChannel();
+  for (MeshData* mesh : meshes) {
+    mesh->uniform.model = &GetAbsoluteTransform();
+    mesh->uniform.view = camera ? &camera->GetViewMatrix() : &Mat4x4Zero;
+    mesh->uniform.proj = camera ? &camera->GetProjMatrix() : &Mat4x4Zero;
+
     for (BaseLight* light : channel->GetLights()) {
-      mesh->uniform.lights.emplace_back(
-          &light->GetType(), &light->GetIntensity(),
-          &light->GetAbsolutePosition(), &light->GetColor(),
-          &light->GetAbsoluteForward());
+      mesh->uniform.lights.emplace_back(&light->GetParams());
     }
   }
 }

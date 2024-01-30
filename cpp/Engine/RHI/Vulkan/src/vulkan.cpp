@@ -110,9 +110,10 @@ void Vulkan::CleanupGraphics() {
 
 void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
   for (const MeshData* data : meshDatas) {
-    std::string* shaderPath = data->uniform.material.shader;
     Draw* draw = GetDrawByShader(
-        GetRoot() + (shaderPath ? *shaderPath : StringUnset), data);
+        GetRoot() +
+            (data->uniform.shader ? *data->uniform.shader : StringUnset),
+        data);
     draw->LoadDrawResource(device, render, data);
   }
 }

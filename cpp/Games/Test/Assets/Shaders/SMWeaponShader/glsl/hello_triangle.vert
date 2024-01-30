@@ -37,8 +37,8 @@ layout(location = 1) out vec2 fragTexCoord;
 void main() {
     gl_Position = transform.proj * transform.view * transform.model * vec4(inPosition, 1.0);
     fragColor =  material.color * inColor;
-    if (lights.object[0].type == 3 && lights.object[0].intensity > 0.9) {
-        fragColor *= lights.object[0].color;
+    if (lights.object[0].type == 3) {
+        fragColor *= 3;
     }
     fragTexCoord = inTexCoord;
 }

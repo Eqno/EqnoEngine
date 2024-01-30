@@ -16,9 +16,7 @@ class Mesh : public Base {
   std::vector<Texture> textures;
 
   void ParseTextures(const Device& device, const Render& render);
-
   void ParseVertexAndIndex();
-
   void ParseBufferAndDescriptor(
       const Device& device, const Render& render,
       const VkDescriptorSetLayout& descriptorSetLayout);

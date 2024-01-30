@@ -185,18 +185,17 @@ std::pair<std::string, Strings> JsonUtils::ParseMeshDataInfos(
 }
 
 void JsonUtils::ParseMaterialParams(const std::string& filePath,
-                                    glm::vec4& color, float& roughness,
-                                    float& metallic) {
+                                    MaterialData& params) {
   if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Params")) {
-    const auto& params = (*doc)["Params"];
-    if (params.HasMember("Color")) {
-      color = ParseGLMVec4(params["Color"].GetString());
+    const auto& values = (*doc)["Params"];
+    if (values.HasMember("Color")) {
+      params.color = ParseGLMVec4(values["Color"].GetString());
     }
-    if (params.HasMember("Roughness")) {
-      roughness = params["Roughness"].GetFloat();
+    if (values.HasMember("Roughness")) {
+      params.roughness = values["Roughness"].GetFloat();
     }
-    if (params.HasMember("Metallic")) {
-      metallic = params["Metallic"].GetFloat();
+    if (values.HasMember("Metallic")) {
+      params.metallic = values["Metallic"].GetFloat();
     }
   }
 }

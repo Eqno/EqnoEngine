@@ -8,9 +8,7 @@
 class BaseMaterial final : public BaseObject {
  protected:
   std::string shader;
-  glm::vec4 color;
-  float roughness;
-  float metallic;
+  MaterialData params;
 
  public:
   template <typename... Args>
@@ -22,12 +20,9 @@ class BaseMaterial final : public BaseObject {
     BaseObject::OnCreate();
 
     shader = JSON_CONFIG(String, "Shader");
-    JsonUtils::ParseMaterialParams(GetRoot() + GetFile(), color, roughness,
-                                   metallic);
+    JsonUtils::ParseMaterialParams(GetRoot() + GetFile(), params);
   }
 
   std::string& GetShader() { return shader; }
-  glm::vec4& GetColor() { return color; }
-  float& GetRoughness() { return roughness; }
-  float& GetMetallic() { return metallic; }
+  MaterialData& GetParams() { return params; }
 };
