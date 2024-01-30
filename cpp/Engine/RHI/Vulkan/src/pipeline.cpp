@@ -118,7 +118,7 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
 
 void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
-  for (unsigned int i = 0; i < UniformBufferNum - 1; i++) {
+  for (unsigned int i = 0; i < UniformBufferNum; i++) {
     bindings.push_back({
         .binding = i,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -127,13 +127,6 @@ void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
         .pImmutableSamplers = nullptr,
     });
   }
-  bindings.push_back({
-      .binding = UniformBufferNum - 1,
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .pImmutableSamplers = nullptr,
-  });
   for (unsigned int i = 0; i < texCount; i++) {
     bindings.emplace_back(VkDescriptorSetLayoutBinding{
         .binding = i + UniformBufferNum,

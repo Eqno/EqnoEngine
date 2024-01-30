@@ -10,14 +10,41 @@
 #include "../include/texture.h"
 #include "../include/uniform.h"
 
-#define TransformDesctiptorIndex 0
-#define MaterialDesctiptorIndex 1
-#define LightsDescriptorIndex 2
+#define AddDescriptorWrites(index, type)                                 \
+  {                                                                      \
+    VkDescriptorBufferInfo bufferInfo{                                   \
+        .buffer = GetUniformBufferByIndex(i * UniformBufferNum + index), \
+        .offset = 0,                                                     \
+        .range = sizeof(type),                                           \
+    };                                                                   \
+    descriptorWrites[index] = {                                          \
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,                 \
+        .dstSet = descriptorSets[i],                                     \
+        .dstBinding = index,                                             \
+        .dstArrayElement = 0,                                            \
+        .descriptorCount = 1,                                            \
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,             \
+        .pBufferInfo = &bufferInfo,                                      \
+    };                                                                   \
+  }
 
-#define TransformBufferIndex(i) \
-  (i * UniformBufferNum + TransformDesctiptorIndex)
-#define MaterialBufferIndex(i) (i * UniformBufferNum + MaterialDesctiptorIndex)
-#define LightsBufferIndex(i) (i * UniformBufferNum + LightsDescriptorIndex)
+#define CreateAndMapBuffers(index, type)                                      \
+  {                                                                           \
+    Buffer::CreateBuffer(device, sizeof(type),                                \
+                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,                  \
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |                \
+                             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,            \
+                         uniformBuffers[i * UniformBufferNum + index],        \
+                         uniformBuffersMemory[i * UniformBufferNum + index]); \
+    vkMapMemory(device.GetLogical(),                                          \
+                uniformBuffersMemory[i * UniformBufferNum + index], 0,        \
+                sizeof(type), 0,                                              \
+                &uniformBuffersMapped[i * UniformBufferNum + index]);         \
+  }
+
+#define CopyMemoryOfBuffers(index, inst)                                       \
+  memcpy(uniformBuffersMapped[currentImage * UniformBufferNum + index], &inst, \
+         sizeof(inst))
 
 void Descriptor::CreateDescriptorSets(
     const VkDevice& device, const Render& render,
@@ -43,50 +70,9 @@ void Descriptor::CreateDescriptorSets(
     std::vector<VkWriteDescriptorSet> descriptorWrites;
     descriptorWrites.resize(textures.size() + UniformBufferNum);
 
-    VkDescriptorBufferInfo transformBufferInfo{
-        .buffer = GetUniformBufferByIndex(TransformBufferIndex(i)),
-        .offset = 0,
-        .range = sizeof(TransformBufferObject),
-    };
-    descriptorWrites[TransformDesctiptorIndex] = {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = descriptorSets[i],
-        .dstBinding = TransformDesctiptorIndex,
-        .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .pBufferInfo = &transformBufferInfo,
-    };
-
-    VkDescriptorBufferInfo materialBufferInfo{
-        .buffer = GetUniformBufferByIndex(MaterialBufferIndex(i)),
-        .offset = 0,
-        .range = sizeof(MaterialBufferObject),
-    };
-    descriptorWrites[MaterialDesctiptorIndex] = {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = descriptorSets[i],
-        .dstBinding = MaterialDesctiptorIndex,
-        .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .pBufferInfo = &materialBufferInfo,
-    };
-
-    VkDescriptorBufferInfo lightBufferInfo{
-        .buffer = GetUniformBufferByIndex(LightsBufferIndex(i)),
-        .offset = 0,
-        .range = sizeof(LightsBufferObject),
-    };
-    descriptorWrites[LightsDescriptorIndex] = {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = descriptorSets[i],
-        .dstBinding = LightsDescriptorIndex,
-        .dstArrayElement = 0,
-        .descriptorCount = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .pBufferInfo = &lightBufferInfo,
-    };
+    AddDescriptorWrites(0, TransformBufferObject);
+    AddDescriptorWrites(1, MaterialBufferObject);
+    AddDescriptorWrites(2, LightsBufferObject);
 
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.resize(textures.size());
@@ -119,18 +105,11 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
   std::vector<VkDescriptorPoolSize> poolSizes;
   poolSizes.resize(textureNum + UniformBufferNum);
 
-  poolSizes[TransformDesctiptorIndex].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  poolSizes[TransformDesctiptorIndex].descriptorCount =
-      static_cast<uint32_t>(render.GetMaxFramesInFlight());
-
-  poolSizes[MaterialDesctiptorIndex].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  poolSizes[MaterialDesctiptorIndex].descriptorCount =
-      static_cast<uint32_t>(render.GetMaxFramesInFlight());
-
-  poolSizes[LightsDescriptorIndex].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  poolSizes[LightsDescriptorIndex].descriptorCount =
-      static_cast<uint32_t>(render.GetMaxFramesInFlight());
-
+  for (int i = 0; i < UniformBufferNum; i++) {
+    poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[i].descriptorCount =
+        static_cast<uint32_t>(render.GetMaxFramesInFlight());
+  }
   for (size_t i = 0; i < textureNum; i++) {
     poolSizes[i + UniformBufferNum].type =
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -185,38 +164,9 @@ void UniformBuffer::CreateUniformBuffers(const Device& device,
   uniformBuffersMapped.resize(render.GetMaxFramesInFlight() * UniformBufferNum);
 
   for (int i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    Buffer::CreateBuffer(device, sizeof(TransformBufferObject),
-                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         uniformBuffers[TransformBufferIndex(i)],
-                         uniformBuffersMemory[TransformBufferIndex(i)]);
-
-    Buffer::CreateBuffer(device, sizeof(MaterialBufferObject),
-                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         uniformBuffers[MaterialBufferIndex(i)],
-                         uniformBuffersMemory[MaterialBufferIndex(i)]);
-
-    Buffer::CreateBuffer(device, sizeof(LightsBufferObject),
-                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         uniformBuffers[LightsBufferIndex(i)],
-                         uniformBuffersMemory[LightsBufferIndex(i)]);
-
-    vkMapMemory(device.GetLogical(),
-                uniformBuffersMemory[TransformBufferIndex(i)], 0,
-                sizeof(TransformBufferObject), 0,
-                &uniformBuffersMapped[TransformBufferIndex(i)]);
-    vkMapMemory(device.GetLogical(),
-                uniformBuffersMemory[MaterialBufferIndex(i)], 0,
-                sizeof(MaterialBufferObject), 0,
-                &uniformBuffersMapped[MaterialBufferIndex(i)]);
-    vkMapMemory(device.GetLogical(), uniformBuffersMemory[LightsBufferIndex(i)],
-                0, sizeof(LightsBufferObject), 0,
-                &uniformBuffersMapped[LightsBufferIndex(i)]);
+    CreateAndMapBuffers(0, TransformBufferObject);
+    CreateAndMapBuffers(1, MaterialBufferObject);
+    CreateAndMapBuffers(2, LightsBufferObject);
   }
 }
 
@@ -239,12 +189,9 @@ void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
                         *lightDatas[i].intensity, *lightDatas[i].pos,
                         *lightDatas[i].color, *lightDatas[i].normal};
   }
-  memcpy(uniformBuffersMapped[TransformBufferIndex(currentImage)], &transform,
-         sizeof(TransformBufferObject));
-  memcpy(uniformBuffersMapped[MaterialBufferIndex(currentImage)], &material,
-         sizeof(MaterialBufferObject));
-  memcpy(uniformBuffersMapped[LightsBufferIndex(currentImage)], &lights,
-         sizeof(LightsBufferObject));
+  CopyMemoryOfBuffers(0, transform);
+  CopyMemoryOfBuffers(1, material);
+  CopyMemoryOfBuffers(2, lights);
 }
 
 void UniformBuffer::DestroyUniformBuffer(const VkDevice& device,
@@ -269,10 +216,6 @@ const MeshData* Descriptor::GetBridgeData() {
   return bridge;
 }
 
-#undef TransformDesctiptorIndex
-#undef MaterialDesctiptorIndex
-#undef LightsDescriptorIndex
-
-#undef TransformBufferIndex
-#undef MaterialBufferIndex
-#undef LightsBufferIndex
+#undef CopyMemoryOfBuffers
+#undef CreateAndMapBuffers 
+#undef AddDescriptorWrites
