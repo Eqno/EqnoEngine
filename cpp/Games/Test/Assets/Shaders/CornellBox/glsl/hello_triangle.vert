@@ -12,13 +12,18 @@ layout(binding = 1) uniform MaterialBufferObject {
     float metallic;
 } material;
 
-layout(binding = 2) uniform LightBufferObject {
+struct LightBufferObject {
     uint type;
     float intensity;
     vec3 pos;
     vec4 color;
     vec3 normal;
-} lights[500];
+};
+
+layout(binding = 2) uniform LightsBufferObject {
+    uint num;
+    LightBufferObject object[];
+} lights;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
@@ -32,8 +37,8 @@ layout(location = 1) out vec2 fragTexCoord;
 void main() {
     gl_Position = transform.proj * transform.view * transform.model * vec4(inPosition, 1.0);
     fragColor =  material.color * inColor;
-    if (lights[0].type == 3 && lights[0].intensity > 0.9) {
-        fragColor *= lights[0].color;
+    if (lights.object[0].type == 3 && lights.object[0].intensity > 0.9) {
+        fragColor *= lights.object[0].color;
     }
     fragTexCoord = inTexCoord;
 }

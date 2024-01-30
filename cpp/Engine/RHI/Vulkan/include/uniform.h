@@ -39,6 +39,11 @@ struct LightBufferObject {
   alignas(16) glm::vec3 normal;
 };
 
+struct LightsBufferObject {
+  alignas(4) unsigned int num;
+  alignas(16) LightBufferObject object[MaxLightNum];
+};
+
 class UniformBuffer : public Base {
   const MeshData* bridge = nullptr;
 

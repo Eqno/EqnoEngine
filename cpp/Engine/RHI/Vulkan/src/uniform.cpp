@@ -12,12 +12,12 @@
 
 #define TransformDesctiptorIndex 0
 #define MaterialDesctiptorIndex 1
-#define LightDescriptorIndex 2
+#define LightsDescriptorIndex 2
 
 #define TransformBufferIndex(i) \
   (i * UniformBufferNum + TransformDesctiptorIndex)
 #define MaterialBufferIndex(i) (i * UniformBufferNum + MaterialDesctiptorIndex)
-#define LightBufferIndex(i) (i * UniformBufferNum + LightDescriptorIndex)
+#define LightsBufferIndex(i) (i * UniformBufferNum + LightsDescriptorIndex)
 
 void Descriptor::CreateDescriptorSets(
     const VkDevice& device, const Render& render,
@@ -74,14 +74,14 @@ void Descriptor::CreateDescriptorSets(
     };
 
     VkDescriptorBufferInfo lightBufferInfo{
-        .buffer = GetUniformBufferByIndex(LightBufferIndex(i)),
+        .buffer = GetUniformBufferByIndex(LightsBufferIndex(i)),
         .offset = 0,
-        .range = sizeof(LightBufferObject) * MaxLightNum,
+        .range = sizeof(LightsBufferObject),
     };
-    descriptorWrites[LightDescriptorIndex] = {
+    descriptorWrites[LightsDescriptorIndex] = {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .dstSet = descriptorSets[i],
-        .dstBinding = LightDescriptorIndex,
+        .dstBinding = LightsDescriptorIndex,
         .dstArrayElement = 0,
         .descriptorCount = 1,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -127,8 +127,8 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
   poolSizes[MaterialDesctiptorIndex].descriptorCount =
       static_cast<uint32_t>(render.GetMaxFramesInFlight());
 
-  poolSizes[LightDescriptorIndex].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  poolSizes[LightDescriptorIndex].descriptorCount =
+  poolSizes[LightsDescriptorIndex].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  poolSizes[LightsDescriptorIndex].descriptorCount =
       static_cast<uint32_t>(render.GetMaxFramesInFlight());
 
   for (size_t i = 0; i < textureNum; i++) {
@@ -199,12 +199,12 @@ void UniformBuffer::CreateUniformBuffers(const Device& device,
                          uniformBuffers[MaterialBufferIndex(i)],
                          uniformBuffersMemory[MaterialBufferIndex(i)]);
 
-    Buffer::CreateBuffer(device, sizeof(LightBufferObject) * MaxLightNum,
+    Buffer::CreateBuffer(device, sizeof(LightsBufferObject),
                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                              VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         uniformBuffers[LightBufferIndex(i)],
-                         uniformBuffersMemory[LightBufferIndex(i)]);
+                         uniformBuffers[LightsBufferIndex(i)],
+                         uniformBuffersMemory[LightsBufferIndex(i)]);
 
     vkMapMemory(device.GetLogical(),
                 uniformBuffersMemory[TransformBufferIndex(i)], 0,
@@ -214,9 +214,9 @@ void UniformBuffer::CreateUniformBuffers(const Device& device,
                 uniformBuffersMemory[MaterialBufferIndex(i)], 0,
                 sizeof(MaterialBufferObject), 0,
                 &uniformBuffersMapped[MaterialBufferIndex(i)]);
-    vkMapMemory(device.GetLogical(), uniformBuffersMemory[LightBufferIndex(i)],
-                0, sizeof(LightBufferObject), 0,
-                &uniformBuffersMapped[LightBufferIndex(i)]);
+    vkMapMemory(device.GetLogical(), uniformBuffersMemory[LightsBufferIndex(i)],
+                0, sizeof(LightsBufferObject), 0,
+                &uniformBuffersMapped[LightsBufferIndex(i)]);
   }
 }
 
@@ -232,17 +232,19 @@ void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
       .roughness = *GetBridgeData()->uniform.material.roughness,
       .metallic = *GetBridgeData()->uniform.material.metallic,
   };
-  std::vector<LightBufferObject> lights;
-  for (const LightData& light : GetBridgeData()->uniform.lights) {
-    lights.push_back({static_cast<unsigned int>(*light.type), *light.intensity,
-                      *light.pos, *light.color, *light.normal});
+  const std::vector<LightData>& lightDatas = GetBridgeData()->uniform.lights;
+  LightsBufferObject lights{lightDatas.size()};
+  for (int i = 0; i < lightDatas.size(); i++) {
+    lights.object[i] = {static_cast<unsigned int>(*lightDatas[i].type),
+                        *lightDatas[i].intensity, *lightDatas[i].pos,
+                        *lightDatas[i].color, *lightDatas[i].normal};
   }
   memcpy(uniformBuffersMapped[TransformBufferIndex(currentImage)], &transform,
          sizeof(TransformBufferObject));
   memcpy(uniformBuffersMapped[MaterialBufferIndex(currentImage)], &material,
          sizeof(MaterialBufferObject));
-  memcpy(uniformBuffersMapped[LightBufferIndex(currentImage)], lights.data(),
-         sizeof(LightBufferObject) * lights.size());
+  memcpy(uniformBuffersMapped[LightsBufferIndex(currentImage)], &lights,
+         sizeof(LightsBufferObject));
 }
 
 void UniformBuffer::DestroyUniformBuffer(const VkDevice& device,
@@ -269,8 +271,8 @@ const MeshData* Descriptor::GetBridgeData() {
 
 #undef TransformDesctiptorIndex
 #undef MaterialDesctiptorIndex
-#undef LightDescriptorIndex
+#undef LightsDescriptorIndex
 
 #undef TransformBufferIndex
 #undef MaterialBufferIndex
-#undef LightBufferIndex
+#undef LightsBufferIndex
