@@ -21,5 +21,5 @@ class LightChannel : public BaseObject {
   void AddLightToChannel(BaseLight* light) { lights.emplace_back(light); }
 
   const std::string& GetName() { return name; }
-  const std ::vector<BaseLight*>& GetLights() { return lights; }
+  std ::vector<BaseLight*>& GetLights() { return lights; }
 };

@@ -9,6 +9,7 @@
 #include <Engine/System/include/GraphicsInterface.h>
 #include <Engine/Utility/include/FileUtils.h>
 #include <Engine/Utility/include/JsonUtils.h>
+#include <Engine/Utility/include/MathUtils.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/types.h>
@@ -44,21 +45,29 @@ void ParseFbxTextures(aiMaterial* material, MeshData* meshData) {
 }
 
 void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
-                  MeshData* meshData) {
+                  MeshData* meshData, float importSize) {
   for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-    const aiVector3D pos = transform * mesh->mVertices[i];
-    const aiColor4D color = mesh->mColors[0]
-                                ? mesh->mColors[0][i]
-                                : aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
-    const aiVector3D normal =
-        transform *
-        (mesh->mNormals ? mesh->mNormals[i] : aiVector3D(0.0f, 0.0f, 1.0f));
-    const aiVector3D tangent = mesh->mTangents ? transform * mesh->mTangents[i]
-                                               : aiVector3D(1.0f, 0.0f, 0.0f);
-    const aiVector3D texCoord = mesh->mTextureCoords[0]
-                                    ? mesh->mTextureCoords[0][i]
-                                    : aiVector3D(0.0f, 0.0f, 0.0f);
-    meshData->vertices.emplace_back(pos, color, normal, tangent, texCoord);
+    aiVector3D pos = transform * mesh->mVertices[i];
+    aiVector3D root = transform * aiVector3D(0);
+
+    aiColor4D color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
+    if (mesh->HasVertexColors(0)) {
+      color = mesh->mColors[0][i];
+    }
+    aiVector3D normal = aiVector3D(0.0f, 0.0f, 0.0f);
+    if (mesh->HasNormals()) {
+      normal = (transform * mesh->mNormals[i] - root).Normalize();
+    }
+    aiVector3D tangent = aiVector3D(0.0f, 0.0f, 0.0f);
+    if (mesh->HasTangentsAndBitangents()) {
+      tangent = (transform * mesh->mTangents[i] - root).Normalize();
+    }
+    aiVector3D texCoord = aiVector3D(0.0f, 0.0f, 0.0f);
+    if (mesh->HasTextureCoords(0)) {
+      texCoord = mesh->mTextureCoords[0][i];
+    }
+    meshData->vertices.emplace_back(pos * importSize, color, normal, tangent,
+                                    texCoord);
   }
   for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
     const auto& face = mesh->mFaces[i];
@@ -71,12 +80,11 @@ void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
 void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
                    const aiScene* scene, const std::string& rootPath,
                    const std::string& modelPath, BaseScene* modelScene,
-                   std::vector<MeshData*>& modelMeshes) {
+                   std::vector<MeshData*>& modelMeshes, float importSize) {
   const aiMatrix4x4 nodeTransform = transform * node->mTransformation;
 
   for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
     const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-
     const auto [fst, snd] = JsonUtils::ParseMeshDataInfos(rootPath + modelPath,
                                                           mesh->mName.C_Str());
 
@@ -85,7 +93,7 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
         new MeshData{.state = {.alive = true}, .name = mesh->mName.C_Str()};
 
     // Parse Data
-    ParseFbxData(nodeTransform, mesh, meshData);
+    ParseFbxData(nodeTransform, mesh, meshData, importSize);
 
     // Parse Material
     auto* mat = modelScene->GetMaterialByPath(fst);
@@ -106,36 +114,34 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
     ParseFbxDatas(nodeTransform, node->mChildren[i], scene, rootPath, modelPath,
-                  modelScene, modelMeshes);
+                  modelScene, modelMeshes, importSize);
   }
 }
 
-void BaseModel::LoadFbxDatas(const std::string& fbxPath,
-                             const unsigned int parserFlags) {
+void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
   Assimp::Importer importer;
 
-  const aiScene* scene = importer.ReadFile(GetRoot() + fbxPath, parserFlags);
-  if (scene == nullptr) {
-  }
+  const aiScene* scene =
+      importer.ReadFile(GetRoot() + JSON_CONFIG(String, "File"), parserFlags);
 
-  if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-      !scene->mRootNode) {
+  if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+      scene->mRootNode == nullptr) {
     throw std::runtime_error(std::string("failed to load fbx model: ") +
                              importer.GetErrorString());
   }
 
   const aiMatrix4x4 identity;
   ParseFbxDatas(identity, scene->mRootNode, scene, GetRoot(), GetFile(),
-                dynamic_cast<BaseScene*>(_owner), meshes);
+                dynamic_cast<BaseScene*>(_owner), meshes,
+                JSON_CONFIG(Float, "ImportSize"));
 }
 
 void BaseModel::OnCreate() {
   SceneObject::OnCreate();
 
   if (JSON_CONFIG(String, "Type") == "FBX") {
-    LoadFbxDatas(JSON_CONFIG(String, "File"),
-                 aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-                     aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    LoadFbxDatas(aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+                 aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
   } else if (JSON_CONFIG(String, "Type") == "OBJ") {
     // LoadObjDatas(JSON_CONFIG(String, "File"), 0);
   }
@@ -149,13 +155,16 @@ void BaseModel::OnStart() {
   LightChannel* channel = GetLightChannel();
 
   for (MeshData* mesh : meshes) {
-    mesh->uniform.model = &GetAbsoluteTransform();
-    mesh->uniform.view = camera ? &camera->GetViewMatrix() : &Mat4x4Zero;
-    mesh->uniform.proj = camera ? &camera->GetProjMatrix() : &Mat4x4Zero;
+    mesh->uniform.lights = &channel->GetLights();
 
-    for (BaseLight* light : channel->GetLights()) {
-      mesh->uniform.lights.emplace_back(&light->GetParams());
-    }
+    mesh->uniform.cameraPosition =
+        camera ? &camera->GetAbsolutePosition() : &Vec3Zero;
+    mesh->uniform.cameraForward =
+        camera ? &camera->GetAbsoluteForward() : &Vec3Zero;
+
+    mesh->uniform.modelMatrix = &GetAbsoluteTransform();
+    mesh->uniform.viewMatrix = camera ? &camera->GetViewMatrix() : &Mat4x4Zero;
+    mesh->uniform.projMatrix = camera ? &camera->GetProjMatrix() : &Mat4x4Zero;
   }
 }
 

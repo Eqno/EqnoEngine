@@ -10,6 +10,6 @@ class SpotLight : public BaseLight {
 
   virtual void OnCreate() override {
     BaseLight::OnCreate();
-    params.type = LightType::Spot;
+    type = LightType::Spot;
   }
 };

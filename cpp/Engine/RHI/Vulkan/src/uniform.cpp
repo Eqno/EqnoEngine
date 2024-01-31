@@ -1,5 +1,7 @@
 #include "../include/uniform.h"
 
+#include <Engine/Light/include/BaseLight.h>
+
 #include <chrono>
 #include <stdexcept>
 
@@ -48,9 +50,10 @@
 
 #define DoSomethingWithBuffers(action) \
   {                                    \
-    action(0, TransformData);          \
+    action(0, CameraData);             \
     action(1, MaterialData);           \
-    action(2, LightsData);             \
+    action(2, TransformData);          \
+    action(3, LightsData);             \
   }
 
 void Descriptor::CreateDescriptorSets(
@@ -174,23 +177,35 @@ void UniformBuffer::CreateUniformBuffers(const Device& device,
 
 void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
   {
-    TransformData* buffer = reinterpret_cast<TransformData*>(
+    CameraData* buffer = reinterpret_cast<CameraData*>(
         uniformBuffersMapped[currentImage * UniformBufferNum]);
-
-    buffer->model = *GetBridgeData()->uniform.model;
-    buffer->view = *GetBridgeData()->uniform.view;
-    buffer->proj = *GetBridgeData()->uniform.proj;
-    buffer->proj[1][1] *= -1;
+    buffer->pos = *GetBridgeData()->uniform.cameraPosition;
+    buffer->normal = *GetBridgeData()->uniform.cameraForward;
   }
   CopyMemoryOfBuffers(1, GetBridgeData()->uniform.material);
   {
-    LightsData* buffer = reinterpret_cast<LightsData*>(
+    TransformData* buffer = reinterpret_cast<TransformData*>(
         uniformBuffersMapped[currentImage * UniformBufferNum + 2]);
+    buffer->modelMatrix = *GetBridgeData()->uniform.modelMatrix;
+    buffer->viewMatrix = *GetBridgeData()->uniform.viewMatrix;
+    buffer->projMatrix = *GetBridgeData()->uniform.projMatrix;
+  }
+  {
+    LightsData* buffer = reinterpret_cast<LightsData*>(
+        uniformBuffersMapped[currentImage * UniformBufferNum + 3]);
 
-    const std::vector<LightData*>& lights = GetBridgeData()->uniform.lights;
-    buffer->num = lights.size();
-    for (int i = 0; i < lights.size(); ++i) {
-      buffer->object[i] = *lights[i];
+    if (GetBridgeData()->uniform.lights != nullptr) {
+      std::vector<BaseLight*>& lights = *GetBridgeData()->uniform.lights;
+
+      buffer->num = lights.size();
+      for (int i = 0; i < lights.size(); ++i) {
+        buffer->object[i].type = lights[i]->GetType();
+        buffer->object[i].intensity = lights[i]->GetIntensity();
+        buffer->object[i].color = lights[i]->GetColor();
+
+        buffer->object[i].pos = lights[i]->GetAbsolutePosition();
+        buffer->object[i].normal = lights[i]->GetAbsoluteForward();
+      }
     }
   }
 }

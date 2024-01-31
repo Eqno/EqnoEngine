@@ -4,7 +4,9 @@
 
 class BaseLight : public SceneObject {
  protected:
-  LightData params;
+  LightType type = LightType::Unset;
+  float intensity = 1;
+  glm::vec4 color = glm::vec4(1);
 
  public:
   template <typename... Args>
@@ -13,5 +15,11 @@ class BaseLight : public SceneObject {
   ~BaseLight() override = default;
 
   virtual void OnCreate() override;
-  virtual LightData& GetParams() { return params; }
+
+  virtual LightType& GetType() { return type; }
+  virtual float& GetIntensity() { return intensity; }
+  virtual glm::vec4& GetColor() { return color; }
+
+  virtual glm::vec3& GetPosition() { return GetAbsolutePosition(); }
+  virtual glm::vec3& GetNormal() { return GetAbsoluteForward(); }
 };

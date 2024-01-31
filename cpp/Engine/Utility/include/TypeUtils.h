@@ -17,6 +17,7 @@
 #include <vector>
 
 class Vertex;
+class BaseLight;
 
 using Vertexes = std::vector<Vertex>;
 using Integers = std::vector<int32_t>;
@@ -31,7 +32,6 @@ using milliseconds = std::chrono::duration<float, std::milli>;
 using microseconds = std::chrono::duration<float, std::micro>;
 using nanoseconds = std::chrono::duration<float, std::nano>;
 
-inline glm::mat4x4 Mat4x4Zero = glm::mat4x4(0);
 inline std::string StringUnset = "Unset";
 inline constexpr int MaxLightNum = 500;
 
@@ -57,16 +57,21 @@ enum class LightType {
   Spot = 3,
 };
 
-struct TransformData {
-  alignas(16) glm::mat4 model;
-  alignas(16) glm::mat4 view;
-  alignas(16) glm::mat4 proj;
+struct CameraData {
+  alignas(16) glm::vec3 pos;
+  alignas(16) glm::vec3 normal;
 };
 
 struct MaterialData {
   alignas(16) glm::vec4 color;
   alignas(4) float roughness;
   alignas(4) float metallic;
+};
+
+struct TransformData {
+  alignas(16) glm::mat4 modelMatrix;
+  alignas(16) glm::mat4 viewMatrix;
+  alignas(16) glm::mat4 projMatrix;
 };
 
 struct LightData {
@@ -84,11 +89,15 @@ struct LightsData {
 
 struct UniformData {
   std::string* shader;
-  glm::mat4* model;
-  glm::mat4* view;
-  glm::mat4* proj;
   MaterialData* material;
-  std::vector<LightData*> lights;
+  std::vector<BaseLight*>* lights;
+
+  glm::vec3* cameraPosition;
+  glm::vec3* cameraForward;
+
+  glm::mat4* modelMatrix;
+  glm::mat4* viewMatrix;
+  glm::mat4* projMatrix;
 };
 
 struct StateData {
@@ -119,3 +128,6 @@ class Reflection {
     classMap.insert(std::make_pair(name, func));
   }
 };
+
+inline glm::mat4x4 Mat4x4Zero = glm::mat4x4(0);
+inline glm::vec3 Vec3Zero = glm::vec3(0);

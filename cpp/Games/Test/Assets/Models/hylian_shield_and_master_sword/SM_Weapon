@@ -3,6 +3,7 @@
     "Type": "FBX",
     "File": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon.fbx",
     "Material": "Assets/Materials/SMWeaponMaterial",
+    "ImportSize": 0.05,
     "Meshes": {
         "Shield_low": {
             "Material": "Assets/Materials/SMWeaponMaterial",

@@ -5,7 +5,7 @@
 #include "Engine/Utility/include/TypeUtils.h"
 #include "base.h"
 
-#define UniformBufferNum 3
+#define UniformBufferNum 4
 
 class Mesh;
 class Device;

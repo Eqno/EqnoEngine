@@ -18,8 +18,7 @@ class BaseModel final : public SceneObject {
   std::string _lightChannelName = "Unset";
   LightChannel* _lightChannel = nullptr;
 
-  virtual void LoadFbxDatas(const std::string& fbxPath,
-                            const unsigned int parserFlags);
+  virtual void LoadFbxDatas(const unsigned int parserFlags);
 
  public:
   template <typename... Args>

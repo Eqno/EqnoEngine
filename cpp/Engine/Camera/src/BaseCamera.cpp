@@ -5,20 +5,20 @@
 #include <Engine/System/include/GraphicsInterface.h>
 
 void BaseCamera::UpdateViewMatrix() {
-  ViewMatrix = lookAt(transform.absolutePosition,
+  viewMatrix = lookAt(transform.absolutePosition,
                       transform.absolutePosition + transform.absoluteForward,
                       transform.absoluteUp);
 }
+
 void BaseCamera::UpdateProjMatrix() {
   if (aspect < 0) {
-    ProjMatrix = glm::perspective(glm::radians(fovy),
+    projMatrix = glm::perspective(glm::radians(fovy),
                                   graphics->GetViewportAspect(), near, far);
   } else {
-    ProjMatrix = glm::perspective(glm::radians(fovy), aspect, near, far);
+    projMatrix = glm::perspective(glm::radians(fovy), aspect, near, far);
   }
+  projMatrix[1][1] *= -1;
 }
-glm::mat4x4& BaseCamera::GetViewMatrix() { return ViewMatrix; }
-glm::mat4x4& BaseCamera::GetProjMatrix() { return ProjMatrix; }
 
 void BaseCamera::OnCreate() {
   SceneObject::OnCreate();
@@ -38,8 +38,10 @@ void BaseCamera::OnCreate() {
 
 void BaseCamera::OnUpdate() {
   SceneObject::OnUpdate();
+
   PerformRotation();
   PerformTraslation();
+
   UpdateViewMatrix();
   UpdateProjMatrix();
 }

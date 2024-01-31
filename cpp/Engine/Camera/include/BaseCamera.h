@@ -6,8 +6,9 @@ class GraphicsInterface;
 
 class BaseCamera : public SceneObject {
  protected:
-  glm::mat4x4 ViewMatrix = glm::mat4x4(1);
-  glm::mat4x4 ProjMatrix = glm::mat4x4(1);
+  GraphicsInterface* graphics;
+  glm::mat4 viewMatrix;
+  glm::mat4 projMatrix;
 
   float fovy = 45;
   float aspect = -1;
@@ -22,7 +23,6 @@ class BaseCamera : public SceneObject {
 
   float rotateX = 0;
   float rotateY = 0;
-  GraphicsInterface* graphics;
 
  public:
   template <typename... Args>
@@ -44,12 +44,12 @@ class BaseCamera : public SceneObject {
   }
   virtual void OnUpdate() override;
 
+  void PerformRotation();
+  void PerformTraslation();
+
   void UpdateViewMatrix();
   void UpdateProjMatrix();
 
-  glm::mat4x4& GetViewMatrix();
-  glm::mat4x4& GetProjMatrix();
-
-  void PerformRotation();
-  void PerformTraslation();
+  glm::mat4& GetViewMatrix() { return viewMatrix; }
+  glm::mat4& GetProjMatrix() { return projMatrix; }
 };
