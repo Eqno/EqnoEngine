@@ -1,0 +1,7 @@
+{
+    "Name": "DefaultLitMaterial",
+    
+    "Shaders": [
+        "Assets/Shaders/DefaultLit/BlinnPhong/WithoutTexture"
+    ]
+}

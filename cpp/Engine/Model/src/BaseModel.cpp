@@ -17,6 +17,8 @@
 
 #include <assimp/Importer.hpp>
 
+std ::vector<BaseLight*> LightsEmpty;
+
 #define LoadPNGTexture(path, textures)                                 \
   {                                                                    \
     int width, height, channels;                                       \
@@ -162,7 +164,7 @@ void BaseModel::OnStart() {
   LightChannel* channel = GetLightChannel();
 
   for (MeshData* mesh : meshes) {
-    mesh->uniform.lights = &channel->GetLights();
+    mesh->uniform.lights = channel ? &channel->GetLights() : &LightsEmpty;
 
     mesh->uniform.cameraPosition =
         camera ? &camera->GetAbsolutePosition() : &Vec3Zero;

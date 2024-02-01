@@ -18,14 +18,28 @@
                 "Scale": "1,1,1"
             }
         }, {
-            "Name": "MainLight",
-            "Type": "SpotLight",
-            "Path": "Assets/Lights/MainLight",
+            "Name": "LampBulb",
+            "Type": "BaseModel",
+            "Path": "Assets/Models/LampBulb/LampBulb",
+            "Camera": "MainCamera",
+            "LightChannel": "None",
             "Transform": {
                 "Position": "0,15,-20",
                 "Rotation": "0,0,0",
                 "Scale": "1,1,1"
-            }
+            },
+            "Sons": [
+                {
+                    "Name": "MainLight",
+                    "Type": "SpotLight",
+                    "Path": "Assets/Lights/MainLight",
+                    "Transform": {
+                        "Position": "0,0,0",
+                        "Rotation": "0,0,0",
+                        "Scale": "1,1,1"
+                    }
+                }
+            ]
         }, {
             "Name": "VikingRoom",
             "Type": "BaseModel",

@@ -1,0 +1,12 @@
+{
+    "Name": "LampBulb",
+    "Type": "FBX",
+    "File": "Assets/Models/LampBulb/Light.fbx",
+    "Material": "Assets/Materials/DefaultLitMaterial",
+    "ImportSize": 0.003,
+    "_Meshes": {
+        "Sphere": {
+            "Material": "Assets/Materials/DefaultUnLitMaterial"
+        }
+    }
+}
