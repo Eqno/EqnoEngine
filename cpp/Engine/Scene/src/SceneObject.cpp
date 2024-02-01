@@ -32,12 +32,6 @@ void SceneObject::UpdateAbsoluteTransform() {
 
 void SceneObject::SetRelativePosition(const glm::vec3& pos) {
   transform.relativePosition = pos;
-  //if (parent != nullptr) {
-  //  transform.absolutePosition =
-  //      parent->GetTransform().absoluteLeft * transform.relativePosition.x +
-  //      parent->GetTransform().absoluteUp * transform.relativePosition.y +
-  //      parent->GetTransform().absoluteForward * transform.relativePosition.z;
-  //}
   UpdateAbsoluteTransform();
 }
 void SceneObject::SetRelativeRotation(const glm::vec3& rot) {

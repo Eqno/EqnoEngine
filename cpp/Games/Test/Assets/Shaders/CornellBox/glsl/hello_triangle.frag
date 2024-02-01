@@ -47,7 +47,7 @@ void main() {
         
         vec3 halfwayDir = normalize(lightDir + viewDir);
         float spec = pow(max(dot(normalize(fragNormal), halfwayDir), 0.), shininessStrength);
-        specular = spec * light * specularStrength;  
+        specular = spec * light * specularStrength;
     }
     vec4 texColor = texture(baseColorSampler, fragTexCoord);
     outColor = (ambient + diffuse + specular) * fragColor * texColor;

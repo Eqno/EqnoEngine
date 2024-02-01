@@ -63,7 +63,7 @@ struct TextureData {
 
 enum class LightType {
   Unset = 0,
-  Direct = 1,
+  Sun = 1,
   Point = 2,
   Spot = 3,
 };

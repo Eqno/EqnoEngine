@@ -10,6 +10,6 @@
     "SensitivityX": 100,
     "SensitivityY": 100,
     
-    "MoveSpeed": 10,
+    "MoveSpeed": 20,
     "speedIncreasingRate": 2
 }

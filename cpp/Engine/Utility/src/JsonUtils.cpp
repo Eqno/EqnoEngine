@@ -2,6 +2,7 @@
 
 #include <Engine/Camera/include/BaseCamera.h>
 #include <Engine/Light/include/SpotLight.h>
+#include <Engine/Light/include/SunLight.h>
 #include <Engine/Model/include/BaseModel.h>
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Scene/include/SceneObject.h>
@@ -100,6 +101,10 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
       object = BaseObject::CreateImmediately<SpotLight>(
           parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",
           root, val["Path"].GetString(), owner);
+    } else if (strcmp(val["Type"].GetString(), "SunLight") == 0) {
+      object = BaseObject::CreateImmediately<SunLight>(
+          parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",
+          root, val["Path"].GetString(), owner);
     } else {
       throw std::runtime_error("unknown scene object type!");
     }
@@ -153,8 +158,8 @@ void JsonUtils::ParseSceneLightChannels(const std::string& root,
       LightChannel* object = BaseObject::CreateImmediately<LightChannel>(
           iter->name.GetString(), root, file, owner);
       for (unsigned int i = 0; i < iter->value.Size(); ++i) {
-        object->AddLightToChannel(
-            owner->GetLightByName(iter->value[i].GetString()));
+        BaseLight* light = owner->GetLightByName(iter->value[i].GetString());
+        object->AddLightToChannel(light);
       }
     }
   }

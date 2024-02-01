@@ -3,7 +3,7 @@
     
     "LightChannels": {
         "All": [
-            "MainLight"
+            "SpotLight", "SunLight"
         ],
         "None": []
     },
@@ -15,6 +15,15 @@
             "Transform": {
                 "Position": "0,0,10",
                 "Rotation": "0,180,0",
+                "Scale": "1,1,1"
+            }
+        }, {
+            "Name": "SunLight",
+            "Type": "SunLight",
+            "Path": "Assets/Lights/SunLight",
+            "Transform": {
+                "Position": "0,0,0",
+                "Rotation": "0,0,0",
                 "Scale": "1,1,1"
             }
         }, {
@@ -30,9 +39,9 @@
             },
             "Sons": [
                 {
-                    "Name": "MainLight",
+                    "Name": "SpotLight",
                     "Type": "SpotLight",
-                    "Path": "Assets/Lights/MainLight",
+                    "Path": "Assets/Lights/SpotLight",
                     "Transform": {
                         "Position": "0,-2,0",
                         "Rotation": "0,0,0",
