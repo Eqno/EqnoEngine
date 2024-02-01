@@ -4,7 +4,7 @@
     "File": "Assets/Models/CornellBox/CornellBox.fbx",
     "Material": "Assets/Materials/CornellBoxMaterial",
     "ImportSize": 0.05,
-    "_Meshes": {
+    "Meshes": {
         "Bottom": {
             "Material": "Assets/Materials/CornellBoxMaterial",
             "Textures": [
@@ -26,7 +26,7 @@
         "Back": {
             "Material": "Assets/Materials/CornellBoxMaterial",
             "Textures": [
-                "Assets/Textures/CornellBox/White.png"
+                "Assets/Textures/CornellBox/BackTexture.jpg"
             ]
         },
         "Top": {

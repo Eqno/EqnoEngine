@@ -162,7 +162,7 @@ void JsonUtils::ParseSceneLightChannels(const std::string& root,
 
 MaterialInfo JsonUtils::ParseMeshDataInfos(const std::string& filePath,
                                            const std::string& meshName) {
-  MaterialInfo infos({"Assets/Materials/DefaultLitMaterial", false}, Strings());
+  MaterialInfo infos("Assets/Materials/ShaderErrorMaterial", Strings());
   if (Document* doc = GetJsonDocFromFile(filePath);
       doc->HasMember("Material")) {
     infos.first = (*doc)["Material"].GetString();

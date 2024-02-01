@@ -17,6 +17,8 @@ layout(binding = 3) uniform LightsData {
     LightData object[500];
 } lights;
 
+layout(binding = 4) uniform sampler2D baseColorSampler;
+
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;
 layout(location = 2) in vec3 fragNormal;
@@ -47,5 +49,6 @@ void main() {
         float spec = pow(max(dot(normalize(fragNormal), halfwayDir), 0.), shininessStrength);
         specular = spec * light * specularStrength;  
     }
-    outColor = (ambient + diffuse + specular) * fragColor;
+    vec4 texColor = texture(baseColorSampler, fragTexCoord);
+    outColor = (ambient + diffuse + specular) * fragColor * texColor;
 }
