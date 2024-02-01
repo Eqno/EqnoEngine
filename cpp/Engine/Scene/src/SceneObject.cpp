@@ -3,8 +3,9 @@
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Utility/include/MathUtils.h>
 
-#define VecInSubSpace(member)                                              \
+#define VecInSubSpace(member, origin)                                      \
   transform.absolute##member =                                             \
+      origin +                                                             \
       parent->GetTransform().absoluteLeft * transform.relative##member.x + \
       parent->GetTransform().absoluteUp * transform.relative##member.y +   \
       parent->GetTransform().absoluteForward * transform.relative##member.z;
@@ -14,10 +15,10 @@
 
 void SceneObject::UpdateAbsoluteTransform() {
   if (parent != nullptr) {
-    VecInSubSpace(Left);
-    VecInSubSpace(Up);
-    VecInSubSpace(Forward);
-    VecInSubSpace(Position);
+    VecInSubSpace(Left, Vec3Zero);
+    VecInSubSpace(Up, Vec3Zero);
+    VecInSubSpace(Forward, Vec3Zero);
+    VecInSubSpace(Position, parent->GetTransform().absolutePosition);
   } else {
     VecInGlobSpace(Left);
     VecInGlobSpace(Up);
@@ -31,12 +32,12 @@ void SceneObject::UpdateAbsoluteTransform() {
 
 void SceneObject::SetRelativePosition(const glm::vec3& pos) {
   transform.relativePosition = pos;
-  if (parent != nullptr) {
-    transform.absolutePosition =
-        parent->GetTransform().absoluteLeft * transform.relativePosition.x +
-        parent->GetTransform().absoluteUp * transform.relativePosition.y +
-        parent->GetTransform().absoluteForward * transform.relativePosition.z;
-  }
+  //if (parent != nullptr) {
+  //  transform.absolutePosition =
+  //      parent->GetTransform().absoluteLeft * transform.relativePosition.x +
+  //      parent->GetTransform().absoluteUp * transform.relativePosition.y +
+  //      parent->GetTransform().absoluteForward * transform.relativePosition.z;
+  //}
   UpdateAbsoluteTransform();
 }
 void SceneObject::SetRelativeRotation(const glm::vec3& rot) {

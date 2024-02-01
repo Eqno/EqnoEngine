@@ -50,21 +50,7 @@
                 "Position": "0,0,0",
                 "Rotation": "0,0,0",
                 "Scale": "1,1,1"
-            },
-            "Sons": [
-                {
-                    "Name": "MasterSword",
-                    "Type": "BaseModel",
-                    "Path": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon",
-                    "Camera": "MainCamera",
-                    "LightChannel": "All",
-                    "Transform": {
-                        "Position": "5,10,-30",
-                        "Rotation": "0,0,0",
-                        "Scale": "1,1,1"
-                    }
-                }
-            ]
+            }
         }, {
             "Name": "CornellBox",
             "Type": "BaseModel",
@@ -75,7 +61,21 @@
                 "Position": "0,-10,-30",
                 "Rotation": "0,0,0",
                 "Scale": "1,1,1"
-            }
+            },
+            "Sons": [
+                {
+                    "Name": "MasterSword",
+                    "Type": "BaseModel",
+                    "Path": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon",
+                    "Camera": "MainCamera",
+                    "LightChannel": "All",
+                    "Transform": {
+                        "Position": "5,20,0",
+                        "Rotation": "0,0,0",
+                        "Scale": "1,1,1"
+                    }
+                }
+            ]
         }
     ]
 }
