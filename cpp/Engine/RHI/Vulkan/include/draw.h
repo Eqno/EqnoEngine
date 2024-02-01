@@ -13,6 +13,10 @@ class Draw : public Base {
   std::list<Mesh*> meshes;
 
  public:
+  [[nodiscard]] int GetShaderFallbackIndex() {
+    return pipeline.GetShaderFallbackIndex();
+  }
+
   [[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {
     return pipeline.GetGraphicsPipeline();
   }
@@ -36,7 +40,8 @@ class Draw : public Base {
     RegisterMember(shader, pipeline);
   }
 
-  void CreateDrawResource(const Device& device, const std::string& shaderPath,
+  void CreateDrawResource(const Device& device, const std::string& rootPath,
+                          const std::vector<std::string>& shaderPaths,
                           const VkRenderPass& renderPass, const int texCount);
 
   void LoadDrawResource(const Device& device, const Render& render,

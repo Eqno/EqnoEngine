@@ -81,15 +81,6 @@ void Vulkan::RendererLoop() {
   }
 }
 
-Draw* Vulkan::GetDrawByShader(const std::string& shaderPath,
-                              const MeshData* data) {
-  if (!draws.contains(shaderPath)) {
-    draws[shaderPath] = Base::Create<Draw>(
-        device, shaderPath, render.GetRenderPass(), data->textures.size());
-  }
-  return draws[shaderPath];
-}
-
 void Vulkan::CleanupGraphics() {
   for (const auto& val : draws | std::views::values) {
     val->DestroyDrawResource(device.GetLogical(), render);
@@ -109,12 +100,42 @@ void Vulkan::CleanupGraphics() {
 }
 
 void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
-  for (const MeshData* data : meshDatas) {
-    Draw* draw = GetDrawByShader(
-        GetRoot() +
-            (data->uniform.shader ? *data->uniform.shader : StringUnset),
-        data);
-    draw->LoadDrawResource(device, render, data);
+  for (const MeshData* mesh : meshDatas) {
+    std::vector<std::string>& shaders = *mesh->uniform.shaders;
+
+    if (shaders.empty()) {
+      continue;
+    }
+
+    if (draws.contains(shaders[0])) {
+      draws[shaders[0]]->LoadDrawResource(device, render, mesh);
+    } else {
+      int findFallbackIndex = -1;
+      for (int i = 1; i < shaders.size(); i++) {
+        if (draws.contains(shaders[i])) {
+          findFallbackIndex = i;
+          break;
+        }
+      }
+
+      Draw* draw =
+          Base::Create<Draw>(device, GetRoot(), shaders, render.GetRenderPass(),
+                             mesh->textures.size());
+      int createFallbackIndex = draw->GetShaderFallbackIndex();
+
+      if (findFallbackIndex != -1 && findFallbackIndex < createFallbackIndex) {
+        draws[shaders[findFallbackIndex]]->LoadDrawResource(device, render,
+                                                            mesh);
+        draw->DestroyDrawResource(device.GetLogical(), render);
+        draw->Destroy();
+      } else if (createFallbackIndex != -1) {
+        draw->LoadDrawResource(device, render, mesh);
+        draws[shaders[createFallbackIndex]] = draw;
+      } else {
+        throw std::runtime_error("could not fallback to a valid shader!");
+      }
+    }
   }
 }
+
 float Vulkan::GetViewportAspect() { return swapChain.GetViewportAspect(); }

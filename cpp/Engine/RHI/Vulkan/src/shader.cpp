@@ -72,12 +72,15 @@ VkShaderModule Shader::CreateModule(const UIntegers& code,
 }
 
 ShaderStages Shader::AutoCreateStages(const VkDevice& device,
+                                      const std::string& rootPath,
                                       const std::string& shaderPath) const {
   ShaderStages shaderStages;
-  for (const auto& fileInfo : std::filesystem::directory_iterator(shaderPath)) {
+  for (const auto& fileInfo :
+       std::filesystem::directory_iterator(rootPath + shaderPath + "/glsl")) {
     const auto glslPath = fileInfo.path().filename().string();
-    shaderModules.emplace_back(
-        CreateModule(ReadGLSLFileAsBinary(glslPath, shaderPath), device));
+    shaderModules.emplace_back(CreateModule(
+        ReadGLSLFileAsBinary(glslPath, rootPath + shaderPath + "/glsl"),
+        device));
     shaderStages.push_back({
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         .stage = GetTypeByName(glslPath).stage,
@@ -86,6 +89,17 @@ ShaderStages Shader::AutoCreateStages(const VkDevice& device,
     });
   }
   return shaderStages;
+}
+
+[[nodiscard]] std::vector<ShaderStages> Shader::AutoCreateStagesSet(
+    const VkDevice& device, const std::string& rootPath,
+    const std::vector<std::string>& shaderPaths) const {
+  std::vector<ShaderStages> shaderStagesSet;
+  for (const std::string& shaderPath : shaderPaths) {
+    shaderStagesSet.emplace_back(
+        AutoCreateStages(device, rootPath, shaderPath));
+  }
+  return shaderStagesSet;
 }
 
 void Shader::DestroyModules(const VkDevice& device) const {

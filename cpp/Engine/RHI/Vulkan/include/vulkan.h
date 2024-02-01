@@ -31,7 +31,6 @@ class Vulkan final : public GraphicsInterface, public Base {
   void RendererLoop() override;
   void CleanupGraphics() override;
 
-  Draw* GetDrawByShader(const std::string& shaderPath, const MeshData* data);
   void ParseMeshDatas(std::vector<MeshData*>& meshDatas) override;
   float GetViewportAspect() override;
 

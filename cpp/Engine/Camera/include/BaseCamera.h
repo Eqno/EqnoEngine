@@ -7,12 +7,12 @@ class GraphicsInterface;
 class BaseCamera : public SceneObject {
  protected:
   GraphicsInterface* graphics;
-  glm::mat4 viewMatrix;
-  glm::mat4 projMatrix;
+  glm::mat4 viewMatrix = Mat4x4One;
+  glm::mat4 projMatrix = Mat4x4One;
 
   float fovy = 45;
   float aspect = -1;
-  float near = 0.1;
+  float near = 0.1f;
   float far = 1000;
 
   float sensitivityX = 1;

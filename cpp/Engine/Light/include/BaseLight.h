@@ -6,7 +6,7 @@ class BaseLight : public SceneObject {
  protected:
   LightType type = LightType::Unset;
   float intensity = 1;
-  glm::vec4 color = glm::vec4(1);
+  glm::vec4 color = Vec4One;
 
  public:
   template <typename... Args>

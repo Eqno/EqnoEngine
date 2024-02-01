@@ -160,9 +160,9 @@ void JsonUtils::ParseSceneLightChannels(const std::string& root,
   }
 }
 
-std::pair<std::string, Strings> JsonUtils::ParseMeshDataInfos(
-    const std::string& filePath, const std::string& meshName) {
-  std::pair<std::string, Strings> infos("Unset", Strings());
+MaterialInfo JsonUtils::ParseMeshDataInfos(const std::string& filePath,
+                                           const std::string& meshName) {
+  MaterialInfo infos({"Assets/Materials/DefaultLitMaterial", false}, Strings());
   if (Document* doc = GetJsonDocFromFile(filePath);
       doc->HasMember("Material")) {
     infos.first = (*doc)["Material"].GetString();
@@ -182,6 +182,17 @@ std::pair<std::string, Strings> JsonUtils::ParseMeshDataInfos(
     }
   }
   return infos;
+}
+
+void JsonUtils::ParseMaterialShaders(const std::string& filePath,
+                                     std::vector<std::string>& shaders) {
+  if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Shaders")) {
+    const auto& shaderPaths = (*doc)["Shaders"];
+    for (unsigned int i = 0; i < shaderPaths.Size(); ++i) {
+      shaders.emplace_back(shaderPaths[i].GetString());
+    }
+  }
+  shaders.push_back("Assets/Shaders/DefaultLit/ShaderError");
 }
 
 void JsonUtils::ParseMaterialParams(const std::string& filePath,

@@ -1,7 +1,9 @@
 {
     "Name": "SMWeaponMaterial",
     
-    "Shader": "Assets/Shaders/SMWeaponShader/glsl",
+    "Shaders": [
+        "Assets/Shaders/SMWeaponShader"
+    ],
     "Params": {
         "Color": "1,1,1,1",
         "Roughness": 1,

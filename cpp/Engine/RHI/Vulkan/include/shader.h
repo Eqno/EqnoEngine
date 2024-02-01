@@ -38,6 +38,12 @@ class Shader : public Base {
   explicit Shader(const Definitions& definitions);
 
   void DestroyModules(const VkDevice& device) const;
+
   [[nodiscard]] ShaderStages AutoCreateStages(
-      const VkDevice& device, const std::string& shaderPath) const;
+      const VkDevice& device, const std::string& rootPath,
+      const std::string& shaderPaths) const;
+
+  [[nodiscard]] std::vector<ShaderStages> AutoCreateStagesSet(
+      const VkDevice& device, const std::string& rootPath,
+      const std::vector<std::string>& shaderPath) const;
 };

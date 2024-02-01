@@ -1,4 +1,6 @@
 {
     "Name": "VikingRoomMaterial",
-    "Shader": "Assets/Shaders/VikingRoomShader/glsl"
+    "Shaders": [
+        "Assets/Shaders/VikingRoomShader"
+    ]
 }

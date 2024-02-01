@@ -1,6 +1,8 @@
 #pragma once
 #pragma once
 
+#include <Engine/Utility/include/TypeUtils.h>
+
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
@@ -51,8 +53,11 @@ void ParseSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
 void ParseSceneLightChannels(const std::string& root, const std::string& file,
                              BaseScene* owner);
 
-std::pair<std::string, std::vector<std::string>> ParseMeshDataInfos(
-    const std::string& filePath, const std::string& meshName);
+MaterialInfo ParseMeshDataInfos(const std::string& filePath,
+                                const std::string& meshName);
+
+void ParseMaterialShaders(const std::string& filePath,
+                          std::vector<std::string>& shaders);
 void ParseMaterialParams(const std::string& filePath, MaterialData& params);
 
 void WriteStringToFile(const std::string& filePath, const std::string& key,

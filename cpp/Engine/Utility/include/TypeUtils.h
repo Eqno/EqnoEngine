@@ -32,8 +32,19 @@ using milliseconds = std::chrono::duration<float, std::milli>;
 using microseconds = std::chrono::duration<float, std::micro>;
 using nanoseconds = std::chrono::duration<float, std::nano>;
 
+using MaterialInfo = std::pair<std::string, Strings>;
+
 inline std::string StringUnset = "Unset";
 inline constexpr int MaxLightNum = 500;
+
+inline glm::mat4x4 Mat4x4Zero = glm::mat4x4(0);
+inline glm::mat4x4 Mat4x4One = glm::mat4x4(1);
+
+inline glm::vec3 Vec3Zero = glm::vec3(0);
+inline glm::vec3 Vec3One = glm::vec3(1);
+
+inline glm::vec4 Vec4Zero = glm::vec4(0);
+inline glm::vec4 Vec4One = glm::vec4(1);
 
 struct VertexData {
   aiVector3D pos;
@@ -58,38 +69,38 @@ enum class LightType {
 };
 
 struct CameraData {
-  alignas(16) glm::vec3 pos;
-  alignas(16) glm::vec3 normal;
+  alignas(16) glm::vec3 pos = Vec3Zero;
+  alignas(16) glm::vec3 normal = Vec3Zero;
 };
 
 struct MaterialData {
-  alignas(16) glm::vec4 color;
-  alignas(4) float roughness;
-  alignas(4) float metallic;
+  alignas(16) glm::vec4 color = Vec4One;
+  alignas(4) float roughness = 1;
+  alignas(4) float metallic = 0;
 };
 
 struct TransformData {
-  alignas(16) glm::mat4 modelMatrix;
-  alignas(16) glm::mat4 viewMatrix;
-  alignas(16) glm::mat4 projMatrix;
+  alignas(16) glm::mat4 modelMatrix = Mat4x4One;
+  alignas(16) glm::mat4 viewMatrix = Mat4x4One;
+  alignas(16) glm::mat4 projMatrix = Mat4x4One;
 };
 
 struct LightData {
-  alignas(4) LightType type;
-  alignas(4) float intensity;
-  alignas(16) glm::vec3 pos;
-  alignas(16) glm::vec4 color;
-  alignas(16) glm::vec3 normal;
+  alignas(4) LightType type = LightType::Unset;
+  alignas(4) float intensity = 1;
+  alignas(16) glm::vec3 pos = Vec3Zero;
+  alignas(16) glm::vec4 color = Vec4One;
+  alignas(16) glm::vec3 normal = Vec3Zero;
 };
 
 struct LightsData {
-  alignas(4) unsigned int num;
+  alignas(4) unsigned int num = 0;
   alignas(16) LightData object[MaxLightNum];
 };
 
 struct UniformData {
-  std::string* shader;
   MaterialData* material;
+  std::vector<std::string>* shaders;
   std::vector<BaseLight*>* lights;
 
   glm::vec3* cameraPosition;
@@ -128,6 +139,3 @@ class Reflection {
     classMap.insert(std::make_pair(name, func));
   }
 };
-
-inline glm::mat4x4 Mat4x4Zero = glm::mat4x4(0);
-inline glm::vec3 Vec3Zero = glm::vec3(0);

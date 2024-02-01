@@ -7,8 +7,8 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_core.h>
 
-#include "utils.h"
-#include "Engine/Utility/include/TypeUtils.h"
+#include <Engine/Utility/include/TypeUtils.h>
+#include <Engine/Utility/include/MathUtils.h>
 
 using AttributeDescriptions = std::array<VkVertexInputAttributeDescription, 5>;
 

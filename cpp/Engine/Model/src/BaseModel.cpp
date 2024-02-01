@@ -29,6 +29,9 @@
   }
 
 void ParseFbxTextures(aiMaterial* material, MeshData* meshData) {
+  if (material == nullptr) {
+    return;
+  }
   for (int i = 0; i <= aiTextureType::AI_TEXTURE_TYPE_MAX; i++) {
     int textureCount = material->GetTextureCount(static_cast<aiTextureType>(i));
     for (int j = 0; j < textureCount; j++) {
@@ -38,9 +41,6 @@ void ParseFbxTextures(aiMaterial* material, MeshData* meshData) {
         LoadPNGTexture(path.C_Str(), meshData->textures);
       }
     }
-  }
-  if (meshData->textures.empty()) {
-    throw std::runtime_error("please set textures for model or mesh!");
   }
 }
 
@@ -85,30 +85,37 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
 
   for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
     const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-    const auto [fst, snd] = JsonUtils::ParseMeshDataInfos(rootPath + modelPath,
-                                                          mesh->mName.C_Str());
+    const auto [matPath, texPaths] = JsonUtils::ParseMeshDataInfos(
+        rootPath + modelPath, mesh->mName.C_Str());
 
     // Parse Name
-    auto meshData =
+    MeshData* meshData =
         new MeshData{.state = {.alive = true}, .name = mesh->mName.C_Str()};
 
     // Parse Data
     ParseFbxData(nodeTransform, mesh, meshData, importSize);
 
-    // Parse Material
-    auto* mat = modelScene->GetMaterialByPath(fst);
-    meshData->uniform.shader = &mat->GetShader();
-    meshData->uniform.material = &mat->GetParams();
+    // Get Material Data
+    aiMaterial* matData = nullptr;
+    if (scene->HasMaterials() && mesh->mMaterialIndex < scene->mNumMaterials) {
+      matData = scene->mMaterials[mesh->mMaterialIndex];
+    }
 
-    if (snd.empty()) {
+    if (texPaths.empty()) {
       // Parse Textures
-      ParseFbxTextures(scene->mMaterials[mesh->mMaterialIndex], meshData);
+      ParseFbxTextures(matData, meshData);
     } else {
       // Parse Textures
-      for (const std::string& texPath : snd) {
+      for (const std::string& texPath : texPaths) {
         LoadPNGTexture((rootPath + texPath).c_str(), meshData->textures);
       }
     }
+
+    // Parse Material
+    BaseMaterial* mat = modelScene->GetMaterialByPath(matPath, matData);
+    meshData->uniform.shaders = &mat->GetShaders();
+    meshData->uniform.material = &mat->GetParams();
+
     modelMeshes.emplace_back(meshData);
   }
 

@@ -9,6 +9,8 @@ class LightChannel;
 class BaseMaterial;
 class GraphicsInterface;
 
+struct aiMaterial;
+
 class BaseScene final : public BaseObject {
   SceneObject* rootObject = nullptr;
   GraphicsInterface* graphics = nullptr;
@@ -19,7 +21,7 @@ class BaseScene final : public BaseObject {
   std::unordered_map<std::string, LightChannel*> lightChannels;
 
  public:
-  BaseMaterial* GetMaterialByPath(const std::string& path);
+  BaseMaterial* GetMaterialByPath(const std::string& path, aiMaterial* matData);
   BaseCamera* GetCameraByName(const std::string& name);
   BaseLight* GetLightByName(const std::string& name);
   LightChannel* GetLightChannelByName(const std::string& name);

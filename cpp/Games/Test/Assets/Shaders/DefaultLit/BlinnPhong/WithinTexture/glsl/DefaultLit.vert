@@ -24,7 +24,7 @@ layout(location = 2) out vec3 fragNormal;
 layout(location = 3) out vec2 fragTexCoord;
 
 void main() {
-    fragColor = material.color * inColor;
+    fragColor = inColor;
     fragTexCoord = inTexCoord;
 
     fragNormal = (transform.modelMatrix * vec4(inNormal, 0.)).xyz;

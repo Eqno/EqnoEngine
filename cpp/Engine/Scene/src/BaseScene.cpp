@@ -5,6 +5,7 @@
 #include <Engine/Light/include/LightChannel.h>
 #include <Engine/Model/include/BaseMaterial.h>
 #include <Engine/Scene/include/SceneObject.h>
+#include <assimp/types.h>
 
 #include <ranges>
 
@@ -42,14 +43,13 @@ void BaseScene::OnDestroy() {
   }
 }
 
-BaseMaterial* BaseScene::GetMaterialByPath(const std::string& path) {
-  if (path == "Unset") {
-    throw std::runtime_error("please set material for model or mesh!");
+BaseMaterial* BaseScene::GetMaterialByPath(const std::string& path,
+                                           aiMaterial* matData) {
+  std::string name = path + ": " + matData->GetName().C_Str();
+  if (materials.contains(name) == false) {
+    materials[name] = Create<BaseMaterial>(matData, false, GetRoot(), path);
   }
-  if (materials.contains(path) == false) {
-    materials[path] = Create<BaseMaterial>(false, GetRoot(), path);
-  }
-  return materials[path];
+  return materials[name];
 }
 BaseCamera* BaseScene::GetCameraByName(const std::string& name) {
   return cameras[name];
@@ -67,6 +67,6 @@ void BaseScene::RegisterLight(const std::string& name, BaseLight* light) {
   lights[name] = light;
 }
 void BaseScene::RegisterLightChannel(const std::string& name,
-                                LightChannel* channel) {
+                                     LightChannel* channel) {
   lightChannels[name] = channel;
 }

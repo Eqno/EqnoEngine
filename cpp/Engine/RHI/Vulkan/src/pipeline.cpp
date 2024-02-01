@@ -9,11 +9,10 @@
 #include "../include/uniform.h"
 #include "../include/vertex.h"
 
-void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
-                                      const Shader& shader,
-                                      const std::string& shaderPath,
-                                      const VkRenderPass& renderPass) {
-  auto shaderStages(shader.AutoCreateStages(device, shaderPath));
+void Pipeline::CreateGraphicsPipeline(
+    const VkDevice& device, const Shader& shader, const std::string& rootPath,
+    const std::vector<std::string>& shaderPaths,
+    const VkRenderPass& renderPass) {
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
   const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
@@ -92,28 +91,36 @@ void Pipeline::CreateGraphicsPipeline(const VkDevice& device,
                              &pipelineLayout) != VK_SUCCESS) {
     throw std::runtime_error("failed to create pipeline layout!");
   }
-  const VkGraphicsPipelineCreateInfo pipelineInfo{
-      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = 2,
-      .pStages = shaderStages.data(),
-      .pVertexInputState = &vertexInputInfo,
-      .pInputAssemblyState = &inputAssembly,
-      .pViewportState = &viewportState,
-      .pRasterizationState = &rasterizer,
-      .pMultisampleState = &multiSampling,
-      .pDepthStencilState = &depthStencil,
-      .pColorBlendState = &colorBlending,
-      .pDynamicState = &dynamicState,
-      .layout = pipelineLayout,
-      .renderPass = renderPass,
-      .subpass = 0,
-      .basePipelineHandle = VK_NULL_HANDLE,
-  };
-  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo,
-                                nullptr, &graphicsPipeline) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create graphics pipeline!");
+
+  auto shaderStagesSet(
+      shader.AutoCreateStagesSet(device, rootPath, shaderPaths));
+  for (int i = 0; i < shaderStagesSet.size(); ++i) {
+    ShaderStages& shaderStages = shaderStagesSet[i];
+    const VkGraphicsPipelineCreateInfo pipelineInfo{
+        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+        .stageCount = 2,
+        .pStages = shaderStages.data(),
+        .pVertexInputState = &vertexInputInfo,
+        .pInputAssemblyState = &inputAssembly,
+        .pViewportState = &viewportState,
+        .pRasterizationState = &rasterizer,
+        .pMultisampleState = &multiSampling,
+        .pDepthStencilState = &depthStencil,
+        .pColorBlendState = &colorBlending,
+        .pDynamicState = &dynamicState,
+        .layout = pipelineLayout,
+        .renderPass = renderPass,
+        .subpass = 0,
+        .basePipelineHandle = VK_NULL_HANDLE,
+    };
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo,
+                                  nullptr, &graphicsPipeline) == VK_SUCCESS) {
+      shaderFallbackIndex = i;
+      shader.DestroyModules(device);
+      return;
+    }
   }
-  shader.DestroyModules(device);
+  throw std::runtime_error("failed to create graphics pipeline!");
 }
 
 void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
@@ -149,10 +156,12 @@ void Pipeline::CreateDescriptorSetLayout(const VkDevice& device, int texCount) {
 }
 
 void Pipeline::CreatePipeline(const Device& device, const Shader& shader,
-                              const std::string& shaderPath,
+                              const std::string& rootPath,
+                              const std::vector<std::string>& shaderPaths,
                               const VkRenderPass& renderPass, int texCount) {
   CreateDescriptorSetLayout(device.GetLogical(), texCount);
-  CreateGraphicsPipeline(device.GetLogical(), shader, shaderPath, renderPass);
+  CreateGraphicsPipeline(device.GetLogical(), shader, rootPath, shaderPaths,
+                         renderPass);
 }
 
 void Pipeline::DestroyPipeline(const VkDevice& device) const {

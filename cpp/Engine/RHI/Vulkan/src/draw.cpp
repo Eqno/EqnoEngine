@@ -4,11 +4,12 @@
 
 #include "../include/config.h"
 
-void Draw::CreateDrawResource(const Device& device,
-                              const std::string& shaderPath,
+void Draw::CreateDrawResource(const Device& device, const std::string& rootPath,
+                              const std::vector<std::string>& shaderPaths,
                               const VkRenderPass& renderPass,
                               const int texCount) {
-  pipeline.CreatePipeline(device, shader, shaderPath, renderPass, texCount);
+  pipeline.CreatePipeline(device, shader, rootPath, shaderPaths, renderPass,
+                          texCount);
 }
 
 void Draw::LoadDrawResource(const Device& device, const Render& render,
