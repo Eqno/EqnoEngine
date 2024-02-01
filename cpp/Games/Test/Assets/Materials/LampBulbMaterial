@@ -1,0 +1,7 @@
+{
+    "Name": "LampBulbMaterial",
+    
+    "Shaders": [
+        "Assets/Shaders/LampBulb"
+    ]
+}

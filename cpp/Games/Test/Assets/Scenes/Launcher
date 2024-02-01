@@ -22,10 +22,10 @@
             "Type": "BaseModel",
             "Path": "Assets/Models/LampBulb/LampBulb",
             "Camera": "MainCamera",
-            "LightChannel": "None",
+            "LightChannel": "All",
             "Transform": {
-                "Position": "0,15,-20",
-                "Rotation": "0,0,0",
+                "Position": "0,17,-20",
+                "Rotation": "180,0,0",
                 "Scale": "1,1,1"
             },
             "Sons": [
@@ -34,7 +34,7 @@
                     "Type": "SpotLight",
                     "Path": "Assets/Lights/MainLight",
                     "Transform": {
-                        "Position": "0,0,0",
+                        "Position": "0,-2,0",
                         "Rotation": "0,0,0",
                         "Scale": "1,1,1"
                     }

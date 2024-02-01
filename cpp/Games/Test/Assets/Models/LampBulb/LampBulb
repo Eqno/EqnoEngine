@@ -4,9 +4,9 @@
     "File": "Assets/Models/LampBulb/Light.fbx",
     "Material": "Assets/Materials/DefaultLitMaterial",
     "ImportSize": 0.003,
-    "_Meshes": {
+    "Meshes": {
         "Sphere": {
-            "Material": "Assets/Materials/DefaultUnLitMaterial"
+            "Material": "Assets/Materials/LampBulbMaterial"
         }
     }
 }
