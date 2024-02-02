@@ -1,7 +1,5 @@
 #version 450
 
-#define MAXLIGHTNUM 500
-
 layout(binding = 0) uniform CameraData {
     vec3 pos;
     vec3 normal;
@@ -16,7 +14,7 @@ struct LightData {
 };
 layout(binding = 3) uniform LightsData {
     uint num;
-    LightData object[MAXLIGHTNUM];
+    LightData object[MaxLightNum];
 } lights;
 
 layout(binding = 4) uniform sampler2D baseColorSampler;

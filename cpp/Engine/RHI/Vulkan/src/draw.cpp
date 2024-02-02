@@ -8,6 +8,7 @@ void Draw::CreateDrawResource(const Device& device, const std::string& rootPath,
                               const std::vector<std::string>& shaderPaths,
                               const VkRenderPass& renderPass,
                               const int texCount) {
+  shader.AddDefinitions({{"MaxLightNum", std::to_string(MaxLightNum)}});
   pipeline.CreatePipeline(device, shader, rootPath, shaderPaths, renderPass,
                           texCount);
 }
