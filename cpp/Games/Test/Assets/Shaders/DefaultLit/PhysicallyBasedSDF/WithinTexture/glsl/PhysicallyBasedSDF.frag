@@ -1,5 +1,7 @@
 #version 450
 
+#include "./Games/Test/Assets/Shaders/DefaultLit/PhysicallyBasedSDF/WithinTexture/test.glsl"
+
 layout(binding = 0) uniform CameraData {
     vec3 pos;
     vec3 normal;
@@ -54,5 +56,5 @@ void main() {
     }
 
     vec4 texColor = fragColor * texture(baseColorSampler, fragTexCoord);
-    outColor = (ambient + diffuse + specular) * texColor;
+    outColor = (ambient + diffuse + specular) * texColor * getColorInLib();
 }

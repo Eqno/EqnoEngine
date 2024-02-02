@@ -39,8 +39,6 @@ class Data : public Base {
   Data() = default;
   ~Data() override = default;
 
-  void CreateData(const std::string& objPath);
-
   void CreateData(const std::vector<uint32_t>& indices,
                   const std::vector<Vertex>& vertices);
 };

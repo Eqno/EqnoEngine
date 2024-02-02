@@ -43,9 +43,6 @@
     <Filter Include="Engine\RHI\Vulkan\deps\stb">
       <UniqueIdentifier>{7e425176-8fe4-4b4d-aa1d-97ec98d4d330}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\RHI\Vulkan\deps\tinyobjloader">
-      <UniqueIdentifier>{7210ce7b-2e81-437a-9c2c-5d2f705df6ad}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\RHI\Vulkan\deps\glfw\include">
       <UniqueIdentifier>{397eb96c-e2d3-4b25-9c8f-d257634c92d2}</UniqueIdentifier>
     </Filter>
@@ -132,6 +129,30 @@
     </Filter>
     <Filter Include="Engine\Light\src">
       <UniqueIdentifier>{7d6abcc3-8d5e-4674-8823-fe14f3570a81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\libshaderc_util">
+      <UniqueIdentifier>{d582b6b6-8a74-4f97-98b7-c2c3428570dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\libshaderc_util\include">
+      <UniqueIdentifier>{9b6638c6-775d-450a-8f77-c24e64588139}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\glslc">
+      <UniqueIdentifier>{481cd39c-a7c6-4f3e-bfe4-9fcdcd7ff40b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\glslc\include">
+      <UniqueIdentifier>{b366a89c-1671-4b2b-bdc3-a4822135bddd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\gmock">
+      <UniqueIdentifier>{a0894ae7-1dca-499b-a616-00a02649f72f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\gmock\include">
+      <UniqueIdentifier>{db647b75-0c2f-4fed-8eed-decc7dedb2d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\gtest">
+      <UniqueIdentifier>{948c696b-4a5e-4c1d-82f7-dd4e10e56018}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\RHI\Vulkan\deps\gtest\include">
+      <UniqueIdentifier>{861761ca-4561-4911-926e-93ea491b8c0d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -315,9 +336,6 @@
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_include.h">
       <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.h">
-      <Filter>Engine\RHI\Vulkan\deps\tinyobjloader</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
@@ -396,6 +414,132 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\light.h">
       <Filter>Engine\RHI\Vulkan\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\io_shaderc.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\message.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\mutex.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\resources.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\shader_stage.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\spirv_tools_wrapper.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\string_piece.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\universal_unistd.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\version_profile.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\args.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\compiler.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\counting_includer.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\exceptions.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\file_finder.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\format.h">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\file.h">
+      <Filter>Engine\RHI\Vulkan\deps\glslc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\file_compiler.h">
+      <Filter>Engine\RHI\Vulkan\deps\glslc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\file_includer.h">
+      <Filter>Engine\RHI\Vulkan\deps\glslc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\resource_parse.h">
+      <Filter>Engine\RHI\Vulkan\deps\glslc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\shader_stage.h">
+      <Filter>Engine\RHI\Vulkan\deps\glslc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\dependency_info.h">
+      <Filter>Engine\RHI\Vulkan\deps\glslc\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-actions.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-cardinalities.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-function-mocker.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-matchers.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-more-actions.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-more-matchers.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-nice-strict.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-spec-builders.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock.h">
+      <Filter>Engine\RHI\Vulkan\deps\gmock\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest_pred_impl.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest_prod.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-assertion-result.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-death-test.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-matchers.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-message.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-param-test.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-printers.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-spi.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-test-part.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-typed-test.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest.h">
+      <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -442,9 +586,6 @@
     </ClCompile>
     <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c">
       <Filter>Engine\RHI\Vulkan\deps\stb</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc">
-      <Filter>Engine\RHI\Vulkan\deps\tinyobjloader</Filter>
     </ClCompile>
     <ClCompile Include="Games\Test\main.cpp">
       <Filter>Games\Test</Filter>
@@ -542,6 +683,9 @@
     </None>
     <None Include="Games\Test\Assets\Shaders\CornellBox\glsl\hello_triangle.vert">
       <Filter>Games\Test\Assets\Shaders\CornellBox\glsl</Filter>
+    </None>
+    <None Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\resources.inc">
+      <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
     </None>
   </ItemGroup>
 </Project>

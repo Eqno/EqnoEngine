@@ -1,5 +1,8 @@
 #include "../include/shader.h"
 
+#include <glslc/file_includer.h>
+#include <libshaderc_util/file_finder.h>
+
 #include <filesystem>
 #include <iostream>
 
@@ -8,6 +11,7 @@
 namespace ShaderRcStatic {
 shaderc::Compiler compiler;
 shaderc::CompileOptions options;
+shaderc_util::FileFinder fileFinder;
 std::unordered_map<std::string, ShaderTypeInfo> shaderTypes{
     {"vert", {shaderc_glsl_vertex_shader, VK_SHADER_STAGE_VERTEX_BIT, "main"}},
     {"frag",
@@ -20,6 +24,13 @@ void Shader::AddDefinitions(const Definitions& definitions) {
   for (const auto& [name, value] : definitions) {
     ShaderRcStatic::options.AddMacroDefinition(name, value);
   }
+}
+void Shader::SetFileIncluder() {
+  ShaderRcStatic::options.SetIncluder(
+      std::make_unique<glslc::FileIncluder>(&ShaderRcStatic::fileFinder));
+}
+void Shader::SetOptimizationLevel(shaderc_optimization_level level) {
+  ShaderRcStatic::options.SetOptimizationLevel(level);
 }
 
 const ShaderTypeInfo& Shader::GetTypeByName(const std::string& glslPath) {

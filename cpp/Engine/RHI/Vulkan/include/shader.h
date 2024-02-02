@@ -36,7 +36,10 @@ class Shader : public Base {
  public:
   explicit Shader() {}
   explicit Shader(const Definitions& definitions);
+
   void AddDefinitions(const Definitions& definitions);
+  void SetFileIncluder();
+  void SetOptimizationLevel(shaderc_optimization_level level);
   void DestroyModules(const VkDevice& device) const;
 
   [[nodiscard]] ShaderStages AutoCreateStages(

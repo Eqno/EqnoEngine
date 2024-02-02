@@ -53,6 +53,48 @@
     <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec3.hpp" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vec4.hpp" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\dependency_info.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\file.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\file_compiler.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\file_includer.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\resource_parse.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\glslc\include\glslc\shader_stage.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-actions.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-cardinalities.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-function-mocker.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-matchers.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-more-actions.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-more-matchers.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-nice-strict.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock-spec-builders.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gmock\include\gmock\gmock.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-assertion-result.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-death-test.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-matchers.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-message.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-param-test.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-printers.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-spi.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-test-part.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest-typed-test.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest_pred_impl.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest_prod.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\args.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\compiler.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\counting_includer.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\exceptions.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\file_finder.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\format.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\io_shaderc.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\message.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\mutex.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\resources.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\shader_stage.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\spirv_tools_wrapper.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\string_piece.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\universal_unistd.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\version_profile.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_connected_components.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_c_lexer.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_divide.h" />
@@ -73,7 +115,6 @@
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_tilemap_editor.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_truetype.h" />
     <ClInclude Include="Engine\RHI\Vulkan\deps\stb\stb_voxel_render.h" />
-    <ClInclude Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\base.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\buffer.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\config.h" />
@@ -117,7 +158,6 @@
     <ClCompile Include="Engine\Model\src\BaseModel.cpp" />
     <ClCompile Include="Engine\Model\src\BaseTransform.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\deps\stb\stb_vorbis.c" />
-    <ClCompile Include="Engine\RHI\Vulkan\deps\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="Engine\RHI\Vulkan\src\base.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\buffer.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\data.cpp" />
@@ -155,6 +195,7 @@
     <Image Include="Games\Test\Assets\Textures\viking_room.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\resources.inc" />
     <None Include="Games\Test\Assets\Shaders\CornellBox\glsl\hello_triangle.frag" />
     <None Include="Games\Test\Assets\Shaders\CornellBox\glsl\hello_triangle.vert" />
     <None Include="Games\Test\Assets\Shaders\SMWeaponShader\glsl\hello_triangle.frag" />
@@ -249,15 +290,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.275.0\Include;C:\VulkanSDK\1.3.268.0\Include;C:\VulkanSDK\1.3.236.0\Include;./Engine/RHI/Vulkan/deps/stb;./Engine/RHI/Vulkan/deps/glm;./Engine/RHI/Vulkan/deps/glfw/include;./Engine/RHI/Vulkan/deps/tinyobjloader;./Engine/RHI/Vulkan/deps/assimp-5.3.1/include;./Engine/System/deps/rapidjson/include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Engine/RHI/Vulkan/deps/stb;./Engine/RHI/Vulkan/deps/glm;./Engine/RHI/Vulkan/deps/glfw/include;./Engine/RHI/Vulkan/deps/assimp-5.3.1/include;./Engine/System/deps/rapidjson/include;./Engine/RHI/Vulkan/deps/libshaderc_util/include;./Engine/RHI/Vulkan/deps/glslc/include;./Engine/RHI/Vulkan/deps/gtest/include;./Engine/RHI/Vulkan/deps/gmock/include;C:\VulkanSDK\1.3.275.0\Include;C:\VulkanSDK\1.3.268.0\Include;C:\VulkanSDK\1.3.236.0\Include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.275.0\Lib;C:\VulkanSDK\1.3.268.0\Lib;C:\VulkanSDK\1.3.236.0\Lib;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/assimp-5.3.1/libraries;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;shaderc_shared.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./Engine/RHI/Vulkan/deps/gmock/lib;./Engine/RHI/Vulkan/deps/glslc/lib;./Engine/RHI/Vulkan/deps/gtest/lib;./Engine/RHI/Vulkan/deps/assimp-5.3.1/libraries;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/libshaderc_util/lib;C:\VulkanSDK\1.3.275.0\Lib;C:\VulkanSDK\1.3.268.0\Lib;C:\VulkanSDK\1.3.236.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3_mt.lib;shaderc_shared.lib;assimp-vc143-mt.lib;shaderc_util.lib;gmock.lib;gtest.lib;glslc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)Engine\RHI\Vulkan\deps\assimp-5.3.1\binaries\" "$(OutDir)" /a /F /I /Y /C</Command>
@@ -271,7 +313,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.268.0\Include;C:\VulkanSDK\1.3.236.0\Include;./Engine/RHI/Vulkan/deps/stb;./Engine/RHI/Vulkan/deps/glm;./Engine/RHI/Vulkan/deps/glfw/include;./Engine/RHI/Vulkan/deps/tinyobjloader;./Engine/RHI/Vulkan/deps/assimp-5.3.1/include;./Engine/System/deps/rapidjson/include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Engine/RHI/Vulkan/deps/stb;./Engine/RHI/Vulkan/deps/glm;./Engine/RHI/Vulkan/deps/glfw/include;./Engine/RHI/Vulkan/deps/assimp-5.3.1/include;./Engine/System/deps/rapidjson/include;./Engine/RHI/Vulkan/deps/libshaderc_util/include;./Engine/RHI/Vulkan/deps/glslc/include;./Engine/RHI/Vulkan/deps/gtest/include;./Engine/RHI/Vulkan/deps/gmock/include;C:\VulkanSDK\1.3.275.0\Include;C:\VulkanSDK\1.3.268.0\Include;C:\VulkanSDK\1.3.236.0\Include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -280,8 +322,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.268.0\Lib;C:\VulkanSDK\1.3.236.0\Lib;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/assimp-5.3.1/lib/Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;shaderc_shared.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./Engine/RHI/Vulkan/deps/gmock/lib;./Engine/RHI/Vulkan/deps/glslc/lib;./Engine/RHI/Vulkan/deps/gtest/lib;./Engine/RHI/Vulkan/deps/assimp-5.3.1/libraries;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/libshaderc_util/lib;C:\VulkanSDK\1.3.275.0\Lib;C:\VulkanSDK\1.3.268.0\Lib;C:\VulkanSDK\1.3.236.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3_mt.lib;shaderc_shared.lib;assimp-vc143-mt.lib;shaderc_util.lib;gmock.lib;gtest.lib;glslc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)Engine\RHI\Vulkan\deps\assimp-5.3.1\bin\Release\" "$(OutDir)" /a /F /I /Y /C</Command>

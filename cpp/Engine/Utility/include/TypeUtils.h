@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <set>
+#include <shaderc/shaderc.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -34,8 +35,11 @@ using nanoseconds = std::chrono::duration<float, std::nano>;
 
 using MaterialInfo = std::pair<std::string, Strings>;
 
-inline std::string StringUnset = "Unset";
 inline constexpr int MaxLightNum = 500;
+inline constexpr shaderc_optimization_level ShaderOptimizationLevel =
+    shaderc_optimization_level_zero;
+
+inline std::string StringUnset = "Unset";
 
 inline glm::mat4x4 Mat4x4Zero = glm::mat4x4(0);
 inline glm::mat4x4 Mat4x4One = glm::mat4x4(1);
