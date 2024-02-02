@@ -14,8 +14,9 @@ class Base {
   template <typename T, typename... Args,
             typename std::enable_if<std::is_base_of<Base, T>{}, int>::type = 0>
   T* Create(Args&&... args) {
-    T* ret = new T(this, std::forward<Args>(args)...);
+    T* ret = new T(this);
     ret->TriggerRegisterMember();
+    ret->TriggerInitComponent(std::forward<Args>(args)...);
     return ret;
   }
   void Destroy() { delete this; }
@@ -25,6 +26,7 @@ class Base {
   void _RegisterMember(T&& arg) {
     arg.RegisterOwner(this);
     arg.TriggerRegisterMember();
+    arg.TriggerInitComponent();
   }
 
   template <typename... Args>
@@ -32,4 +34,5 @@ class Base {
     (_RegisterMember(args), ...);
   }
   virtual void TriggerRegisterMember() {}
+  virtual void TriggerInitComponent() {}
 };

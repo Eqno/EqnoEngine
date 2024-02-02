@@ -15,7 +15,8 @@ std::unordered_map<std::string, ShaderTypeInfo> shaderTypes{
 };
 }  // namespace ShaderRcStatic
 
-Shader::Shader(const Definitions& definitions) {
+Shader::Shader(const Definitions& definitions) { AddDefinitions(definitions); }
+void Shader::AddDefinitions(const Definitions& definitions) {
   for (const auto& [name, value] : definitions) {
     ShaderRcStatic::options.AddMacroDefinition(name, value);
   }

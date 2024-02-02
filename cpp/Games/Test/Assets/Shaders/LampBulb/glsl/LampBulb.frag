@@ -19,9 +19,5 @@ layout(location = 2) in vec3 fragNormal;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    vec4 Illumination = vec4(1.);
-    for (int i=0; i<lights.num; ++i) {
-        Illumination = lights.object[i].color * lights.object[i].intensity;  
-    }
-    outColor = Illumination * fragColor;
+    outColor = 3. * lights.object[0].color * lights.object[0].intensity * fragColor;
 }

@@ -31,13 +31,15 @@ class Draw : public Base {
 
   std::list<Mesh*>& GetMeshes() { return meshes; }
 
-  template <typename... Args>
-  explicit Draw(Base* owner, Args&&... args) : Base(owner) {
-    CreateDrawResource(std::forward<Args>(args)...);
-  }
+  explicit Draw(Base* owner) : Base(owner) {}
   ~Draw() override = default;
+
   virtual void TriggerRegisterMember() override {
     RegisterMember(shader, pipeline);
+  }
+  template <typename... Args>
+  void TriggerInitComponent(Args&&... args) {
+    CreateDrawResource(std::forward<Args>(args)...);
   }
 
   void CreateDrawResource(const Device& device, const std::string& rootPath,

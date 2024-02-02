@@ -1,6 +1,6 @@
 {
     "Name": "SpotLight",
 
-    "Intensity": 1,
+    "Intensity": 0.4,
     "Color": "1,1,1,1"
 }

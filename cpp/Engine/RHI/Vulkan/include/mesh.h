@@ -4,6 +4,7 @@
 #include "base.h"
 #include "buffer.h"
 #include "data.h"
+#include "light.h"
 #include "texture.h"
 #include "uniform.h"
 
@@ -51,13 +52,15 @@ class Mesh : public Base {
     descriptor.UpdateUniformBuffer(currentImage);
   }
 
-  template <typename... Args>
-  explicit Mesh(Base* owner, Args&&... args) : Base(owner) {
-    CreateMesh(std::forward<Args>(args)...);
-  }
+  explicit Mesh(Base* owner) : Base(owner) {}
   ~Mesh() override = default;
+
   virtual void TriggerRegisterMember() override {
     RegisterMember(data, buffer, descriptor);
+  }
+  template <typename... Args>
+  void TriggerInitComponent(Args&&... args) {
+    CreateMesh(std::forward<Args>(args)...);
   }
 
   void CreateMesh(const Device& device, const Render& render,

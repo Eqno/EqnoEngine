@@ -139,7 +139,6 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
 
 void Descriptor::CreateUniformBuffer(const Device& device,
                                      const Render& render) {
-  uniformBuffer.RegisterOwner(this);
   uniformBuffer.CreateUniformBuffers(device, render);
 }
 

@@ -9,6 +9,7 @@
 
 class Mesh;
 class Device;
+class Light;
 class Render;
 class Texture;
 class Descriptor;
@@ -68,8 +69,9 @@ class Descriptor : public Base {
   ~Descriptor() override = default;
 
   const MeshData* GetBridgeData();
+  std::vector<Light> lightBuffers;
+
   virtual void TriggerRegisterMember() override {
-    this;
     RegisterMember(uniformBuffer);
   }
 
