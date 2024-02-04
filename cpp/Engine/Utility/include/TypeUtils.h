@@ -38,6 +38,8 @@ using MaterialInfo = std::pair<std::string, Strings>;
 inline constexpr int MaxLightNum = 500;
 inline constexpr shaderc_optimization_level ShaderOptimizationLevel =
     shaderc_optimization_level_zero;
+inline const std::vector<std::string> ShaderSearchPaths = {
+    "Assets/Shaders/GLSLLibrary/"};
 
 inline std::string StringUnset = "Unset";
 

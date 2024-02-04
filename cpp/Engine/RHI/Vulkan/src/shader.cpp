@@ -1,12 +1,11 @@
 #include "../include/shader.h"
 
+#include <Engine/Utility/include/FileUtils.h>
 #include <glslc/file_includer.h>
 #include <libshaderc_util/file_finder.h>
 
 #include <filesystem>
 #include <iostream>
-
-#include "Engine/Utility/include/FileUtils.h"
 
 namespace ShaderRcStatic {
 shaderc::Compiler compiler;
@@ -25,7 +24,8 @@ void Shader::AddDefinitions(const Definitions& definitions) {
     ShaderRcStatic::options.AddMacroDefinition(name, value);
   }
 }
-void Shader::SetFileIncluder() {
+void Shader::SetFileIncluder(const std::vector<std::string>& searchPaths) {
+  ShaderRcStatic::fileFinder.search_path() = searchPaths;
   ShaderRcStatic::options.SetIncluder(
       std::make_unique<glslc::FileIncluder>(&ShaderRcStatic::fileFinder));
 }

@@ -38,7 +38,7 @@ class Shader : public Base {
   explicit Shader(const Definitions& definitions);
 
   void AddDefinitions(const Definitions& definitions);
-  void SetFileIncluder();
+  void SetFileIncluder(const std::vector<std::string>& searchPaths);
   void SetOptimizationLevel(shaderc_optimization_level level);
   void DestroyModules(const VkDevice& device) const;
 

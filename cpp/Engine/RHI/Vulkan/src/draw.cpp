@@ -8,11 +8,13 @@ void Draw::CreateDrawResource(const Device& device, const std::string& rootPath,
                               const std::vector<std::string>& shaderPaths,
                               const VkRenderPass& renderPass,
                               const int texCount) {
-  shader.AddDefinitions(
-      {{"RootPath", rootPath}, {"MaxLightNum", std::to_string(MaxLightNum)}});
-  shader.SetFileIncluder();
+  shader.AddDefinitions({{"MaxLightNum", std::to_string(MaxLightNum)}});
+  std::vector<std::string> shaderSearchPaths;
+  for (const std::string& searchPath : ShaderSearchPaths) {
+    shaderSearchPaths.push_back(rootPath + searchPath);
+  }
+  shader.SetFileIncluder(shaderSearchPaths);
   shader.SetOptimizationLevel(ShaderOptimizationLevel);
-
   pipeline.CreatePipeline(device, shader, rootPath, shaderPaths, renderPass,
                           texCount);
 }
