@@ -53,11 +53,11 @@ inline glm::vec4 Vec4Zero = glm::vec4(0);
 inline glm::vec4 Vec4One = glm::vec4(1);
 
 struct VertexData {
-  aiVector3D pos;
-  aiColor4D color;
-  aiVector3D normal;
-  aiVector3D tangent;
-  aiVector3D texCoord;
+  glm::vec3 pos;
+  glm::vec4 color;
+  glm::vec3 normal;
+  glm::vec3 tangent;
+  glm::vec3 texCoord;
 };
 
 struct TextureData {

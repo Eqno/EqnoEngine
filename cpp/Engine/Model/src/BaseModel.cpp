@@ -68,8 +68,12 @@ void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
     if (mesh->HasTextureCoords(0)) {
       texCoord = mesh->mTextureCoords[0][i];
     }
-    meshData->vertices.emplace_back(pos * importSize, color, normal, tangent,
-                                    texCoord);
+    meshData->vertices.emplace_back(
+        MathUtils::AiVector3D2GlmVec3(pos * importSize),
+        MathUtils::AiColor4D2GlmVec4(color),
+        MathUtils::AiVector3D2GlmVec3(normal),
+        MathUtils::AiVector3D2GlmVec3(tangent),
+        MathUtils::AiVector3D2GlmVec3(texCoord));
   }
   for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
     const auto& face = mesh->mFaces[i];
