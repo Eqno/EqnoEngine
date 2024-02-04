@@ -4,6 +4,7 @@
 
 #include "Engine/Utility/include/TypeUtils.h"
 #include "base.h"
+#include "buffer.h"
 
 #define UniformBufferNum 4
 
@@ -12,39 +13,24 @@ class Device;
 class Render;
 class Texture;
 class Descriptor;
-
-using UniformMapped = std::vector<void*>;
-using UniformBuffers = std::vector<VkBuffer>;
-using UniformMemories = std::vector<VkDeviceMemory>;
 using DescriptorSets = std::vector<VkDescriptorSet>;
 
-class UniformBuffer : public Base {
+class TransformBuffer : public UniformBuffer {
   const MeshData* bridge = nullptr;
-
-  UniformBuffers uniformBuffers;
-  UniformMemories uniformBuffersMemory;
-  UniformMapped uniformBuffersMapped;
 
  public:
   const MeshData* GetBridgeData();
-  [[nodiscard]] const UniformBuffers& GetUniformBuffers() const {
-    return uniformBuffers;
-  }
-
-  [[nodiscard]] const VkBuffer& GetUniformBufferByIndex(
-      const size_t index) const {
-    return uniformBuffers[index];
-  }
-
-  void CreateUniformBuffers(const Device& device, const Render& render);
   void UpdateUniformBuffer(const uint32_t currentImage);
-  void DestroyUniformBuffer(const VkDevice& device, const Render& render) const;
 };
 
 class Descriptor : public Base {
   const MeshData* bridge = nullptr;
 
-  UniformBuffer uniformBuffer;
+  CameraBuffer* cameraBuffer;
+  MaterialBuffer* materialBuffer;
+  LightChannelBuffer* lightChannelBuffer;
+
+  TransformBuffer transformBuffer;
   VkDescriptorPool descriptorPool;
   DescriptorSets descriptorSets;
 
@@ -56,8 +42,7 @@ class Descriptor : public Base {
                             size_t textureNum);
 
   void CreateUniformBuffer(const Device& device, const Render& render);
-  void DestroyUniformBuffers(const VkDevice& device,
-                             const Render& render) const;
+  void DestroyUniformBuffer(const VkDevice& device, const Render& render);
 
  public:
   template <typename... Args>
@@ -69,30 +54,23 @@ class Descriptor : public Base {
   const MeshData* GetBridgeData();
 
   virtual void TriggerRegisterMember() override {
-    RegisterMember(uniformBuffer);
+    RegisterMember(transformBuffer);
   }
+  void UpdateUniformBuffer(const uint32_t currentImage);
 
-  void UpdateUniformBuffer(const uint32_t currentImage) {
-    uniformBuffer.UpdateUniformBuffer(currentImage);
+  [[nodiscard]] const TransformBuffer& GetUniformBuffer() const {
+    return transformBuffer;
   }
-
-  [[nodiscard]] const UniformBuffer& GetUniformBuffer() const {
-    return uniformBuffer;
-  }
-
   [[nodiscard]] const UniformBuffers& GetUniformBuffers() const {
-    return uniformBuffer.GetUniformBuffers();
+    return transformBuffer.GetUniformBuffers();
   }
-
   [[nodiscard]] const VkBuffer& GetUniformBufferByIndex(
       const size_t index) const {
-    return uniformBuffer.GetUniformBufferByIndex(index);
+    return transformBuffer.GetUniformBufferByIndex(index);
   }
-
   [[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
     return descriptorSets;
   }
-
   [[nodiscard]] const VkDescriptorSet& GetDescriptorSetByIndex(
       const uint32_t index) const {
     return descriptorSets[index];
@@ -101,5 +79,5 @@ class Descriptor : public Base {
   void CreateDescriptor(const Device& device, const Render& render,
                         const VkDescriptorSetLayout& descriptorSetLayout,
                         const std::vector<Texture>& textures);
-  void DestroyDesciptor(const VkDevice& device, const Render& render) const;
+  void DestroyDesciptor(const VkDevice& device, const Render& render);
 };

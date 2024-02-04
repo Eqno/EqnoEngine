@@ -18,7 +18,7 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingBufferMemory;
-  Buffer::CreateBuffer(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+  DataBuffer::CreateBuffer(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                        stagingBuffer, stagingBufferMemory);
@@ -139,7 +139,7 @@ void Texture::CreateImage(const Device& device, const uint32_t width,
   const VkMemoryAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
       .allocationSize = memRequirements.size,
-      .memoryTypeIndex = Buffer::MemoryType(
+      .memoryTypeIndex = DataBuffer::MemoryType(
           device.GetPhysical(), memRequirements.memoryTypeBits, properties),
   };
 

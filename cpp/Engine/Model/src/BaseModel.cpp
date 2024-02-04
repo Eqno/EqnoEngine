@@ -157,7 +157,6 @@ void BaseModel::OnCreate() {
   } else if (JSON_CONFIG(String, "Type") == "OBJ") {
     // LoadObjDatas(JSON_CONFIG(String, "File"), 0);
   }
-  scene->GetGraphics()->ParseMeshDatas(meshes);
 }
 
 void BaseModel::OnStart() {
@@ -168,15 +167,26 @@ void BaseModel::OnStart() {
     mesh->uniform.lights = GetLightChannel();
     mesh->uniform.modelMatrix = &GetAbsoluteTransform();
   }
+  scene->GetGraphics()->ParseMeshDatas(meshes);
 }
 
-void BaseModel::OnUpdate() { SceneObject::OnUpdate(); }
+void BaseModel::OnUpdate() {
+  SceneObject::OnUpdate();
+
+  static int count = 0;
+  count++;
+  if (count == 5000 && name == "MasterSword") {
+    Destroy();
+  }
+}
+
+void BaseModel::OnStop() { SceneObject::OnStop(); }
 
 void BaseModel::OnDestroy() {
   SceneObject::OnDestroy();
 
-  for (const MeshData* mesh : meshes) {
-    delete mesh;
+  for (MeshData* mesh : meshes) {
+    mesh->state.alive = false;
   }
 }
 

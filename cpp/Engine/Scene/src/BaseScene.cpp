@@ -12,8 +12,8 @@
 void DestroyObjects(SceneObject* root) {
   for (SceneObject* son : root->GetSons()) {
     DestroyObjects(son);
-    son->DestroyImmediately();
   }
+  root->DestroyImmediately();
 }
 
 void BaseScene::OnCreate() {
@@ -40,6 +40,9 @@ void BaseScene::OnDestroy() {
 
   for (BaseMaterial* material : materials | std::views::values) {
     material->DestroyImmediately();
+  }
+  for (LightChannel* lightChannel : lightChannels | std::views::values) {
+    lightChannel->DestroyImmediately();
   }
 }
 

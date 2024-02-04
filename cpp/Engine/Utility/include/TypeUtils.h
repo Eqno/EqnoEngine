@@ -22,6 +22,7 @@ class BaseLight;
 class BaseCamera;
 class BaseMaterial;
 class LightChannel;
+class BufferManager;
 
 using Vertexes = std::vector<Vertex>;
 using Integers = std::vector<int32_t>;
@@ -111,7 +112,9 @@ struct UniformData {
   BaseCamera* camera;
   LightChannel* lights;
   BaseMaterial* material;
+
   glm::mat4* modelMatrix;
+  BufferManager* bufferManager;
 };
 
 struct StateData {

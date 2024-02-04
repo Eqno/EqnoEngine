@@ -15,46 +15,6 @@
 #include "../include/texture.h"
 #include "../include/uniform.h"
 
-#define AddDescriptorWrites(index, type)                                 \
-  {                                                                      \
-    VkDescriptorBufferInfo bufferInfo{                                   \
-        .buffer = GetUniformBufferByIndex(i * UniformBufferNum + index), \
-        .offset = 0,                                                     \
-        .range = sizeof(type),                                           \
-    };                                                                   \
-    descriptorWrites[index] = {                                          \
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,                 \
-        .dstSet = descriptorSets[i],                                     \
-        .dstBinding = index,                                             \
-        .dstArrayElement = 0,                                            \
-        .descriptorCount = 1,                                            \
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,             \
-        .pBufferInfo = &bufferInfo,                                      \
-    };                                                                   \
-  }
-
-#define CreateAndMapBuffers(index, type)                                      \
-  {                                                                           \
-    Buffer::CreateBuffer(device, sizeof(type),                                \
-                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,                  \
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |                \
-                             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,            \
-                         uniformBuffers[i * UniformBufferNum + index],        \
-                         uniformBuffersMemory[i * UniformBufferNum + index]); \
-    vkMapMemory(device.GetLogical(),                                          \
-                uniformBuffersMemory[i * UniformBufferNum + index], 0,        \
-                sizeof(type), 0,                                              \
-                &uniformBuffersMapped[i * UniformBufferNum + index]);         \
-  }
-
-#define DoSomethingWithBuffers(action) \
-  {                                    \
-    action(0, CameraData);             \
-    action(1, MaterialData);           \
-    action(2, TransformData);          \
-    action(3, LightsData);             \
-  }
-
 void Descriptor::CreateDescriptorSets(
     const VkDevice& device, const Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout,
@@ -78,7 +38,71 @@ void Descriptor::CreateDescriptorSets(
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     std::vector<VkWriteDescriptorSet> descriptorWrites;
     descriptorWrites.resize(textures.size() + UniformBufferNum);
-    DoSomethingWithBuffers(AddDescriptorWrites);
+
+    {
+      VkDescriptorBufferInfo bufferInfo{
+          .buffer = cameraBuffer->GetUniformBufferByIndex(i),
+          .offset = 0,
+          .range = sizeof(CameraData),
+      };
+      descriptorWrites[0] = {
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+          .dstSet = descriptorSets[i],
+          .dstBinding = 0,
+          .dstArrayElement = 0,
+          .descriptorCount = 1,
+          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .pBufferInfo = &bufferInfo,
+      };
+    }
+    {
+      VkDescriptorBufferInfo bufferInfo{
+          .buffer = materialBuffer->GetUniformBufferByIndex(i),
+          .offset = 0,
+          .range = sizeof(MaterialData),
+      };
+      descriptorWrites[1] = {
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+          .dstSet = descriptorSets[i],
+          .dstBinding = 1,
+          .dstArrayElement = 0,
+          .descriptorCount = 1,
+          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .pBufferInfo = &bufferInfo,
+      };
+    }
+    {
+      VkDescriptorBufferInfo bufferInfo{
+          .buffer = transformBuffer.GetUniformBufferByIndex(i),
+          .offset = 0,
+          .range = sizeof(TransformData),
+      };
+      descriptorWrites[2] = {
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+          .dstSet = descriptorSets[i],
+          .dstBinding = 2,
+          .dstArrayElement = 0,
+          .descriptorCount = 1,
+          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .pBufferInfo = &bufferInfo,
+      };
+    }
+    {
+      VkDescriptorBufferInfo bufferInfo{
+          .buffer = lightChannelBuffer->GetUniformBufferByIndex(i),
+          .offset = 0,
+          .range = sizeof(LightsData),
+      };
+      descriptorWrites[3] = {
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+          .dstSet = descriptorSets[i],
+          .dstBinding = 3,
+          .dstArrayElement = 0,
+          .descriptorCount = 1,
+          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .pBufferInfo = &bufferInfo,
+      };
+    }
 
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.resize(textures.size());
@@ -138,12 +162,51 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
 
 void Descriptor::CreateUniformBuffer(const Device& device,
                                      const Render& render) {
-  uniformBuffer.CreateUniformBuffers(device, render);
-}
+  transformBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
 
-void Descriptor::DestroyUniformBuffers(const VkDevice& device,
-                                       const Render& render) const {
-  uniformBuffer.DestroyUniformBuffer(device, render);
+  const UniformData& uniform = GetBridgeData()->uniform;
+  if (BaseCamera* camera = uniform.camera) {
+    cameraBuffer =
+        &uniform.bufferManager->CreateCameraBuffer(camera, device, render);
+  }
+  if (BaseMaterial* material = uniform.material) {
+    materialBuffer =
+        &uniform.bufferManager->CreateMaterialBuffer(material, device, render);
+  }
+  if (LightChannel* lightChannel = uniform.lights) {
+    lightChannelBuffer = &uniform.bufferManager->CreateLightChannelBuffer(
+        lightChannel, device, render);
+  }
+}
+void Descriptor::UpdateUniformBuffer(const uint32_t currentImage) {
+  transformBuffer.UpdateUniformBuffer(currentImage);
+
+  const UniformData& uniform = GetBridgeData()->uniform;
+  if (BaseCamera* camera = uniform.camera) {
+    cameraBuffer->UpdateUniformBuffer(camera, currentImage);
+  }
+  if (BaseMaterial* material = uniform.material) {
+    materialBuffer->UpdateUniformBuffer(material, currentImage);
+  }
+  if (LightChannel* lightChannel = uniform.lights) {
+    lightChannelBuffer->UpdateUniformBuffer(lightChannel, currentImage);
+  }
+}
+void Descriptor::DestroyUniformBuffer(const VkDevice& device,
+                                      const Render& render) {
+  transformBuffer.DestroyUniformBuffer(device, render);
+
+  const UniformData& uniform = GetBridgeData()->uniform;
+  if (BaseCamera* camera = uniform.camera) {
+    uniform.bufferManager->DestroyCameraBuffer(camera, device, render);
+  }
+  if (BaseMaterial* material = uniform.material) {
+    uniform.bufferManager->DestroyMaterialBuffer(material, device, render);
+  }
+  if (LightChannel* lightChannel = uniform.lights) {
+    uniform.bufferManager->DestroyLightChannelBuffer(lightChannel, device,
+                                                     render);
+  }
 }
 
 void Descriptor::CreateDescriptor(
@@ -157,70 +220,23 @@ void Descriptor::CreateDescriptor(
 }
 
 void Descriptor::DestroyDesciptor(const VkDevice& device,
-                                  const Render& render) const {
+                                  const Render& render) {
   vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-  DestroyUniformBuffers(device, render);
+  DestroyUniformBuffer(device, render);
 }
 
-void UniformBuffer::CreateUniformBuffers(const Device& device,
-                                         const Render& render) {
-  uniformBuffers.resize(render.GetMaxFramesInFlight() * UniformBufferNum);
-  uniformBuffersMemory.resize(render.GetMaxFramesInFlight() * UniformBufferNum);
-  uniformBuffersMapped.resize(render.GetMaxFramesInFlight() * UniformBufferNum);
-
-  for (int i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    DoSomethingWithBuffers(CreateAndMapBuffers);
-  }
-}
-
-void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
+void TransformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
   if (BaseCamera* camera = GetBridgeData()->uniform.camera) {
-    CameraData* buffer = reinterpret_cast<CameraData*>(
-        uniformBuffersMapped[currentImage * UniformBufferNum]);
-    buffer->pos = camera->GetAbsolutePosition();
-    buffer->normal = camera->GetAbsoluteForward();
-  }
-  if (BaseMaterial* material = GetBridgeData()->uniform.material) {
-    MaterialData* buffer = reinterpret_cast<MaterialData*>(
-        uniformBuffersMapped[currentImage * UniformBufferNum + 1]);
-    buffer->color = material->GetColor();
-    buffer->roughness = material->GetRoughness();
-    buffer->metallic = material->GetMetallic();
-  }
-  if (BaseCamera* camera = GetBridgeData()->uniform.camera) {
-    TransformData* buffer = reinterpret_cast<TransformData*>(
-        uniformBuffersMapped[currentImage * UniformBufferNum + 2]);
+    TransformData* buffer =
+        reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
     glm::mat4x4* modelMatrix = GetBridgeData()->uniform.modelMatrix;
     buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
     buffer->viewMatrix = camera->GetViewMatrix();
     buffer->projMatrix = camera->GetProjMatrix();
   }
-  if (LightChannel* lightChannel = GetBridgeData()->uniform.lights) {
-    LightsData* buffer = reinterpret_cast<LightsData*>(
-        uniformBuffersMapped[currentImage * UniformBufferNum + 3]);
-
-    std::vector<BaseLight*>& lights = lightChannel->GetLights();
-    buffer->num = lights.size();
-    for (int i = 0; i < lights.size(); ++i) {
-      buffer->object[i].type = lights[i]->GetType();
-      buffer->object[i].intensity = lights[i]->GetIntensity();
-      buffer->object[i].color = lights[i]->GetColor();
-
-      buffer->object[i].pos = lights[i]->GetAbsolutePosition();
-      buffer->object[i].normal = lights[i]->GetAbsoluteForward();
-    }
-  }
 }
 
-void UniformBuffer::DestroyUniformBuffer(const VkDevice& device,
-                                         const Render& render) const {
-  for (auto i = 0; i < render.GetMaxFramesInFlight() * UniformBufferNum; i++) {
-    vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-    vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
-  }
-}
-
-const MeshData* UniformBuffer::GetBridgeData() {
+const MeshData* TransformBuffer::GetBridgeData() {
   if (bridge == nullptr) {
     bridge = dynamic_cast<Descriptor*>(owner)->GetBridgeData();
   }
@@ -233,8 +249,3 @@ const MeshData* Descriptor::GetBridgeData() {
   }
   return bridge;
 }
-
-#undef DoSomethingWithBuffers
-#undef CopyMemoryOfBuffers
-#undef CreateAndMapBuffers
-#undef AddDescriptorWrites

@@ -89,13 +89,11 @@ class BaseObject {
     _active = false;
   }
   void DestroyImmediately() {
-    if (this != nullptr) {
-      if (_active == true) {
-        OnStop();
-      }
-      OnDestroy();
-      delete this;
+    if (_active == true) {
+      OnStop();
     }
+    OnDestroy();
+    delete this;
   }
 
   BaseObject& operator=(const BaseObject& app) = delete;

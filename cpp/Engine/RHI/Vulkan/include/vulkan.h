@@ -19,6 +19,8 @@ class Vulkan final : public GraphicsInterface, public Base {
   Instance instance;
   SwapChain swapChain;
   Validation validation;
+
+  BufferManager bufferManager;
   std::unordered_map<std::string, Draw*> draws;
 
  public:
@@ -31,6 +33,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   void RendererLoop() override;
   void CleanupGraphics() override;
 
+  BufferManager& GetBufferManager() { return bufferManager; }
   void ParseMeshDatas(std::vector<MeshData*>& meshDatas) override;
   float GetViewportAspect() override;
 

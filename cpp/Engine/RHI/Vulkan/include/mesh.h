@@ -11,7 +11,7 @@ class Mesh : public Base {
   const MeshData* bridge;
 
   Data data;
-  Buffer buffer;
+  DataBuffer buffer;
   Descriptor descriptor;
   std::vector<Texture> textures;
 
@@ -66,8 +66,9 @@ class Mesh : public Base {
                   const MeshData* inData,
                   const VkDescriptorSetLayout& descriptorSetLayout);
 
-  void DestroyMesh(const VkDevice& device, const Render& render) const;
+  void DestroyMesh(const VkDevice& device, const Render& render);
 
   [[nodiscard]] const bool GetAlive() const { return bridge->state.alive; }
+  void DeleteBridge() { delete bridge; }
   const MeshData* GetBridgeData() { return bridge; }
 };

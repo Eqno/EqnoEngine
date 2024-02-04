@@ -61,6 +61,7 @@ void Vulkan::RendererLoop() {
         if ((*meshIter)->GetAlive() == false) {
           // Destroy the mesh if not alive
           (*meshIter)->DestroyMesh(device.GetLogical(), render);
+          (*meshIter)->DeleteBridge();
           (*meshIter)->Destroy();
           meshIter = meshes.erase(meshIter);
         } else {
@@ -101,13 +102,14 @@ void Vulkan::CleanupGraphics() {
 }
 
 void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
-  for (const MeshData* mesh : meshDatas) {
+  for (MeshData* mesh : meshDatas) {
     std::vector<std::string>& shaders = mesh->uniform.material->GetShaders();
 
     if (shaders.empty()) {
       continue;
     }
 
+    mesh->uniform.bufferManager = &bufferManager;
     if (draws.contains(shaders[0])) {
       draws[shaders[0]]->LoadDrawResource(device, render, mesh);
     } else {

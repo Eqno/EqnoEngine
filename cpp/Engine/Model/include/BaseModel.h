@@ -30,7 +30,7 @@ class BaseModel final : public SceneObject {
   virtual void OnUpdate() override;
   virtual void OnDestroy() override;
   virtual void OnStart() override;
-  virtual void OnStop() override { SceneObject::OnStop(); }
+  virtual void OnStop() override;
 
   virtual void OnActive() override { SceneObject::OnActive(); }
   virtual void OnDeactive() override { SceneObject::OnDeactive(); }

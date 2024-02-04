@@ -10,7 +10,7 @@ void Mesh::CreateMesh(const Device& device, const Render& render,
   ParseBufferAndDescriptor(device, render, descriptorSetLayout);
 }
 
-void Mesh::DestroyMesh(const VkDevice& device, const Render& render) const {
+void Mesh::DestroyMesh(const VkDevice& device, const Render& render) {
   descriptor.DestroyDesciptor(device, render);
   buffer.DestroyBuffers(device);
   for (const Texture& texture : textures) {
