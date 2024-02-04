@@ -4,7 +4,6 @@
 #include "base.h"
 #include "buffer.h"
 #include "data.h"
-#include "light.h"
 #include "texture.h"
 #include "uniform.h"
 
