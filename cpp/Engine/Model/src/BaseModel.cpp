@@ -118,9 +118,8 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
     }
 
     // Parse Material
-    BaseMaterial* mat = modelScene->GetMaterialByPath(matPath, matData);
-    meshData->uniform.shaders = &mat->GetShaders();
-    meshData->uniform.material = &mat->GetParams();
+    BaseMaterial* mat = meshData->uniform.material =
+        modelScene->GetMaterialByPath(matPath, matData);
 
     modelMeshes.emplace_back(meshData);
   }
@@ -164,20 +163,10 @@ void BaseModel::OnCreate() {
 void BaseModel::OnStart() {
   SceneObject::OnStart();
 
-  BaseCamera* camera = GetCamera();
-  LightChannel* channel = GetLightChannel();
-
   for (MeshData* mesh : meshes) {
-    mesh->uniform.lights = channel ? &channel->GetLights() : &LightsEmpty;
-
-    mesh->uniform.cameraPosition =
-        camera ? &camera->GetAbsolutePosition() : &Vec3Zero;
-    mesh->uniform.cameraForward =
-        camera ? &camera->GetAbsoluteForward() : &Vec3Zero;
-
+    mesh->uniform.camera = GetCamera();
+    mesh->uniform.lights = GetLightChannel();
     mesh->uniform.modelMatrix = &GetAbsoluteTransform();
-    mesh->uniform.viewMatrix = camera ? &camera->GetViewMatrix() : &Mat4x4Zero;
-    mesh->uniform.projMatrix = camera ? &camera->GetProjMatrix() : &Mat4x4Zero;
   }
 }
 

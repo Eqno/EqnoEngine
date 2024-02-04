@@ -1,6 +1,9 @@
 #include "../include/uniform.h"
 
+#include <Engine/Camera/include/BaseCamera.h>
 #include <Engine/Light/include/BaseLight.h>
+#include <Engine/Light/include/LightChannel.h>
+#include <Engine/Model/include/BaseMaterial.h>
 
 #include <chrono>
 #include <stdexcept>
@@ -43,10 +46,6 @@
                 sizeof(type), 0,                                              \
                 &uniformBuffersMapped[i * UniformBufferNum + index]);         \
   }
-
-#define CopyMemoryOfBuffers(index, ptr)                                      \
-  memcpy(uniformBuffersMapped[currentImage * UniformBufferNum + index], ptr, \
-         sizeof(*ptr))
 
 #define DoSomethingWithBuffers(action) \
   {                                    \
@@ -175,36 +174,40 @@ void UniformBuffer::CreateUniformBuffers(const Device& device,
 }
 
 void UniformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
-  {
+  if (BaseCamera* camera = GetBridgeData()->uniform.camera) {
     CameraData* buffer = reinterpret_cast<CameraData*>(
         uniformBuffersMapped[currentImage * UniformBufferNum]);
-    buffer->pos = *GetBridgeData()->uniform.cameraPosition;
-    buffer->normal = *GetBridgeData()->uniform.cameraForward;
+    buffer->pos = camera->GetAbsolutePosition();
+    buffer->normal = camera->GetAbsoluteForward();
   }
-  CopyMemoryOfBuffers(1, GetBridgeData()->uniform.material);
-  {
+  if (BaseMaterial* material = GetBridgeData()->uniform.material) {
+    MaterialData* buffer = reinterpret_cast<MaterialData*>(
+        uniformBuffersMapped[currentImage * UniformBufferNum + 1]);
+    buffer->color = material->GetColor();
+    buffer->roughness = material->GetRoughness();
+    buffer->metallic = material->GetMetallic();
+  }
+  if (BaseCamera* camera = GetBridgeData()->uniform.camera) {
     TransformData* buffer = reinterpret_cast<TransformData*>(
         uniformBuffersMapped[currentImage * UniformBufferNum + 2]);
-    buffer->modelMatrix = *GetBridgeData()->uniform.modelMatrix;
-    buffer->viewMatrix = *GetBridgeData()->uniform.viewMatrix;
-    buffer->projMatrix = *GetBridgeData()->uniform.projMatrix;
+    glm::mat4x4* modelMatrix = GetBridgeData()->uniform.modelMatrix;
+    buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
+    buffer->viewMatrix = camera->GetViewMatrix();
+    buffer->projMatrix = camera->GetProjMatrix();
   }
-  {
+  if (LightChannel* lightChannel = GetBridgeData()->uniform.lights) {
     LightsData* buffer = reinterpret_cast<LightsData*>(
         uniformBuffersMapped[currentImage * UniformBufferNum + 3]);
 
-    if (GetBridgeData()->uniform.lights != nullptr) {
-      std::vector<BaseLight*>& lights = *GetBridgeData()->uniform.lights;
+    std::vector<BaseLight*>& lights = lightChannel->GetLights();
+    buffer->num = lights.size();
+    for (int i = 0; i < lights.size(); ++i) {
+      buffer->object[i].type = lights[i]->GetType();
+      buffer->object[i].intensity = lights[i]->GetIntensity();
+      buffer->object[i].color = lights[i]->GetColor();
 
-      buffer->num = lights.size();
-      for (int i = 0; i < lights.size(); ++i) {
-        buffer->object[i].type = lights[i]->GetType();
-        buffer->object[i].intensity = lights[i]->GetIntensity();
-        buffer->object[i].color = lights[i]->GetColor();
-
-        buffer->object[i].pos = lights[i]->GetAbsolutePosition();
-        buffer->object[i].normal = lights[i]->GetAbsoluteForward();
-      }
+      buffer->object[i].pos = lights[i]->GetAbsolutePosition();
+      buffer->object[i].normal = lights[i]->GetAbsoluteForward();
     }
   }
 }

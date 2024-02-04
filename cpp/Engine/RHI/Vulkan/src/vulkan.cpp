@@ -1,5 +1,6 @@
 #include "../include/vulkan.h"
 
+#include <Engine/Model/include/BaseMaterial.h>
 #include <Engine/System/include/Application.h>
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/Utility/include/JsonUtils.h>
@@ -101,7 +102,7 @@ void Vulkan::CleanupGraphics() {
 
 void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
   for (const MeshData* mesh : meshDatas) {
-    std::vector<std::string>& shaders = *mesh->uniform.shaders;
+    std::vector<std::string>& shaders = mesh->uniform.material->GetShaders();
 
     if (shaders.empty()) {
       continue;

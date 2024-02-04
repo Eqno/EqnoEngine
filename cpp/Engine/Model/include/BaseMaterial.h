@@ -8,7 +8,10 @@
 
 class BaseMaterial final : public BaseObject {
  protected:
-  MaterialData params;
+  glm::vec4 color;
+  float roughness;
+  float metallic;
+
   std::vector<std::string> shaders;
   aiMaterial* matData = nullptr;
 
@@ -25,13 +28,16 @@ class BaseMaterial final : public BaseObject {
     if (matData != nullptr) {
       aiColor4D color;
       matData->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-      params.color = MathUtils::AiColor4D2GlmVec4(color);
-      matData->Get(AI_MATKEY_ROUGHNESS_FACTOR, params.roughness);
-      matData->Get(AI_MATKEY_METALLIC_FACTOR, params.metallic);
+      this->color = MathUtils::AiColor4D2GlmVec4(color);
+      matData->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+      matData->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
     }
-    JsonUtils::ParseMaterialParams(GetRoot() + GetFile(), params);
+    JsonUtils::ParseMaterialParams(GetRoot() + GetFile(), color, roughness,
+                                   metallic);
   }
 
   std::vector<std::string>& GetShaders() { return shaders; }
-  MaterialData& GetParams() { return params; }
+  glm::vec4& GetColor() { return color; }
+  float& GetRoughness() { return roughness; }
+  float& GetMetallic() { return metallic; }
 };

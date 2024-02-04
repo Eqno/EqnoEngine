@@ -19,6 +19,9 @@
 
 class Vertex;
 class BaseLight;
+class BaseCamera;
+class BaseMaterial;
+class LightChannel;
 
 using Vertexes = std::vector<Vertex>;
 using Integers = std::vector<int32_t>;
@@ -75,28 +78,28 @@ enum class LightType {
 };
 
 struct CameraData {
-  alignas(16) glm::vec3 pos = Vec3Zero;
-  alignas(16) glm::vec3 normal = Vec3Zero;
+  alignas(16) glm::vec3 pos;
+  alignas(16) glm::vec3 normal;
 };
 
 struct MaterialData {
-  alignas(16) glm::vec4 color = Vec4One;
-  alignas(4) float roughness = 1;
-  alignas(4) float metallic = 0;
+  alignas(16) glm::vec4 color;
+  alignas(4) float roughness;
+  alignas(4) float metallic;
 };
 
 struct TransformData {
-  alignas(16) glm::mat4 modelMatrix = Mat4x4One;
-  alignas(16) glm::mat4 viewMatrix = Mat4x4One;
-  alignas(16) glm::mat4 projMatrix = Mat4x4One;
+  alignas(16) glm::mat4 modelMatrix;
+  alignas(16) glm::mat4 viewMatrix;
+  alignas(16) glm::mat4 projMatrix;
 };
 
 struct LightData {
-  alignas(4) LightType type = LightType::Unset;
-  alignas(4) float intensity = 1;
-  alignas(16) glm::vec3 pos = Vec3Zero;
-  alignas(16) glm::vec4 color = Vec4One;
-  alignas(16) glm::vec3 normal = Vec3Zero;
+  alignas(4) LightType type;
+  alignas(4) float intensity;
+  alignas(16) glm::vec3 pos;
+  alignas(16) glm::vec4 color;
+  alignas(16) glm::vec3 normal;
 };
 
 struct LightsData {
@@ -105,16 +108,10 @@ struct LightsData {
 };
 
 struct UniformData {
-  MaterialData* material;
-  std::vector<std::string>* shaders;
-  std::vector<BaseLight*>* lights;
-
-  glm::vec3* cameraPosition;
-  glm::vec3* cameraForward;
-
+  BaseCamera* camera;
+  LightChannel* lights;
+  BaseMaterial* material;
   glm::mat4* modelMatrix;
-  glm::mat4* viewMatrix;
-  glm::mat4* projMatrix;
 };
 
 struct StateData {

@@ -58,7 +58,8 @@ MaterialInfo ParseMeshDataInfos(const std::string& filePath,
 
 void ParseMaterialShaders(const std::string& filePath,
                           std::vector<std::string>& shaders);
-void ParseMaterialParams(const std::string& filePath, MaterialData& params);
+void ParseMaterialParams(const std::string& filePath, glm::vec4& color,
+                         float& roughness, float& metallic);
 
 void WriteStringToFile(const std::string& filePath, const std::string& key,
                        const std::string& value);
