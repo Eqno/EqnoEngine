@@ -2,14 +2,15 @@
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
+#include <memory>
 
 class SceneObject;
 
 class BaseTransform {
-  SceneObject* _owner = nullptr;
+  std::weak_ptr<SceneObject> _owner;
 
  public:
-  void RegisterOwner(SceneObject* other) { _owner = other; }
+  void RegisterOwner(std::weak_ptr<SceneObject> other) { _owner = other; }
 
   glm::vec3 relativeLeft = glm::vec3(1, 0, 0);
   glm::vec3 absoluteLeft = glm::vec3(1, 0, 0);

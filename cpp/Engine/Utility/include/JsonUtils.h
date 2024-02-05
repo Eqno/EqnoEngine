@@ -47,11 +47,12 @@ std::vector<std::string> ReadStringsFromFile(const std::string& filePath,
 float ReadFloatFromFile(const std::string& filePath, const std::string& key);
 int ReadIntFromFile(const std::string& filePath, const std::string& key);
 
-void ParseSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
+void ParseSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
+                          std::shared_ptr<SceneObject> parent,
                           const std::string& root, const std::string& file,
-                          BaseObject* owner);
+                          std::weak_ptr<BaseObject> owner);
 void ParseSceneLightChannels(const std::string& root, const std::string& file,
-                             BaseScene* owner);
+                             std::weak_ptr<BaseScene> owner);
 
 MaterialInfo ParseMeshDataInfos(const std::string& filePath,
                                 const std::string& meshName);

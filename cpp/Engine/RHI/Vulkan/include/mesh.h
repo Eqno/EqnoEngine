@@ -8,7 +8,7 @@
 #include "uniform.h"
 
 class Mesh : public Base {
-  const MeshData* bridge;
+  std::weak_ptr<MeshData> bridge;
 
   Data data;
   DataBuffer buffer;
@@ -63,12 +63,17 @@ class Mesh : public Base {
   }
 
   void CreateMesh(const Device& device, const Render& render,
-                  const MeshData* inData,
+                  std::weak_ptr<MeshData> inData,
                   const VkDescriptorSetLayout& descriptorSetLayout);
 
   void DestroyMesh(const VkDevice& device, const Render& render);
 
-  [[nodiscard]] const bool GetAlive() const { return bridge->state.alive; }
-  void DeleteBridge() { delete bridge; }
-  const MeshData* GetBridgeData() { return bridge; }
+  [[nodiscard]] const bool GetAlive() const {
+    if (auto bridgePtr = bridge.lock()) {
+      return bridgePtr->state.alive;
+    } else {
+      return false;
+    }
+  }
+  std::weak_ptr<MeshData> GetBridgeData() { return bridge; }
 };

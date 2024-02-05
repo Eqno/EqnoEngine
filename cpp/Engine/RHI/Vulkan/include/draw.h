@@ -47,7 +47,7 @@ class Draw : public Base {
                           const VkRenderPass& renderPass, const int texCount);
 
   void LoadDrawResource(const Device& device, const Render& render,
-                        const MeshData* data);
+                        std::weak_ptr<MeshData> data);
 
   void DestroyDrawResource(const VkDevice& device, const Render& render);
 };

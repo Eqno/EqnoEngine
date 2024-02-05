@@ -71,21 +71,23 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
   return {};
 }
 
-void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
+void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
+                           std::shared_ptr<SceneObject> parent,
                            const Value& val, const std::string& root,
-                           BaseObject* owner) {
+                           std::weak_ptr<BaseObject> owner) {
   if (val.HasMember("Type") && val.HasMember("Path")) {
-    SceneObject* object = nullptr;
+    std::shared_ptr<SceneObject> object;
     if (strcmp(val["Type"].GetString(), "BaseModel") == 0) {
       object = BaseObject::CreateImmediately<BaseModel>(
           graphics, parent,
           val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
           val["Path"].GetString(), owner);
       if (val.HasMember("Camera")) {
-        dynamic_cast<BaseModel*>(object)->SetCamera(val["Camera"].GetString());
+        std::dynamic_pointer_cast<BaseModel>(object)->SetCamera(
+            val["Camera"].GetString());
       }
       if (val.HasMember("LightChannel")) {
-        dynamic_cast<BaseModel*>(object)->SetLightChannel(
+        std::dynamic_pointer_cast<BaseModel>(object)->SetLightChannel(
             val["LightChannel"].GetString());
       }
     } else if (strcmp(val["Type"].GetString(), "BaseCamera") == 0) {
@@ -94,7 +96,7 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
           val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
           val["Path"].GetString(), owner);
       if (val.HasMember("Transform")) {
-        dynamic_cast<BaseCamera*>(object)->InitRotation(
+        std::dynamic_pointer_cast<BaseCamera>(object)->InitRotation(
             ParseGLMVec3(val["Transform"]["Rotation"].GetString()));
       }
     } else if (strcmp(val["Type"].GetString(), "SpotLight") == 0) {
@@ -133,11 +135,11 @@ void TravelSceneObjectTree(GraphicsInterface* graphics, SceneObject*& parent,
   }
 }
 
-void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
-                                     SceneObject*& parent,
+void JsonUtils::ParseSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
+                                     std::shared_ptr<SceneObject> parent,
                                      const std::string& root,
                                      const std::string& file,
-                                     BaseObject* owner) {
+                                     std::weak_ptr<BaseObject> owner) {
   if (Document* doc = GetJsonDocFromFile(root + file);
       doc->HasMember("SceneObjects")) {
     const auto& values = (*doc)["SceneObjects"];
@@ -149,17 +151,21 @@ void JsonUtils::ParseSceneObjectTree(GraphicsInterface* graphics,
 
 void JsonUtils::ParseSceneLightChannels(const std::string& root,
                                         const std::string& file,
-                                        BaseScene* owner) {
+                                        std::weak_ptr<BaseScene> owner) {
   if (Document* doc = GetJsonDocFromFile(root + file);
       doc->HasMember("LightChannels")) {
     const auto& channels = (*doc)["LightChannels"];
     for (auto iter = channels.MemberBegin(); iter != channels.MemberEnd();
          ++iter) {
-      LightChannel* object = BaseObject::CreateImmediately<LightChannel>(
-          iter->name.GetString(), root, file, owner);
+      std::shared_ptr<LightChannel> object =
+          BaseObject::CreateImmediately<LightChannel>(iter->name.GetString(),
+                                                      false, root, file, owner);
       for (unsigned int i = 0; i < iter->value.Size(); ++i) {
-        BaseLight* light = owner->GetLightByName(iter->value[i].GetString());
-        object->AddLightToChannel(light);
+        if (auto ownerPtr = owner.lock()) {
+          std::weak_ptr<BaseLight> light =
+              ownerPtr->GetLightByName(iter->value[i].GetString());
+          object->AddLightToChannel(light);
+        }
       }
     }
   }

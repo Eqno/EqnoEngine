@@ -14,8 +14,10 @@ void BaseScene::OnCreate() {
   rootObject =
       Create<SceneObject>(rootObject, "RootObject", GetRoot(), GetFile());
   JsonUtils::ParseSceneObjectTree(graphics, rootObject, GetRoot(), GetFile(),
-                                  this);
-  JsonUtils::ParseSceneLightChannels(GetRoot(), GetFile(), this);
+                                  shared_from_this());
+  JsonUtils::ParseSceneLightChannels(
+      GetRoot(), GetFile(),
+      std::dynamic_pointer_cast<BaseScene>(shared_from_this()));
 }
 
 void BaseScene::OnStart() {
@@ -29,38 +31,54 @@ void BaseScene::OnDestroy() {
   BaseObject::OnDestroy();
 
   rootObject->Destroy();
-  for (BaseMaterial* material : materials | std::views::values) {
+  for (std::shared_ptr<BaseMaterial> material :
+       materials | std::views::values) {
     material->Destroy();
   }
-  for (LightChannel* lightChannel : lightChannels | std::views::values) {
+  for (std::shared_ptr<LightChannel> lightChannel :
+       lightChannels | std::views::values) {
     lightChannel->Destroy();
   }
 }
 
-BaseMaterial* BaseScene::GetMaterialByPath(const std::string& path,
-                                           aiMaterial* matData) {
+std::weak_ptr<BaseMaterial> BaseScene::GetMaterialByPath(
+    const std::string& path, aiMaterial* matData) {
   std::string name = path + ": " + matData->GetName().C_Str();
   if (materials.contains(name) == false) {
-    materials[name] = Create<BaseMaterial>(matData, false, GetRoot(), path);
+    materials[name] =
+        Create<BaseMaterial>(matData, name, false, GetRoot(), path);
   }
   return materials[name];
 }
-BaseCamera* BaseScene::GetCameraByName(const std::string& name) {
+std::weak_ptr<BaseCamera> BaseScene::GetCameraByName(const std::string& name) {
   return cameras[name];
 }
-BaseLight* BaseScene::GetLightByName(const std::string& name) {
+std::weak_ptr<BaseLight> BaseScene::GetLightByName(const std::string& name) {
   return lights[name];
 }
-LightChannel* BaseScene::GetLightChannelByName(const std::string& name) {
+std::weak_ptr<LightChannel> BaseScene::GetLightChannelByName(
+    const std::string& name) {
   return lightChannels[name];
 }
-void BaseScene::RegisterCamera(const std::string& name, BaseCamera* camera) {
+void BaseScene::RegisterCamera(const std::string& name,
+                               std::shared_ptr<BaseCamera> camera) {
   cameras[name] = camera;
 }
-void BaseScene::RegisterLight(const std::string& name, BaseLight* light) {
+void BaseScene::RegisterLight(const std::string& name,
+                              std::shared_ptr<BaseLight> light) {
   lights[name] = light;
 }
 void BaseScene::RegisterLightChannel(const std::string& name,
-                                     LightChannel* channel) {
+                                     std::shared_ptr<LightChannel> channel) {
   lightChannels[name] = channel;
+}
+void BaseScene::UnregisterMaterial(const std::string& name) {
+  materials.erase(name);
+}
+void BaseScene::UnregisterCamera(const std::string& name) {
+  cameras.erase(name);
+}
+void BaseScene::UnregisterLight(const std::string& name) { lights.erase(name); }
+void BaseScene::UnregisterLightChannel(const std::string& name) {
+  lightChannels.erase(name);
 }

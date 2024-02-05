@@ -30,7 +30,8 @@ std ::vector<BaseLight*> LightsEmpty;
     (textures).emplace_back(width, height, channels, data);            \
   }
 
-void ParseFbxTextures(aiMaterial* material, MeshData* meshData) {
+void ParseFbxTextures(aiMaterial* material,
+                      std::shared_ptr<MeshData> meshData) {
   if (material == nullptr) {
     return;
   }
@@ -47,7 +48,7 @@ void ParseFbxTextures(aiMaterial* material, MeshData* meshData) {
 }
 
 void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
-                  MeshData* meshData, float importSize) {
+                  std::shared_ptr<MeshData> meshData, float importSize) {
   for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
     aiVector3D pos = transform * mesh->mVertices[i];
     aiVector3D root = transform * aiVector3D(0);
@@ -85,8 +86,10 @@ void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
 
 void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
                    const aiScene* scene, const std::string& rootPath,
-                   const std::string& modelPath, BaseScene* modelScene,
-                   std::vector<MeshData*>& modelMeshes, float importSize) {
+                   const std::string& modelPath,
+                   std::weak_ptr<BaseScene> modelScene,
+                   std::vector<std::shared_ptr<MeshData>>& modelMeshes,
+                   float importSize) {
   const aiMatrix4x4 nodeTransform = transform * node->mTransformation;
 
   for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
@@ -95,8 +98,8 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
         rootPath + modelPath, mesh->mName.C_Str());
 
     // Parse Name
-    MeshData* meshData =
-        new MeshData{.state = {.alive = true}, .name = mesh->mName.C_Str()};
+    std::shared_ptr<MeshData> meshData = std::make_shared<MeshData>(
+        MeshData({.state = {.alive = true}, .name = mesh->mName.C_Str()}));
 
     // Parse Data
     ParseFbxData(nodeTransform, mesh, meshData, importSize);
@@ -118,9 +121,10 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
     }
 
     // Parse Material
-    BaseMaterial* mat = meshData->uniform.material =
-        modelScene->GetMaterialByPath(matPath, matData);
-
+    if (auto scenePtr = modelScene.lock()) {
+      meshData->uniform.material =
+          scenePtr->GetMaterialByPath(matPath, matData);
+    }
     modelMeshes.emplace_back(meshData);
   }
 
@@ -133,19 +137,18 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
 void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
   Assimp::Importer importer;
 
-  const aiScene* scene =
+  const aiScene* sceneData =
       importer.ReadFile(GetRoot() + JSON_CONFIG(String, "File"), parserFlags);
 
-  if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-      scene->mRootNode == nullptr) {
+  if (sceneData == nullptr || sceneData->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+      sceneData->mRootNode == nullptr) {
     throw std::runtime_error(std::string("failed to load fbx model: ") +
                              importer.GetErrorString());
   }
 
   const aiMatrix4x4 identity;
-  ParseFbxDatas(identity, scene->mRootNode, scene, GetRoot(), GetFile(),
-                dynamic_cast<BaseScene*>(_owner), meshes,
-                JSON_CONFIG(Float, "ImportSize"));
+  ParseFbxDatas(identity, sceneData->mRootNode, sceneData, GetRoot(), GetFile(),
+                scene, meshes, JSON_CONFIG(Float, "ImportSize"));
 }
 
 void BaseModel::OnCreate() {
@@ -162,12 +165,19 @@ void BaseModel::OnCreate() {
 void BaseModel::OnStart() {
   SceneObject::OnStart();
 
-  for (MeshData* mesh : meshes) {
-    mesh->uniform.camera = GetCamera();
-    mesh->uniform.lights = GetLightChannel();
-    mesh->uniform.modelMatrix = &GetAbsoluteTransform();
+  if (auto scenePtr = scene.lock()) {
+    if (auto graphicsPtr = scenePtr->GetGraphics().lock()) {
+      std::vector<std::weak_ptr<MeshData>> meshDatas;
+      for (std::shared_ptr<MeshData> mesh : meshes) {
+        meshDatas.emplace_back(mesh);
+
+        mesh->uniform.camera = GetCamera();
+        mesh->uniform.lights = GetLightChannel();
+        mesh->uniform.modelMatrix = &GetAbsoluteTransform();
+      }
+      graphicsPtr->ParseMeshDatas(meshDatas);
+    }
   }
-  scene->GetGraphics()->ParseMeshDatas(meshes);
 }
 
 void BaseModel::OnUpdate() {
@@ -184,10 +194,7 @@ void BaseModel::OnStop() { SceneObject::OnStop(); }
 
 void BaseModel::OnDestroy() {
   SceneObject::OnDestroy();
-
-  for (MeshData* mesh : meshes) {
-    delete mesh;
-  }
+  meshes.clear();
 }
 
 void BaseModel::SetCamera(const std::string& cameraName) {
@@ -197,18 +204,22 @@ void BaseModel::SetLightChannel(const std::string& lightChannelName) {
   _lightChannelName = lightChannelName;
 }
 
-BaseCamera* BaseModel::GetCamera() {
-  if (_camera != nullptr) {
+std::weak_ptr<BaseCamera> BaseModel::GetCamera() {
+  if (_camera.lock()) {
     return _camera;
+  } else if (auto scenePtr = scene.lock()) {
+    return scenePtr->GetCameraByName(_cameraName);
   } else {
-    return scene->GetCameraByName(_cameraName);
+    return std::shared_ptr<BaseCamera>(nullptr);
   }
 }
-LightChannel* BaseModel::GetLightChannel() {
-  if (_lightChannel != nullptr) {
+std::weak_ptr<LightChannel> BaseModel::GetLightChannel() {
+  if (_lightChannel.lock()) {
     return _lightChannel;
+  } else if (auto scenePtr = scene.lock()) {
+    return scenePtr->GetLightChannelByName(_lightChannelName);
   } else {
-    return scene->GetLightChannelByName(_lightChannelName);
+    return std::shared_ptr<LightChannel>(nullptr);
   }
 }
 

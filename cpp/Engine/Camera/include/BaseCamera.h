@@ -6,7 +6,7 @@ class GraphicsInterface;
 
 class BaseCamera : public SceneObject {
  protected:
-  GraphicsInterface* graphics;
+  std::weak_ptr<GraphicsInterface> graphics;
   glm::mat4 viewMatrix = Mat4x4One;
   glm::mat4 projMatrix = Mat4x4One;
 
@@ -26,7 +26,7 @@ class BaseCamera : public SceneObject {
 
  public:
   template <typename... Args>
-  explicit BaseCamera(GraphicsInterface* graphics, Args&&... args)
+  explicit BaseCamera(std::weak_ptr<GraphicsInterface> graphics, Args&&... args)
       : graphics(graphics), SceneObject(std::forward<Args>(args)...) {}
   ~BaseCamera() override = default;
 
@@ -43,6 +43,7 @@ class BaseCamera : public SceneObject {
     rotateY = rot.x;
   }
   virtual void OnUpdate() override;
+  virtual void OnDestroy() override;
 
   void PerformRotation();
   void PerformTraslation();

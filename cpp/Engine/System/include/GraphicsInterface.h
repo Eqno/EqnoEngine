@@ -17,6 +17,7 @@ class GraphicsInterface : public BaseObject {
   virtual void RendererLoop() = 0;
   virtual void CleanupGraphics() = 0;
 
-  virtual void ParseMeshDatas(std::vector<MeshData*>& meshDatas) = 0;
+  virtual void ParseMeshDatas(
+      std::vector<std::weak_ptr<MeshData>>& meshDatas) = 0;
   virtual float GetViewportAspect() = 0;
 };

@@ -20,7 +20,7 @@ void Draw::CreateDrawResource(const Device& device, const std::string& rootPath,
 }
 
 void Draw::LoadDrawResource(const Device& device, const Render& render,
-                            const MeshData* data) {
+                            std::weak_ptr<MeshData> data) {
   Mesh* mesh =
       Create<Mesh>(device, render, data, pipeline.GetDescriptorSetLayout());
   meshes.emplace_back(mesh);

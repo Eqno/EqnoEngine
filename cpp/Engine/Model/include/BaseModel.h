@@ -9,20 +9,20 @@
 class BaseCamera;
 
 class BaseModel final : public SceneObject {
-  std::vector<MeshData*> meshes;
-  GraphicsInterface* graphics;
+  std::vector<std::shared_ptr<MeshData>> meshes;
+  std::weak_ptr<GraphicsInterface> graphics;
 
   std::string _cameraName = "Unset";
-  BaseCamera* _camera = nullptr;
+  std::weak_ptr<BaseCamera> _camera;
 
   std::string _lightChannelName = "Unset";
-  LightChannel* _lightChannel = nullptr;
+  std::weak_ptr<LightChannel> _lightChannel;
 
   virtual void LoadFbxDatas(const unsigned int parserFlags);
 
  public:
   template <typename... Args>
-  explicit BaseModel(GraphicsInterface* graphics, Args&&... args)
+  explicit BaseModel(std::weak_ptr<GraphicsInterface> graphics, Args&&... args)
       : graphics(graphics), SceneObject(std::forward<Args>(args)...) {}
   ~BaseModel() override = default;
 
@@ -38,6 +38,6 @@ class BaseModel final : public SceneObject {
   virtual void SetCamera(const std::string& cameraName);
   virtual void SetLightChannel(const std::string& lightChannelName);
 
-  virtual BaseCamera* GetCamera();
-  virtual LightChannel* GetLightChannel();
+  virtual std::weak_ptr<BaseCamera> GetCamera();
+  virtual std::weak_ptr<LightChannel> GetLightChannel();
 };

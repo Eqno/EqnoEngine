@@ -1,7 +1,7 @@
 #include "../include/mesh.h"
 
 void Mesh::CreateMesh(const Device& device, const Render& render,
-                      const MeshData* inData,
+                      std::weak_ptr<MeshData> inData,
                       const VkDescriptorSetLayout& descriptorSetLayout) {
   bridge = inData;
 
@@ -19,19 +19,24 @@ void Mesh::DestroyMesh(const VkDevice& device, const Render& render) {
 }
 
 void Mesh::ParseTextures(const Device& device, const Render& render) {
-  for (const auto& [width, height, channels, _data] : bridge->textures) {
-    textures.emplace_back("NOSRPGB", device, render, width, height, channels,
-                          _data);
+  if (auto bridgePtr = bridge.lock()) {
+    for (const auto& [width, height, channels, _data] : bridgePtr->textures) {
+      textures.emplace_back("NOSRPGB", device, render, width, height, channels,
+                            _data);
+    }
   }
 }
 
 void Mesh::ParseVertexAndIndex() {
   std::vector<Vertex> vertices;
-  vertices.reserve(bridge->vertices.size());
-  for (const auto& vert : bridge->vertices) {
-    vertices.emplace_back(vert);
+
+  if (auto bridgePtr = bridge.lock()) {
+    vertices.reserve(bridgePtr->vertices.size());
+    for (const auto& vert : bridgePtr->vertices) {
+      vertices.emplace_back(vert);
+    }
+    data.CreateData(bridgePtr->indices, vertices);
   }
-  data.CreateData(bridge->indices, vertices);
 }
 
 void Mesh::ParseBufferAndDescriptor(

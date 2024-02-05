@@ -16,16 +16,12 @@ class Descriptor;
 using DescriptorSets = std::vector<VkDescriptorSet>;
 
 class TransformBuffer : public UniformBuffer {
-  const MeshData* bridge = nullptr;
-
  public:
-  const MeshData* GetBridgeData();
+  std::weak_ptr<MeshData> GetBridgeData();
   void UpdateUniformBuffer(const uint32_t currentImage);
 };
 
 class Descriptor : public Base {
-  const MeshData* bridge = nullptr;
-
   CameraBuffer* cameraBuffer;
   MaterialBuffer* materialBuffer;
   LightChannelBuffer* lightChannelBuffer;
@@ -51,7 +47,7 @@ class Descriptor : public Base {
   }
   Descriptor() = default;
   ~Descriptor() override = default;
-  const MeshData* GetBridgeData();
+  std::weak_ptr<MeshData> GetBridgeData();
 
   virtual void TriggerRegisterMember() override {
     RegisterMember(transformBuffer);

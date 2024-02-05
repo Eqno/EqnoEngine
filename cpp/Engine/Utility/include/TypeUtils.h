@@ -109,9 +109,9 @@ struct LightsData {
 };
 
 struct UniformData {
-  BaseCamera* camera;
-  LightChannel* lights;
-  BaseMaterial* material;
+  std::weak_ptr<BaseCamera> camera;
+  std::weak_ptr<LightChannel> lights;
+  std::weak_ptr<BaseMaterial> material;
 
   glm::mat4* modelMatrix;
   BufferManager* bufferManager;

@@ -80,7 +80,9 @@ void Vulkan::RendererLoop() {
     device.WaitIdle();
 
     Input::RecordDownUpFlags();
-    dynamic_cast<Application*>(_owner)->TriggerOnUpdate();
+    if (auto ownerPtr = _owner.lock()) {
+      std::dynamic_pointer_cast<Application>(ownerPtr)->TriggerOnUpdate();
+    }
     TriggerOnUpdate();
     Input::ResetDownUpFlags();
   }
@@ -104,41 +106,47 @@ void Vulkan::CleanupGraphics() {
   window.DestroyWindow();
 }
 
-void Vulkan::ParseMeshDatas(std::vector<MeshData*>& meshDatas) {
-  for (MeshData* mesh : meshDatas) {
-    std::vector<std::string>& shaders = mesh->uniform.material->GetShaders();
-
-    if (shaders.empty()) {
-      continue;
+void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) {
+  for (std::weak_ptr<MeshData> meshData : meshDatas) {
+    auto mesh = meshData.lock();
+    if (!mesh) {
+      return;
     }
-
-    mesh->uniform.bufferManager = &bufferManager;
-    if (draws.contains(shaders[0])) {
-      draws[shaders[0]]->LoadDrawResource(device, render, mesh);
-    } else {
-      int findFallbackIndex = -1;
-      for (int i = 1; i < shaders.size(); i++) {
-        if (draws.contains(shaders[i])) {
-          findFallbackIndex = i;
-          break;
-        }
+    if (auto materialPtr = mesh->uniform.material.lock()) {
+      std::vector<std::string>& shaders = materialPtr->GetShaders();
+      if (shaders.empty()) {
+        continue;
       }
 
-      Draw* draw =
-          Base::Create<Draw>(device, GetRoot(), shaders, render.GetRenderPass(),
-                             mesh->textures.size());
-      int createFallbackIndex = draw->GetShaderFallbackIndex();
-
-      if (findFallbackIndex != -1 && findFallbackIndex < createFallbackIndex) {
-        draws[shaders[findFallbackIndex]]->LoadDrawResource(device, render,
-                                                            mesh);
-        draw->DestroyDrawResource(device.GetLogical(), render);
-        draw->Destroy();
-      } else if (createFallbackIndex != -1) {
-        draw->LoadDrawResource(device, render, mesh);
-        draws[shaders[createFallbackIndex]] = draw;
+      mesh->uniform.bufferManager = &bufferManager;
+      if (draws.contains(shaders[0])) {
+        draws[shaders[0]]->LoadDrawResource(device, render, mesh);
       } else {
-        throw std::runtime_error("could not fallback to a valid shader!");
+        int findFallbackIndex = -1;
+        for (int i = 1; i < shaders.size(); i++) {
+          if (draws.contains(shaders[i])) {
+            findFallbackIndex = i;
+            break;
+          }
+        }
+
+        Draw* draw =
+            Base::Create<Draw>(device, GetRoot(), shaders,
+                               render.GetRenderPass(), mesh->textures.size());
+        int createFallbackIndex = draw->GetShaderFallbackIndex();
+
+        if (findFallbackIndex != -1 &&
+            findFallbackIndex < createFallbackIndex) {
+          draws[shaders[findFallbackIndex]]->LoadDrawResource(device, render,
+                                                              mesh);
+          draw->DestroyDrawResource(device.GetLogical(), render);
+          draw->Destroy();
+        } else if (createFallbackIndex != -1) {
+          draw->LoadDrawResource(device, render, mesh);
+          draws[shaders[createFallbackIndex]] = draw;
+        } else {
+          throw std::runtime_error("could not fallback to a valid shader!");
+        }
       }
     }
   }

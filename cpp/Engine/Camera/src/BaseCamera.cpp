@@ -12,8 +12,10 @@ void BaseCamera::UpdateViewMatrix() {
 
 void BaseCamera::UpdateProjMatrix() {
   if (aspect < 0) {
-    projMatrix = glm::perspective(glm::radians(fovy),
-                                  graphics->GetViewportAspect(), near, far);
+    if (auto graphicsPtr = graphics.lock()) {
+      projMatrix = glm::perspective(
+          glm::radians(fovy), graphicsPtr->GetViewportAspect(), near, far);
+    }
   } else {
     projMatrix = glm::perspective(glm::radians(fovy), aspect, near, far);
   }
@@ -22,7 +24,11 @@ void BaseCamera::UpdateProjMatrix() {
 
 void BaseCamera::OnCreate() {
   SceneObject::OnCreate();
-  scene->RegisterCamera(name, this);
+
+  if (auto scenePtr = scene.lock()) {
+    scenePtr->RegisterCamera(
+        name, std::dynamic_pointer_cast<BaseCamera>(shared_from_this()));
+  }
 
   ParseAspect(JSON_CONFIG(String, "Aspect"));
   fovy = JSON_CONFIG(Float, "FOVy");
@@ -44,6 +50,14 @@ void BaseCamera::OnUpdate() {
 
   UpdateViewMatrix();
   UpdateProjMatrix();
+}
+
+void BaseCamera::OnDestroy() {
+  SceneObject::OnDestroy();
+
+  if (auto scenePtr = scene.lock()) {
+    scenePtr->UnregisterCamera(name);
+  }
 }
 
 void BaseCamera::PerformTraslation() {

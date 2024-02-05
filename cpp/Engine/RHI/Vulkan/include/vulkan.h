@@ -35,7 +35,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   void CleanupGraphics() override;
 
   BufferManager& GetBufferManager() { return bufferManager; }
-  void ParseMeshDatas(std::vector<MeshData*>& meshDatas) override;
+  void ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) override;
   float GetViewportAspect() override;
 
   virtual void OnCreate() override {

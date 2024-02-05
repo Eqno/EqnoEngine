@@ -9,8 +9,8 @@ class BaseScene;
 class GraphicsInterface;
 
 class Application final : public BaseObject {
-  BaseScene* scene = nullptr;
-  GraphicsInterface* graphics = nullptr;
+  std::shared_ptr<BaseScene> scene;
+  std::shared_ptr<GraphicsInterface> graphics;
 
   void CreateGraphics();
   void CreateLauncherScene();
@@ -22,7 +22,8 @@ class Application final : public BaseObject {
  public:
   template <typename... Args>
   explicit Application(Args&&... args)
-      : BaseObject(std::forward<Args>(args)..., nullptr) {}
+      : BaseObject(std::forward<Args>(args)...,
+                   std::shared_ptr<BaseObject>(nullptr)) {}
   ~Application() override = default;
 
   void TriggerOnUpdate();

@@ -15,6 +15,7 @@ class BaseLight : public SceneObject {
   ~BaseLight() override = default;
 
   virtual void OnCreate() override;
+  virtual void OnDestroy() override;
 
   virtual LightType& GetType() { return type; }
   virtual float& GetIntensity() { return intensity; }

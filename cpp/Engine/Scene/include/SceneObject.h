@@ -7,27 +7,24 @@ class BaseScene;
 
 class SceneObject : public BaseObject {
  protected:
-  BaseScene* scene = nullptr;
-  SceneObject* parent = nullptr;
+  std::weak_ptr<BaseScene> scene;
+  std::weak_ptr<SceneObject> parent;
 
   std::string name;
-  std::list<SceneObject*> sons;
+  std::list<std::shared_ptr<SceneObject>> sons;
 
   BaseTransform transform;
-  void AddToSons(SceneObject* son) { sons.push_back(son); }
+  void AddToSons(std::shared_ptr<SceneObject> son) { sons.push_back(son); }
 
  public:
   template <typename... Args>
-  explicit SceneObject(SceneObject*& parent, std::string name, Args&&... args)
-      : parent(parent), name(name), BaseObject(std::forward<Args>(args)...) {
-    if (parent != nullptr) {
-      parent->AddToSons(this);
-    }
-  }
+  explicit SceneObject(std::weak_ptr<SceneObject> parent, std::string name,
+                       Args&&... args)
+      : parent(parent), name(name), BaseObject(std::forward<Args>(args)...) {}
   ~SceneObject() override = default;
 
-  std::list<SceneObject*>& GetSons() { return sons; }
-  [[nodiscard]] SceneObject* GetParent() const { return parent; }
+  std::list<std::shared_ptr<SceneObject>>& GetSons() { return sons; }
+  [[nodiscard]] std::weak_ptr<SceneObject> GetParent() const { return parent; }
   [[nodiscard]] BaseTransform& GetTransform() { return transform; }
 
   virtual void UpdateAbsoluteTransform();

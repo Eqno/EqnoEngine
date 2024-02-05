@@ -12,30 +12,40 @@ class GraphicsInterface;
 struct aiMaterial;
 
 class BaseScene final : public BaseObject {
-  SceneObject* rootObject = nullptr;
-  GraphicsInterface* graphics = nullptr;
+  std::shared_ptr<SceneObject> rootObject;
+  std::weak_ptr<GraphicsInterface> graphics;
 
-  std::unordered_map<std::string, BaseMaterial*> materials;
-  std::unordered_map<std::string, BaseCamera*> cameras;
-  std::unordered_map<std::string, BaseLight*> lights;
-  std::unordered_map<std::string, LightChannel*> lightChannels;
+  std::unordered_map<std::string, std::shared_ptr<BaseMaterial>> materials;
+  std::unordered_map<std::string, std::shared_ptr<BaseCamera>> cameras;
+  std::unordered_map<std::string, std::shared_ptr<BaseLight>> lights;
+  std::unordered_map<std::string, std::shared_ptr<LightChannel>> lightChannels;
 
  public:
-  BaseMaterial* GetMaterialByPath(const std::string& path, aiMaterial* matData);
-  BaseCamera* GetCameraByName(const std::string& name);
-  BaseLight* GetLightByName(const std::string& name);
-  LightChannel* GetLightChannelByName(const std::string& name);
+  std::weak_ptr<BaseMaterial> GetMaterialByPath(const std::string& path,
+                                                aiMaterial* matData);
+  std::weak_ptr<BaseCamera> GetCameraByName(const std::string& name);
+  std::weak_ptr<BaseLight> GetLightByName(const std::string& name);
+  std::weak_ptr<LightChannel> GetLightChannelByName(const std::string& name);
 
-  void RegisterCamera(const std::string& name, BaseCamera* camera);
-  void RegisterLight(const std::string& name, BaseLight* light);
-  void RegisterLightChannel(const std::string& name, LightChannel* channel);
+  void RegisterCamera(const std::string& name,
+                      std::shared_ptr<BaseCamera> camera);
+  void RegisterLight(const std::string& name, std::shared_ptr<BaseLight> light);
+  void RegisterLightChannel(const std::string& name,
+                            std::shared_ptr<LightChannel> channel);
+
+  void UnregisterMaterial(const std::string& name);
+  void UnregisterCamera(const std::string& name);
+  void UnregisterLight(const std::string& name);
+  void UnregisterLightChannel(const std::string& name);
 
   template <typename... Args>
-  explicit BaseScene(GraphicsInterface* graphics, Args&&... args)
+  explicit BaseScene(std::weak_ptr<GraphicsInterface> graphics, Args&&... args)
       : graphics(graphics), BaseObject(std::forward<Args>(args)...) {}
   ~BaseScene() override = default;
 
-  [[nodiscard]] GraphicsInterface* GetGraphics() const { return graphics; }
+  [[nodiscard]] std::weak_ptr<GraphicsInterface> GetGraphics() const {
+    return graphics;
+  }
 
   virtual void OnCreate() override;
   virtual void OnStart() override;

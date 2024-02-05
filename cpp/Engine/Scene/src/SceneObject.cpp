@@ -3,29 +3,30 @@
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Utility/include/MathUtils.h>
 
-#define VecInSubSpace(member, origin)                                      \
-  transform.absolute##member =                                             \
-      origin +                                                             \
-      parent->GetTransform().absoluteLeft * transform.relative##member.x + \
-      parent->GetTransform().absoluteUp * transform.relative##member.y +   \
-      parent->GetTransform().absoluteForward * transform.relative##member.z;
+#define VecInSubSpace(member, origin)                                         \
+  transform.absolute##member =                                                \
+      origin +                                                                \
+      parentPtr->GetTransform().absoluteLeft * transform.relative##member.x + \
+      parentPtr->GetTransform().absoluteUp * transform.relative##member.y +   \
+      parentPtr->GetTransform().absoluteForward *                             \
+          transform.relative##member.z;
 
 #define VecInGlobSpace(member) \
   transform.absolute##member = transform.relative##member;
 
 void SceneObject::UpdateAbsoluteTransform() {
-  if (parent != nullptr) {
+  if (auto parentPtr = parent.lock()) {
     VecInSubSpace(Left, Vec3Zero);
     VecInSubSpace(Up, Vec3Zero);
     VecInSubSpace(Forward, Vec3Zero);
-    VecInSubSpace(Position, parent->GetTransform().absolutePosition);
+    VecInSubSpace(Position, parentPtr->GetTransform().absolutePosition);
   } else {
     VecInGlobSpace(Left);
     VecInGlobSpace(Up);
     VecInGlobSpace(Forward);
     VecInGlobSpace(Position);
   }
-  for (SceneObject* son : sons) {
+  for (std::shared_ptr<SceneObject> son : GetSons()) {
     son->UpdateAbsoluteTransform();
   }
 }
@@ -52,11 +53,11 @@ void SceneObject::SetRelativeScale(const glm::vec3& sca) {
 
 void SceneObject::PrintSons() {
   std::cout << "Parent: " << _name << ", Sons: ";
-  for (SceneObject* son : sons) {
+  for (std::shared_ptr<SceneObject> son : sons) {
     std::cout << son->_name << ", ";
   }
   std::cout << std::endl;
-  for (SceneObject* son : sons) {
+  for (std::shared_ptr<SceneObject> son : sons) {
     son->PrintSons();
   }
 }
@@ -79,24 +80,30 @@ glm::vec3& SceneObject::GetAbsoluteForward() {
 
 void SceneObject::OnCreate() {
   BaseObject::OnCreate();
-  scene = dynamic_cast<BaseScene*>(_owner);
-  if (scene == nullptr) {
-    throw std::runtime_error("please create camera through scene method!");
+  if (auto parentPtr = parent.lock()) {
+    parentPtr->AddToSons(dynamic_pointer_cast<SceneObject>(shared_from_this()));
   }
-  transform.RegisterOwner(this);
+  if (auto ownerPtr = GetOwner().lock()) {
+    scene = std::dynamic_pointer_cast<BaseScene>(ownerPtr);
+    if (!scene.lock()) {
+      throw std::runtime_error("please create camera through scene method!");
+    }
+  }
+  transform.RegisterOwner(
+      std::dynamic_pointer_cast<SceneObject>(shared_from_this()));
 }
 
 void SceneObject::OnDestroy() {
   BaseObject::OnDestroy();
 
-  for (SceneObject* son : GetSons()) {
+  for (std::shared_ptr<SceneObject> son : GetSons()) {
     son->Destroy();
   }
-  if (parent != nullptr) {
-    auto iter = parent->GetSons().begin();
-    while (iter != parent->GetSons().end()) {
-      if (*iter == this) {
-        parent->GetSons().erase(iter);
+  if (auto parentPtr = parent.lock()) {
+    auto iter = parentPtr->GetSons().begin();
+    while (iter != parentPtr->GetSons().end()) {
+      if (iter->get() == this) {
+        parentPtr->GetSons().erase(iter);
         break;
       }
     }

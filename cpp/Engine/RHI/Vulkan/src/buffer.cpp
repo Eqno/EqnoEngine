@@ -179,15 +179,17 @@ void LightChannelBuffer::UpdateUniformBuffer(LightChannel* lightChannel,
   LightsData* buffer =
       reinterpret_cast<LightsData*>(uniformBuffersMapped[currentImage]);
 
-  std::vector<BaseLight*>& lights = lightChannel->GetLights();
+  std::vector<std::weak_ptr<BaseLight>>& lights = lightChannel->GetLights();
   buffer->num = lights.size();
 
   for (int i = 0; i < lights.size(); ++i) {
-    buffer->object[i].type = lights[i]->GetType();
-    buffer->object[i].intensity = lights[i]->GetIntensity();
-    buffer->object[i].color = lights[i]->GetColor();
+    if (auto lightPtr = lights[i].lock()) {
+      buffer->object[i].type = lightPtr->GetType();
+      buffer->object[i].intensity = lightPtr->GetIntensity();
+      buffer->object[i].color = lightPtr->GetColor();
 
-    buffer->object[i].pos = lights[i]->GetAbsolutePosition();
-    buffer->object[i].normal = lights[i]->GetAbsoluteForward();
+      buffer->object[i].pos = lightPtr->GetAbsolutePosition();
+      buffer->object[i].normal = lightPtr->GetAbsoluteForward();
+    }
   }
 }

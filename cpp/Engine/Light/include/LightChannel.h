@@ -7,9 +7,9 @@
 #include <vector>
 
 class LightChannel : public BaseObject {
-  BaseScene* scene = nullptr;
+  std::weak_ptr<BaseScene> scene;
   std::string name = "Unset";
-  std::vector<BaseLight*> lights;
+  std::vector<std::weak_ptr<BaseLight>> lights;
 
  public:
   template <typename... Args>
@@ -18,8 +18,11 @@ class LightChannel : public BaseObject {
   ~LightChannel() override = default;
 
   virtual void OnCreate() override;
-  void AddLightToChannel(BaseLight* light) { lights.emplace_back(light); }
+  virtual void OnDestroy() override;
+  void AddLightToChannel(std::weak_ptr<BaseLight> light) {
+    lights.emplace_back(light);
+  }
 
   const std::string& GetName() { return name; }
-  std ::vector<BaseLight*>& GetLights() { return lights; }
+  std ::vector<std::weak_ptr<BaseLight>>& GetLights() { return lights; }
 };

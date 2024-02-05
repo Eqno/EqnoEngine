@@ -4,10 +4,21 @@
 void LightChannel::OnCreate() {
   BaseObject::OnCreate();
 
-  scene = dynamic_cast<BaseScene*>(_owner);
-  if (scene == nullptr) {
-    throw std::runtime_error(
-        "please create light channel through scene method!");
+  if (auto ownerPtr = GetOwner().lock()) {
+    scene = std::dynamic_pointer_cast<BaseScene>(ownerPtr);
+    if (auto scenePtr = scene.lock()) {
+      scenePtr->RegisterLightChannel(
+          name, std::dynamic_pointer_cast<LightChannel>(shared_from_this()));
+    } else {
+      throw std::runtime_error(
+          "please create light channel through scene method!");
+    }
   }
-  scene->RegisterLightChannel(name, this);
+}
+void LightChannel::OnDestroy() {
+  BaseObject::OnDestroy();
+
+  if (auto scenePtr = scene.lock()) {
+    scenePtr->UnregisterLightChannel(name);
+  }
 }

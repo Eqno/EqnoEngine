@@ -3,8 +3,20 @@
 
 void BaseLight::OnCreate() {
   SceneObject::OnCreate();
-  scene->RegisterLight(name, this);
+
+  if (auto scenePtr = scene.lock()) {
+    scenePtr->RegisterLight(
+        name, std::dynamic_pointer_cast<BaseLight>(shared_from_this()));
+  }
 
   intensity = JSON_CONFIG(Float, "Intensity");
   color = ParseGLMVec4(JSON_CONFIG(String, "Color"));
+}
+
+void BaseLight::OnDestroy() {
+  SceneObject::OnDestroy();
+
+  if (auto scenePtr = scene.lock()) {
+    scenePtr->UnregisterLight(name);
+  }
 }

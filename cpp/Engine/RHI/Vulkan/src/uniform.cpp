@@ -164,48 +164,55 @@ void Descriptor::CreateUniformBuffer(const Device& device,
                                      const Render& render) {
   transformBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
 
-  const UniformData& uniform = GetBridgeData()->uniform;
-  if (BaseCamera* camera = uniform.camera) {
-    cameraBuffer =
-        &uniform.bufferManager->CreateCameraBuffer(camera, device, render);
-  }
-  if (BaseMaterial* material = uniform.material) {
-    materialBuffer =
-        &uniform.bufferManager->CreateMaterialBuffer(material, device, render);
-  }
-  if (LightChannel* lightChannel = uniform.lights) {
-    lightChannelBuffer = &uniform.bufferManager->CreateLightChannelBuffer(
-        lightChannel, device, render);
+  if (auto bridgePtr = GetBridgeData().lock()) {
+    const UniformData& uniform = bridgePtr->uniform;
+    if (auto camera = uniform.camera.lock()) {
+      cameraBuffer = &uniform.bufferManager->CreateCameraBuffer(camera.get(),
+                                                                device, render);
+    }
+    if (auto material = uniform.material.lock()) {
+      materialBuffer = &uniform.bufferManager->CreateMaterialBuffer(
+          material.get(), device, render);
+    }
+    if (auto lightChannel = uniform.lights.lock()) {
+      lightChannelBuffer = &uniform.bufferManager->CreateLightChannelBuffer(
+          lightChannel.get(), device, render);
+    }
   }
 }
 void Descriptor::UpdateUniformBuffer(const uint32_t currentImage) {
   transformBuffer.UpdateUniformBuffer(currentImage);
 
-  const UniformData& uniform = GetBridgeData()->uniform;
-  if (BaseCamera* camera = uniform.camera) {
-    cameraBuffer->UpdateUniformBuffer(camera, currentImage);
-  }
-  if (BaseMaterial* material = uniform.material) {
-    materialBuffer->UpdateUniformBuffer(material, currentImage);
-  }
-  if (LightChannel* lightChannel = uniform.lights) {
-    lightChannelBuffer->UpdateUniformBuffer(lightChannel, currentImage);
+  if (auto bridgePtr = GetBridgeData().lock()) {
+    const UniformData& uniform = bridgePtr->uniform;
+    if (auto camera = uniform.camera.lock()) {
+      cameraBuffer->UpdateUniformBuffer(camera.get(), currentImage);
+    }
+    if (auto material = uniform.material.lock()) {
+      materialBuffer->UpdateUniformBuffer(material.get(), currentImage);
+    }
+    if (auto lightChannel = uniform.lights.lock()) {
+      lightChannelBuffer->UpdateUniformBuffer(lightChannel.get(), currentImage);
+    }
   }
 }
 void Descriptor::DestroyUniformBuffer(const VkDevice& device,
                                       const Render& render) {
   transformBuffer.DestroyUniformBuffer(device, render);
 
-  const UniformData& uniform = GetBridgeData()->uniform;
-  if (BaseCamera* camera = uniform.camera) {
-    uniform.bufferManager->DestroyCameraBuffer(camera, device, render);
-  }
-  if (BaseMaterial* material = uniform.material) {
-    uniform.bufferManager->DestroyMaterialBuffer(material, device, render);
-  }
-  if (LightChannel* lightChannel = uniform.lights) {
-    uniform.bufferManager->DestroyLightChannelBuffer(lightChannel, device,
-                                                     render);
+  if (auto bridgePtr = GetBridgeData().lock()) {
+    const UniformData& uniform = bridgePtr->uniform;
+    if (auto camera = uniform.camera.lock()) {
+      uniform.bufferManager->DestroyCameraBuffer(camera.get(), device, render);
+    }
+    if (auto material = uniform.material.lock()) {
+      uniform.bufferManager->DestroyMaterialBuffer(material.get(), device,
+                                                   render);
+    }
+    if (auto lightChannel = uniform.lights.lock()) {
+      uniform.bufferManager->DestroyLightChannelBuffer(lightChannel.get(),
+                                                       device, render);
+    }
   }
 }
 
@@ -226,26 +233,22 @@ void Descriptor::DestroyDesciptor(const VkDevice& device,
 }
 
 void TransformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
-  if (BaseCamera* camera = GetBridgeData()->uniform.camera) {
-    TransformData* buffer =
-        reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
-    glm::mat4x4* modelMatrix = GetBridgeData()->uniform.modelMatrix;
-    buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
-    buffer->viewMatrix = camera->GetViewMatrix();
-    buffer->projMatrix = camera->GetProjMatrix();
+  if (auto bridgePtr = GetBridgeData().lock()) {
+    if (auto camera = bridgePtr->uniform.camera.lock()) {
+      TransformData* buffer =
+          reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
+      glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
+      buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
+      buffer->viewMatrix = camera->GetViewMatrix();
+      buffer->projMatrix = camera->GetProjMatrix();
+    }
   }
 }
 
-const MeshData* TransformBuffer::GetBridgeData() {
-  if (bridge == nullptr) {
-    bridge = dynamic_cast<Descriptor*>(owner)->GetBridgeData();
-  }
-  return bridge;
+std::weak_ptr<MeshData> TransformBuffer::GetBridgeData() {
+  return dynamic_cast<Descriptor*>(owner)->GetBridgeData();
 }
 
-const MeshData* Descriptor::GetBridgeData() {
-  if (bridge == nullptr) {
-    bridge = dynamic_cast<Mesh*>(owner)->GetBridgeData();
-  }
-  return bridge;
+std::weak_ptr<MeshData> Descriptor::GetBridgeData() {
+  return dynamic_cast<Mesh*>(owner)->GetBridgeData();
 }

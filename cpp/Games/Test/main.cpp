@@ -5,7 +5,7 @@
 
 int main() {
   try {
-    Application* app =
+    std::shared_ptr<Application> app =
         BaseObject::CreateImmediately<Application>("Games/Test/", "Index");
     app->RunApplication();
     app->Destroy();

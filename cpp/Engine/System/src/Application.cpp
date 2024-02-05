@@ -47,10 +47,9 @@ void Application::RunApplication() {
 }
 
 void Application::TriggerOnUpdate() {
-  for (BaseObject* obj : BaseObject::PassiveObjects) {
+  for (std::shared_ptr<BaseObject> obj : BaseObject::PassiveObjects) {
     if (obj->_alive == false) {
       obj->OnDestroy();
-      delete obj;
     } else if (obj->_active) {
       obj->OnStart();
       BaseObject::ActiveObjects.emplace_back(obj);
