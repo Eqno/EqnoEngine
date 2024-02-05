@@ -47,42 +47,29 @@ void Application::RunApplication() {
 }
 
 void Application::TriggerOnUpdate() {
-  for (const auto& val : BaseObject::_BaseObjects | std::views::values) {
-    for (BaseObject* obj : val) {
-      if (obj->_alive == false) {
-        obj->OnDestroy();
-        delete obj;
-      } else if (obj->_active) {
-        obj->OnStart();
-        BaseObject::BaseObjects[obj->_name].emplace_back(obj);
-      } else {
-        obj->OnDeactive();
-        obj->_locked = false;
-      }
+  for (BaseObject* obj : BaseObject::PassiveObjects) {
+    if (obj->_alive == false) {
+      obj->OnDestroy();
+      delete obj;
+    } else if (obj->_active) {
+      obj->OnStart();
+      BaseObject::ActiveObjects.emplace_back(obj);
+    } else {
+      obj->OnDeactive();
+      obj->_locked = false;
     }
   }
-  BaseObject::_BaseObjects.clear();
+  BaseObject::PassiveObjects.clear();
 
-  auto& _map = BaseObject::BaseObjects;
-  auto mapIter = _map.begin();
-  while (mapIter != _map.end()) {
-    auto& _list = mapIter->second;
-    auto listIter = _list.begin();
-    while (listIter != _list.end()) {
-      if ((*listIter)->_alive && (*listIter)->_active) {
-        (*listIter)->OnUpdate();
-        listIter++;
-      } else {
-        (*listIter)->OnStop();
-        (*listIter)->_locked = true;
-        BaseObject::_BaseObjects[(*listIter)->_name].emplace_back(*listIter);
-        listIter = _list.erase(listIter);
-      }
-    }
-    if (_list.empty()) {
-      mapIter = _map.erase(mapIter);
+  auto iter = BaseObject::ActiveObjects.begin();
+  while (iter != BaseObject::ActiveObjects.end()) {
+    if ((*iter)->_alive && (*iter)->_active) {
+      (*iter)->OnUpdate();
+      iter++;
     } else {
-      mapIter++;
+      (*iter)->OnStop();
+      BaseObject::PassiveObjects.emplace_back(*iter);
+      iter = BaseObject::ActiveObjects.erase(iter);
     }
   }
 }

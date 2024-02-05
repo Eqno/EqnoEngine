@@ -22,8 +22,6 @@ class SceneObject : public BaseObject {
       : parent(parent), name(name), BaseObject(std::forward<Args>(args)...) {
     if (parent != nullptr) {
       parent->AddToSons(this);
-    } else {
-      parent = this;
     }
   }
   ~SceneObject() override = default;
@@ -44,4 +42,5 @@ class SceneObject : public BaseObject {
   virtual glm::vec3& GetAbsoluteForward();
 
   virtual void OnCreate() override;
+  virtual void OnDestroy() override;
 };

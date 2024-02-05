@@ -176,7 +176,7 @@ void BaseModel::OnUpdate() {
   static int count = 0;
   count++;
   if (count == 5000 && name == "MasterSword") {
-    Destroy();
+    DestroyImmediately();
   }
 }
 

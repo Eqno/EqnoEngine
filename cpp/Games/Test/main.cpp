@@ -1,7 +1,7 @@
+#include <Engine/System/include/Application.h>
+
 #include <iostream>
 #include <ostream>
-
-#include "Engine/System/include/Application.h"
 
 int main() {
   try {

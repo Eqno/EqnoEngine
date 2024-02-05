@@ -85,3 +85,20 @@ void SceneObject::OnCreate() {
   }
   transform.RegisterOwner(this);
 }
+
+void SceneObject::OnDestroy() {
+  BaseObject::OnDestroy();
+
+  while (GetSons().empty() == false) {
+    (*GetSons().begin())->DestroyImmediately();
+  }
+  if (parent != nullptr) {
+    auto iter = parent->GetSons().begin();
+    while (iter != parent->GetSons().end()) {
+      if (*iter == this) {
+        parent->GetSons().erase(iter);
+        break;
+      }
+    }
+  }
+}

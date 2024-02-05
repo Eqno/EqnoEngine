@@ -9,13 +9,6 @@
 
 #include <ranges>
 
-void DestroyObjects(SceneObject* root) {
-  for (SceneObject* son : root->GetSons()) {
-    DestroyObjects(son);
-  }
-  root->DestroyImmediately();
-}
-
 void BaseScene::OnCreate() {
   BaseObject::OnCreate();
   rootObject =
@@ -35,9 +28,7 @@ void BaseScene::OnStart() {
 void BaseScene::OnDestroy() {
   BaseObject::OnDestroy();
 
-  DestroyObjects(rootObject);
   rootObject->DestroyImmediately();
-
   for (BaseMaterial* material : materials | std::views::values) {
     material->DestroyImmediately();
   }

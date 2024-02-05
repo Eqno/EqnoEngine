@@ -61,7 +61,6 @@ void Vulkan::RendererLoop() {
         if ((*meshIter)->GetAlive() == false) {
           // Destroy the mesh if not alive
           (*meshIter)->DestroyMesh(device.GetLogical(), render);
-          (*meshIter)->DeleteBridge();
           (*meshIter)->Destroy();
           meshIter = meshes.erase(meshIter);
         } else {
