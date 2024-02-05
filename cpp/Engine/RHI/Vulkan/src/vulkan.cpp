@@ -38,6 +38,34 @@ void Vulkan::InitGraphics() {
   render.CreateSyncObjects(device.GetLogical());
 }
 
+void Vulkan::TriggerOnUpdate() {
+  auto drawIter = draws.begin();
+  while (drawIter != draws.end()) {
+    auto& meshes = drawIter->second->GetMeshes();
+    auto meshIter = meshes.begin();
+    while (meshIter != meshes.end()) {
+      if ((*meshIter)->GetAlive() == false) {
+        // Destroy the mesh if not alive
+        (*meshIter)->DestroyMesh(device.GetLogical(), render);
+        (*meshIter)->Destroy();
+        meshIter = meshes.erase(meshIter);
+      } else {
+        // Update uniform buffer if mesh alive
+        (*meshIter)->UpdateUniformBuffer(render.GetCurrentFrame());
+        meshIter++;
+      }
+    }
+    if (meshes.empty()) {
+      // Destroy the draw if meshes empty
+      drawIter->second->DestroyDrawResource(device.GetLogical(), render);
+      drawIter->second->Destroy();
+      drawIter = draws.erase(drawIter);
+    } else {
+      drawIter++;
+    }
+  }
+}
+
 void Vulkan::RendererLoop() {
   while (!glfwWindowShouldClose(window.window)) {
     static auto lastTime = std::chrono::steady_clock::now();
@@ -53,31 +81,7 @@ void Vulkan::RendererLoop() {
 
     Input::RecordDownUpFlags();
     dynamic_cast<Application*>(_owner)->TriggerOnUpdate();
-    auto drawIter = draws.begin();
-    while (drawIter != draws.end()) {
-      auto& meshes = drawIter->second->GetMeshes();
-      auto meshIter = meshes.begin();
-      while (meshIter != meshes.end()) {
-        if ((*meshIter)->GetAlive() == false) {
-          // Destroy the mesh if not alive
-          (*meshIter)->DestroyMesh(device.GetLogical(), render);
-          (*meshIter)->Destroy();
-          meshIter = meshes.erase(meshIter);
-        } else {
-          // Update uniform buffer if mesh alive
-          (*meshIter)->UpdateUniformBuffer(render.GetCurrentFrame());
-          meshIter++;
-        }
-      }
-      if (meshes.empty()) {
-        // Destroy the draw if meshes empty
-        drawIter->second->DestroyDrawResource(device.GetLogical(), render);
-        drawIter->second->Destroy();
-        drawIter = draws.erase(drawIter);
-      } else {
-        drawIter++;
-      }
-    }
+    TriggerOnUpdate();
     Input::ResetDownUpFlags();
   }
 }

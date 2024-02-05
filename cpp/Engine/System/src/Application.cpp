@@ -36,7 +36,7 @@ void Application::LaunchScene() {
 }
 
 void Application::TerminateScene() const {
-  scene->DestroyImmediately();
+  scene->Destroy();
   graphics->CleanupGraphics();
 }
 
@@ -84,6 +84,6 @@ void Application::OnStop() { BaseObject::OnStop(); }
 void Application::OnDestroy() {
   BaseObject::OnDestroy();
 
-  graphics->DestroyImmediately();
+  graphics->Destroy();
   JsonUtils::ClearDocumentCache();
 }

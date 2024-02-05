@@ -90,26 +90,6 @@ class BaseObject {
     _active = false;
   }
 
-  void RemoveFromObjectList(std::list<BaseObject*>& list) {
-    auto iter = list.begin();
-    while (iter != list.end()) {
-      if (*iter == this) {
-        list.erase(iter);
-        break;
-      }
-      iter++;
-    }
-  }
-  void DestroyImmediately() {
-    RemoveFromObjectList(PassiveObjects);
-    RemoveFromObjectList(ActiveObjects);
-    if (_active == true) {
-      OnStop();
-    }
-    OnDestroy();
-    delete this;
-  }
-
   BaseObject& operator=(const BaseObject& app) = delete;
   BaseObject& operator=(BaseObject&& app) = delete;
 

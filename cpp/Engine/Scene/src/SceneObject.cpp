@@ -89,8 +89,8 @@ void SceneObject::OnCreate() {
 void SceneObject::OnDestroy() {
   BaseObject::OnDestroy();
 
-  while (GetSons().empty() == false) {
-    (*GetSons().begin())->DestroyImmediately();
+  for (SceneObject* son : GetSons()) {
+    son->Destroy();
   }
   if (parent != nullptr) {
     auto iter = parent->GetSons().begin();

@@ -28,12 +28,12 @@ void BaseScene::OnStart() {
 void BaseScene::OnDestroy() {
   BaseObject::OnDestroy();
 
-  rootObject->DestroyImmediately();
+  rootObject->Destroy();
   for (BaseMaterial* material : materials | std::views::values) {
-    material->DestroyImmediately();
+    material->Destroy();
   }
   for (LightChannel* lightChannel : lightChannels | std::views::values) {
-    lightChannel->DestroyImmediately();
+    lightChannel->Destroy();
   }
 }
 

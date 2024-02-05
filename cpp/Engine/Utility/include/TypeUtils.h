@@ -119,6 +119,7 @@ struct UniformData {
 
 struct StateData {
   bool alive;
+  bool synced;
 };
 
 struct MeshData {

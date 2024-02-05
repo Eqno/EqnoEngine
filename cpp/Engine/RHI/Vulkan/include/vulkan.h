@@ -30,6 +30,7 @@ class Vulkan final : public GraphicsInterface, public Base {
 
   void CreateWindow(const std::string& title) override;
   void InitGraphics() override;
+  void TriggerOnUpdate() override;
   void RendererLoop() override;
   void CleanupGraphics() override;
 

@@ -13,6 +13,7 @@ class GraphicsInterface : public BaseObject {
 
   virtual void CreateWindow(const std::string& title) = 0;
   virtual void InitGraphics() = 0;
+  virtual void TriggerOnUpdate() = 0;
   virtual void RendererLoop() = 0;
   virtual void CleanupGraphics() = 0;
 

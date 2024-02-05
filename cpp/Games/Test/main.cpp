@@ -8,7 +8,7 @@ int main() {
     Application* app =
         BaseObject::CreateImmediately<Application>("Games/Test/", "Index");
     app->RunApplication();
-    app->DestroyImmediately();
+    app->Destroy();
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
