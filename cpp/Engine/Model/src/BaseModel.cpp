@@ -95,8 +95,8 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
         rootPath + modelPath, mesh->mName.C_Str());
 
     // Parse Name
-    MeshData* meshData = new MeshData{.state = {.alive = true, .synced = false},
-                                      .name = mesh->mName.C_Str()};
+    MeshData* meshData =
+        new MeshData{.state = {.alive = true}, .name = mesh->mName.C_Str()};
 
     // Parse Data
     ParseFbxData(nodeTransform, mesh, meshData, importSize);
