@@ -121,7 +121,8 @@ class BufferManager {
       lower##Buffers.erase(iter);                                            \
     }                                                                        \
   }
-  DefineUniformBuffer(LightChannel, LightsData, LightChannel, lightChannel)
+  DefineUniformBuffer(BaseCamera, CameraData, Camera, camera)
       DefineUniformBuffer(BaseMaterial, MaterialData, Material, material)
-          DefineUniformBuffer(BaseCamera, CameraData, Camera, camera)
+          DefineUniformBuffer(LightChannel, LightChannelData, LightChannel,
+                              lightChannel)
 };

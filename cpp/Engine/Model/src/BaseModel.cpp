@@ -172,7 +172,7 @@ void BaseModel::OnStart() {
         meshDatas.emplace_back(mesh);
 
         mesh->uniform.camera = GetCamera();
-        mesh->uniform.lights = GetLightChannel();
+        mesh->uniform.lightChannel = GetLightChannel();
         mesh->uniform.modelMatrix = &GetAbsoluteTransform();
       }
       graphicsPtr->ParseMeshDatas(meshDatas);

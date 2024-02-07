@@ -15,6 +15,31 @@
 #include "../include/texture.h"
 #include "../include/uniform.h"
 
+#define AddDescriptorWrite(index, type, buf)                 \
+  {                                                          \
+    VkDescriptorBufferInfo bufferInfo{                       \
+        .buffer = (buf)->GetUniformBufferByIndex(i),         \
+        .offset = 0,                                         \
+        .range = sizeof(type),                               \
+    };                                                       \
+    descriptorWrites[index] = {                              \
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,     \
+        .dstSet = descriptorSets[i],                         \
+        .dstBinding = index,                                 \
+        .dstArrayElement = 0,                                \
+        .descriptorCount = 1,                                \
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, \
+        .pBufferInfo = &bufferInfo,                          \
+    };                                                       \
+  }
+#define AddDescriptorWrites()                                    \
+  {                                                              \
+    AddDescriptorWrite(0, CameraData, cameraBuffer);             \
+    AddDescriptorWrite(1, MaterialData, materialBuffer);         \
+    AddDescriptorWrite(2, TransformData, &transformBuffer);      \
+    AddDescriptorWrite(3, LightChannelData, lightChannelBuffer); \
+  }
+
 void Descriptor::CreateDescriptorSets(
     const VkDevice& device, const Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout,
@@ -38,71 +63,7 @@ void Descriptor::CreateDescriptorSets(
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     std::vector<VkWriteDescriptorSet> descriptorWrites;
     descriptorWrites.resize(textures.size() + UniformBufferNum);
-
-    {
-      VkDescriptorBufferInfo bufferInfo{
-          .buffer = cameraBuffer->GetUniformBufferByIndex(i),
-          .offset = 0,
-          .range = sizeof(CameraData),
-      };
-      descriptorWrites[0] = {
-          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-          .dstSet = descriptorSets[i],
-          .dstBinding = 0,
-          .dstArrayElement = 0,
-          .descriptorCount = 1,
-          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          .pBufferInfo = &bufferInfo,
-      };
-    }
-    {
-      VkDescriptorBufferInfo bufferInfo{
-          .buffer = materialBuffer->GetUniformBufferByIndex(i),
-          .offset = 0,
-          .range = sizeof(MaterialData),
-      };
-      descriptorWrites[1] = {
-          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-          .dstSet = descriptorSets[i],
-          .dstBinding = 1,
-          .dstArrayElement = 0,
-          .descriptorCount = 1,
-          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          .pBufferInfo = &bufferInfo,
-      };
-    }
-    {
-      VkDescriptorBufferInfo bufferInfo{
-          .buffer = transformBuffer.GetUniformBufferByIndex(i),
-          .offset = 0,
-          .range = sizeof(TransformData),
-      };
-      descriptorWrites[2] = {
-          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-          .dstSet = descriptorSets[i],
-          .dstBinding = 2,
-          .dstArrayElement = 0,
-          .descriptorCount = 1,
-          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          .pBufferInfo = &bufferInfo,
-      };
-    }
-    {
-      VkDescriptorBufferInfo bufferInfo{
-          .buffer = lightChannelBuffer->GetUniformBufferByIndex(i),
-          .offset = 0,
-          .range = sizeof(LightsData),
-      };
-      descriptorWrites[3] = {
-          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-          .dstSet = descriptorSets[i],
-          .dstBinding = 3,
-          .dstArrayElement = 0,
-          .descriptorCount = 1,
-          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          .pBufferInfo = &bufferInfo,
-      };
-    }
+    AddDescriptorWrites();
 
     std::vector<VkDescriptorImageInfo> imageInfos;
     imageInfos.resize(textures.size());
@@ -170,7 +131,7 @@ void Descriptor::UpdateBufferPointers() {
     if (auto material = uniform.material.lock()) {
       materialPointer = material.get();
     }
-    if (auto lightChannel = uniform.lights.lock()) {
+    if (auto lightChannel = uniform.lightChannel.lock()) {
       lightChannelPointer = lightChannel.get();
     }
   }
@@ -264,3 +225,6 @@ std::weak_ptr<MeshData> TransformBuffer::GetBridgeData() {
 std::weak_ptr<MeshData> Descriptor::GetBridgeData() {
   return dynamic_cast<Mesh*>(owner)->GetBridgeData();
 }
+
+#undef AddDescriptorWrites
+#undef AddDescriptorWrite

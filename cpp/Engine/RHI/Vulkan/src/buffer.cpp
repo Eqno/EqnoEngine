@@ -176,8 +176,8 @@ void MaterialBuffer::UpdateUniformBuffer(BaseMaterial* material,
 
 void LightChannelBuffer::UpdateUniformBuffer(LightChannel* lightChannel,
                                              const uint32_t currentImage) {
-  LightsData* buffer =
-      reinterpret_cast<LightsData*>(uniformBuffersMapped[currentImage]);
+  LightChannelData* buffer =
+      reinterpret_cast<LightChannelData*>(uniformBuffersMapped[currentImage]);
 
   std::vector<std::weak_ptr<BaseLight>>& lights = lightChannel->GetLights();
   buffer->num = lights.size();

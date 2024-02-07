@@ -103,15 +103,15 @@ struct LightData {
   alignas(16) glm::vec3 normal;
 };
 
-struct LightsData {
+struct LightChannelData {
   alignas(4) unsigned int num = 0;
   alignas(16) LightData object[MaxLightNum];
 };
 
 struct UniformData {
   std::weak_ptr<BaseCamera> camera;
-  std::weak_ptr<LightChannel> lights;
   std::weak_ptr<BaseMaterial> material;
+  std::weak_ptr<LightChannel> lightChannel;
 
   glm::mat4* modelMatrix = nullptr;
   BufferManager* bufferManager = nullptr;
