@@ -113,8 +113,8 @@ struct UniformData {
   std::weak_ptr<LightChannel> lights;
   std::weak_ptr<BaseMaterial> material;
 
-  glm::mat4* modelMatrix;
-  BufferManager* bufferManager;
+  glm::mat4* modelMatrix = nullptr;
+  BufferManager* bufferManager = nullptr;
 };
 
 struct StateData {

@@ -22,9 +22,16 @@ class TransformBuffer : public UniformBuffer {
 };
 
 class Descriptor : public Base {
-  CameraBuffer* cameraBuffer;
-  MaterialBuffer* materialBuffer;
-  LightChannelBuffer* lightChannelBuffer;
+  BufferManager* bufferManager = nullptr;
+
+  BaseCamera* cameraPointer = nullptr;
+  CameraBuffer* cameraBuffer = nullptr;
+
+  BaseMaterial* materialPointer = nullptr;
+  MaterialBuffer* materialBuffer = nullptr;
+
+  LightChannel* lightChannelPointer = nullptr;
+  LightChannelBuffer* lightChannelBuffer = nullptr;
 
   TransformBuffer transformBuffer;
   VkDescriptorPool descriptorPool;
@@ -33,10 +40,9 @@ class Descriptor : public Base {
   void CreateDescriptorSets(const VkDevice& device, const Render& render,
                             const VkDescriptorSetLayout& descriptorSetLayout,
                             const std::vector<Texture>& textures);
-
   void CreateDescriptorPool(const VkDevice& device, const Render& render,
                             size_t textureNum);
-
+  void UpdateBufferPointers();
   void CreateUniformBuffer(const Device& device, const Render& render);
   void DestroyUniformBuffer(const VkDevice& device, const Render& render);
 

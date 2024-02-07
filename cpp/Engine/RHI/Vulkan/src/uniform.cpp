@@ -160,60 +160,72 @@ void Descriptor::CreateDescriptorPool(const VkDevice& device,
   }
 }
 
+void Descriptor::UpdateBufferPointers() {
+  if (auto bridgePtr = GetBridgeData().lock()) {
+    const UniformData& uniform = bridgePtr->uniform;
+    bufferManager = uniform.bufferManager;
+    if (auto camera = uniform.camera.lock()) {
+      cameraPointer = camera.get();
+    }
+    if (auto material = uniform.material.lock()) {
+      materialPointer = material.get();
+    }
+    if (auto lightChannel = uniform.lights.lock()) {
+      lightChannelPointer = lightChannel.get();
+    }
+  }
+}
+
 void Descriptor::CreateUniformBuffer(const Device& device,
                                      const Render& render) {
   transformBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
 
-  if (auto bridgePtr = GetBridgeData().lock()) {
-    const UniformData& uniform = bridgePtr->uniform;
-    if (auto camera = uniform.camera.lock()) {
-      cameraBuffer = &uniform.bufferManager->CreateCameraBuffer(camera.get(),
-                                                                device, render);
-    }
-    if (auto material = uniform.material.lock()) {
-      materialBuffer = &uniform.bufferManager->CreateMaterialBuffer(
-          material.get(), device, render);
-    }
-    if (auto lightChannel = uniform.lights.lock()) {
-      lightChannelBuffer = &uniform.bufferManager->CreateLightChannelBuffer(
-          lightChannel.get(), device, render);
-    }
+  UpdateBufferPointers();
+  if (bufferManager == nullptr) {
+    return;
+  }
+  if (cameraPointer != nullptr) {
+    cameraBuffer =
+        &bufferManager->CreateCameraBuffer(cameraPointer, device, render);
+  }
+  if (materialPointer != nullptr) {
+    materialBuffer =
+        &bufferManager->CreateMaterialBuffer(materialPointer, device, render);
+  }
+  if (lightChannelPointer != nullptr) {
+    lightChannelBuffer = &bufferManager->CreateLightChannelBuffer(
+        lightChannelPointer, device, render);
   }
 }
+
 void Descriptor::UpdateUniformBuffer(const uint32_t currentImage) {
   transformBuffer.UpdateUniformBuffer(currentImage);
 
-  if (auto bridgePtr = GetBridgeData().lock()) {
-    const UniformData& uniform = bridgePtr->uniform;
-    if (auto camera = uniform.camera.lock()) {
-      cameraBuffer->UpdateUniformBuffer(camera.get(), currentImage);
-    }
-    if (auto material = uniform.material.lock()) {
-      materialBuffer->UpdateUniformBuffer(material.get(), currentImage);
-    }
-    if (auto lightChannel = uniform.lights.lock()) {
-      lightChannelBuffer->UpdateUniformBuffer(lightChannel.get(), currentImage);
-    }
+  UpdateBufferPointers();
+  if (bufferManager == nullptr) {
+    return;
+  }
+  if (cameraPointer != nullptr) {
+    cameraBuffer->UpdateUniformBuffer(cameraPointer, currentImage);
+  }
+  if (materialPointer != nullptr) {
+    materialBuffer->UpdateUniformBuffer(materialPointer, currentImage);
+  }
+  if (lightChannelPointer != nullptr) {
+    lightChannelBuffer->UpdateUniformBuffer(lightChannelPointer, currentImage);
   }
 }
+
 void Descriptor::DestroyUniformBuffer(const VkDevice& device,
                                       const Render& render) {
   transformBuffer.DestroyUniformBuffer(device, render);
 
-  if (auto bridgePtr = GetBridgeData().lock()) {
-    const UniformData& uniform = bridgePtr->uniform;
-    if (auto camera = uniform.camera.lock()) {
-      uniform.bufferManager->DestroyCameraBuffer(camera.get(), device, render);
-    }
-    if (auto material = uniform.material.lock()) {
-      uniform.bufferManager->DestroyMaterialBuffer(material.get(), device,
-                                                   render);
-    }
-    if (auto lightChannel = uniform.lights.lock()) {
-      uniform.bufferManager->DestroyLightChannelBuffer(lightChannel.get(),
-                                                       device, render);
-    }
+  if (bufferManager == nullptr) {
+    return;
   }
+  bufferManager->DestroyCameraBuffer(cameraPointer, device, render);
+  bufferManager->DestroyMaterialBuffer(materialPointer, device, render);
+  bufferManager->DestroyLightChannelBuffer(lightChannelPointer, device, render);
 }
 
 void Descriptor::CreateDescriptor(

@@ -122,31 +122,6 @@ class BufferManager {
     }                                                                        \
   }
   DefineUniformBuffer(LightChannel, LightsData, LightChannel, lightChannel)
-      DefineUniformBuffer(BaseMaterial, MaterialData, Material, material);
-  // DefineUniformBuffer(BaseCamera, CameraData, Camera, camera);
-
-  std::unordered_map<BaseCamera*, std::pair<int, CameraBuffer>> cameraBuffers;
-  CameraBuffer& CreateCameraBuffer(BaseCamera* camera, const Device& device,
-                                   const Render& render) {
-    auto [iter, inserted] = cameraBuffers.insert({camera, {1, CameraBuffer()}});
-    if (inserted == true) {
-      iter->second.second.CreateUniformBuffer(device, render,
-                                              sizeof(CameraData));
-    } else {
-      iter->second.first++;
-    }
-    return iter->second.second;
-  }
-  void DestroyCameraBuffer(BaseCamera* camera, const VkDevice& device,
-                           const Render& render) {
-    auto iter = cameraBuffers.find(camera);
-    if (iter == cameraBuffers.end()) {
-      return;
-    }
-    iter->second.first--;
-    if (iter->second.first <= 0) {
-      iter->second.second.DestroyUniformBuffer(device, render);
-      cameraBuffers.erase(iter);
-    }
-  }
+      DefineUniformBuffer(BaseMaterial, MaterialData, Material, material)
+          DefineUniformBuffer(BaseCamera, CameraData, Camera, camera)
 };
