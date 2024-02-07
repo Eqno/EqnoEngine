@@ -37,7 +37,8 @@ using milliseconds = std::chrono::duration<float, std::milli>;
 using microseconds = std::chrono::duration<float, std::micro>;
 using nanoseconds = std::chrono::duration<float, std::nano>;
 
-using MaterialInfo = std::pair<std::string, Strings>;
+using MaterialInfo =
+    std::pair<std::string, std::vector<std::pair<std::string, std::string>>>;
 
 inline constexpr int MaxLightNum = 500;
 inline constexpr shaderc_optimization_level ShaderOptimizationLevel =
@@ -64,7 +65,17 @@ struct VertexData {
   glm::vec3 texCoord;
 };
 
+enum class TextureType {
+  Unset = 0,
+  BaseColor = 1,
+  Roughness = 2,
+  Metallic = 3,
+  Normal = 4,
+  AO = 5,
+};
+
 struct TextureData {
+  TextureType type;
   int width;
   int height;
   int channels;

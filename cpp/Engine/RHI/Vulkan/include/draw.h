@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan_core.h>
+
 #include "base.h"
 #include "mesh.h"
 #include "pipeline.h"

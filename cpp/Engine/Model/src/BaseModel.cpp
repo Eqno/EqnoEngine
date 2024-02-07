@@ -19,7 +19,7 @@
 
 std ::vector<BaseLight*> LightsEmpty;
 
-#define LoadPNGTexture(path, textures)                                 \
+#define LoadPNGTexture(type, path, textures)                           \
   {                                                                    \
     int width, height, channels;                                       \
     stbi_uc* data =                                                    \
@@ -27,24 +27,42 @@ std ::vector<BaseLight*> LightsEmpty;
     if (!data) {                                                       \
       throw std::runtime_error("failed to load texture image!");       \
     }                                                                  \
-    (textures).emplace_back(width, height, channels, data);            \
+    (textures).emplace_back(type, width, height, channels, data);      \
   }
+
+#define ParseFbxTextureType(_aiTexturetype, textureType)                  \
+  {                                                                       \
+    for (int j = 0; j < material->GetTextureCount(_aiTexturetype); j++) { \
+      aiString path;                                                      \
+      if (material->GetTexture(_aiTexturetype, j, &path) == AI_SUCCESS) { \
+        LoadPNGTexture(textureType, path.C_Str(), meshData->textures);    \
+      }                                                                   \
+    }                                                                     \
+  }
+
+std::unordered_map<std::string, TextureType> TextureTypeMap{
+    {"BaseColor", TextureType::BaseColor},
+    {"Roughness", TextureType::Roughness},
+    {"Metallic", TextureType::Metallic},
+    {"Normal", TextureType::Normal},
+    {"AO", TextureType::AO},
+};
 
 void ParseFbxTextures(aiMaterial* material,
                       std::shared_ptr<MeshData> meshData) {
   if (material == nullptr) {
     return;
   }
-  for (int i = 0; i <= aiTextureType::AI_TEXTURE_TYPE_MAX; i++) {
-    int textureCount = material->GetTextureCount(static_cast<aiTextureType>(i));
-    for (int j = 0; j < textureCount; j++) {
-      aiString path;
-      if (material->GetTexture(static_cast<aiTextureType>(i), j, &path) ==
-          AI_SUCCESS) {
-        LoadPNGTexture(path.C_Str(), meshData->textures);
-      }
-    }
-  }
+  ParseFbxTextureType(aiTextureType::aiTextureType_BASE_COLOR,
+                      TextureType::BaseColor);
+  ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS,
+                      TextureType::Roughness);
+  ParseFbxTextureType(aiTextureType::aiTextureType_METALNESS,
+                      TextureType::Metallic);
+  ParseFbxTextureType(aiTextureType::aiTextureType_NORMALS,
+                      TextureType::Normal);
+  ParseFbxTextureType(aiTextureType::aiTextureType_AMBIENT_OCCLUSION,
+                      TextureType::AO);
 }
 
 void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
@@ -115,8 +133,9 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
       ParseFbxTextures(matData, meshData);
     } else {
       // Parse Textures
-      for (const std::string& texPath : texPaths) {
-        LoadPNGTexture((rootPath + texPath).c_str(), meshData->textures);
+      for (const auto& texPath : texPaths) {
+        LoadPNGTexture(TextureTypeMap[texPath.first],
+                       (rootPath + texPath.second).c_str(), meshData->textures);
       }
     }
 
@@ -180,15 +199,7 @@ void BaseModel::OnStart() {
   }
 }
 
-void BaseModel::OnUpdate() {
-  SceneObject::OnUpdate();
-
-  static int count = 0;
-  count++;
-  if (count == 5000 && name == "MasterSword") {
-    Destroy();
-  }
-}
+void BaseModel::OnUpdate() { SceneObject::OnUpdate(); }
 
 void BaseModel::OnStop() { SceneObject::OnStop(); }
 
@@ -223,4 +234,5 @@ std::weak_ptr<LightChannel> BaseModel::GetLightChannel() {
   }
 }
 
+#undef ParseFbxTextureType
 #undef LoadPNGTexture

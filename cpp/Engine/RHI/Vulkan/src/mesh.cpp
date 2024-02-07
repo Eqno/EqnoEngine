@@ -1,5 +1,7 @@
 #include "../include/mesh.h"
 
+#include "../include/utils.h"
+
 void Mesh::CreateMesh(const Device& device, const Render& render,
                       std::weak_ptr<MeshData> inData,
                       const VkDescriptorSetLayout& descriptorSetLayout) {
@@ -20,9 +22,10 @@ void Mesh::DestroyMesh(const VkDevice& device, const Render& render) {
 
 void Mesh::ParseTextures(const Device& device, const Render& render) {
   if (auto bridgePtr = bridge.lock()) {
-    for (const auto& [width, height, channels, _data] : bridgePtr->textures) {
-      textures.emplace_back("NOSRPGB", device, render, width, height, channels,
-                            _data);
+    for (const auto& [type, width, height, channels, _data] :
+         bridgePtr->textures) {
+      textures.emplace_back(VulkanUtils::TextureFormat[type], device, render,
+                            width, height, channels, _data);
     }
   }
 }

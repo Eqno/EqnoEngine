@@ -4,6 +4,6 @@
     "RenderHardwareInterface": "Vulkan",
     "DefaultWindowWidth": 1280,
     "DefaultWindowHeight": 720,
-    "SwapChainSurfaceImageFormat": "NOSRGB",
-    "SwapChainSurfaceColorSpace": "NOSRGB"
+    "SwapChainSurfaceImageFormat": "RGBA_UNORM",
+    "SwapChainSurfaceColorSpace": "SRGB_LINEAR"
 }

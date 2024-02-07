@@ -23,6 +23,9 @@ class Vulkan final : public GraphicsInterface, public Base {
   BufferManager bufferManager;
   std::unordered_map<std::string, Draw*> draws;
 
+  std::string imageFormat = "RGBA_UNORM";
+  std::string colorSpace = "SRGB_LINEAR";
+
  public:
   template <typename... Args>
   explicit Vulkan(const Args&... args) : GraphicsInterface(args...) {}

@@ -19,9 +19,9 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingBufferMemory;
   DataBuffer::CreateBuffer(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                           VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                       stagingBuffer, stagingBufferMemory);
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                           stagingBuffer, stagingBufferMemory);
 
   void* imageData = nullptr;
   vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, imageSize, 0,

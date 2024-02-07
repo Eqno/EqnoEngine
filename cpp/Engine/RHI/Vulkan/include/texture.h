@@ -13,10 +13,10 @@ class Render;
 class Texture {
   VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
-  VkImage textureImage{};
-  VkDeviceMemory textureImageMemory{};
-  VkImageView textureImageView{};
-  VkSampler textureSampler{};
+  VkImage textureImage;
+  VkDeviceMemory textureImageMemory;
+  VkImageView textureImageView;
+  VkSampler textureSampler;
 
   void CreateTextureImage(const Device& device, const Render& render,
                           int texWidth, int texHeight, int texChannels,
@@ -34,18 +34,14 @@ class Texture {
  public:
   Texture() = default;
 
-  explicit Texture(const std::string& imageFormat)
-      : imageFormat(VulkanUtils::ParseImageFormat(imageFormat)) {}
-
   Texture(const Device& device, const Render& render, const int width,
           const int height, const int channels, stbi_uc* data) {
     CreateTexture(device, render, width, height, channels, data);
   }
 
-  Texture(const std::string& imageFormat, const Device& device,
-          const Render& render, const int width, const int height,
-          const int channels, stbi_uc* data)
-      : imageFormat(VulkanUtils::ParseImageFormat(imageFormat)) {
+  Texture(VkFormat imageFormat, const Device& device, const Render& render,
+          const int width, const int height, const int channels, stbi_uc* data)
+      : imageFormat(imageFormat) {
     CreateTexture(device, render, width, height, channels, data);
   }
 

@@ -173,7 +173,7 @@ void JsonUtils::ParseSceneLightChannels(const std::string& root,
 
 MaterialInfo JsonUtils::ParseMeshDataInfos(const std::string& filePath,
                                            const std::string& meshName) {
-  MaterialInfo infos("Assets/Materials/ShaderErrorMaterial", Strings());
+  MaterialInfo infos("Assets/Materials/ShaderErrorMaterial", {});
   if (Document* doc = GetJsonDocFromFile(filePath);
       doc->HasMember("Material")) {
     infos.first = (*doc)["Material"].GetString();
@@ -186,8 +186,9 @@ MaterialInfo JsonUtils::ParseMeshDataInfos(const std::string& filePath,
       }
       if (info.HasMember("Textures")) {
         const Value& texs = info["Textures"];
-        for (unsigned int i = 0; i < texs.Size(); ++i) {
-          infos.second.emplace_back(texs[i].GetString());
+        for (auto iter = texs.MemberBegin(); iter != texs.MemberEnd(); iter++) {
+          infos.second.push_back(
+              {iter->name.GetString(), iter->value.GetString()});
         }
       }
     }

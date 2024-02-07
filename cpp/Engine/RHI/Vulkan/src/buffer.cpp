@@ -41,7 +41,7 @@ void DataBuffer::CreateBuffer(const Device& device, const VkDeviceSize& size,
     throw std::runtime_error("Failed to create buffer!");
   }
 
-  VkMemoryRequirements memRequirements{};
+  VkMemoryRequirements memRequirements;
   vkGetBufferMemoryRequirements(device.GetLogical(), buffer, &memRequirements);
 
   const VkMemoryAllocateInfo allocInfo{

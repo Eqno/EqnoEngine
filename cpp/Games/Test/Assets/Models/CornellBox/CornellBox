@@ -7,45 +7,45 @@
     "Meshes": {
         "Bottom": {
             "Material": "Assets/Materials/CornellBoxMaterial",
-            "Textures": [
-                "Assets/Textures/CornellBox/White.png"
-            ]
+            "Textures": {
+                "BaseColor": "Assets/Textures/CornellBox/White.png"
+            }
         },
         "Left": {
             "Material": "Assets/Materials/CornellBoxMaterial",
-            "Textures": [
-                "Assets/Textures/CornellBox/Green.jpg"
-            ]
+            "Textures": {
+                "BaseColor": "Assets/Textures/CornellBox/Green.jpg"
+            }
         },
         "Right": {
             "Material": "Assets/Materials/CornellBoxMaterial",
-            "Textures": [
-                "Assets/Textures/CornellBox/Red.jpg"
-            ]
+            "Textures": {
+                "BaseColor": "Assets/Textures/CornellBox/Red.jpg"
+            }
         },
         "Back": {
             "Material": "Assets/Materials/CornellBoxMaterial",
-            "Textures": [
-                "Assets/Textures/CornellBox/BackTexture.jpg"
-            ]
+            "Textures": {
+                "BaseColor": "Assets/Textures/CornellBox/BackTexture.jpg"
+            }
         },
         "Top": {
             "Material": "Assets/Materials/CornellBoxMaterial",
-            "Textures": [
-                "Assets/Textures/CornellBox/White.png"
-            ]
+            "Textures": {
+                "BaseColor": "Assets/Textures/CornellBox/White.png"
+            }
         },
         "Small": {
             "Material": "Assets/Materials/CornellBoxMaterial",
-            "Textures": [
-                "Assets/Textures/CornellBox/White.png"
-            ]
+            "Textures": {
+                "BaseColor": "Assets/Textures/CornellBox/White.png"
+            }
         },
         "Big": {
             "Material": "Assets/Materials/CornellBoxMaterial",
-            "Textures": [
-                "Assets/Textures/CornellBox/White.png"
-            ]
+            "Textures": {
+                "BaseColor": "Assets/Textures/CornellBox/White.png"
+            }
         }
     }
 }

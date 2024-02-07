@@ -23,8 +23,8 @@ void Vulkan::InitGraphics() {
   device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
   device.CreateLogicalDevice(window.GetSurface(), validation);
 
-  std::string imageFormat = JSON_CONFIG(String, "SwapChainSurfaceImageFormat");
-  std::string colorSpace = JSON_CONFIG(String, "SwapChainSurfaceColorSpace");
+  imageFormat = JSON_CONFIG(String, "SwapChainSurfaceImageFormat");
+  colorSpace = JSON_CONFIG(String, "SwapChainSurfaceColorSpace");
   swapChain.CreateRenderTarget(imageFormat, colorSpace, device, window);
 
   render.CreateRenderPass(swapChain.GetImageFormat(), device);
