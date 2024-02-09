@@ -41,8 +41,8 @@ void main() {
     vec3 texNormal = normalize(texture(normalSampler, fragTexCoord).xyz);
     float texAO = texture(AOSampler, fragTexCoord)[0];
 
-    float DiffuseStrength = 5.;
-    float SpecularStength = 5.;
+    float DiffuseStrength = 2.;
+    float SpecularStength = 4.;
     outColor = DiffuseStrength * texBaseColor / PI * texAO;
 
     for (int i=0; i<lights.num; ++i) {
@@ -56,7 +56,7 @@ void main() {
         vec3 viewDir = normalize(camera.pos - fragPosition);
 
         if (lights.object[i].type == 1) {
-            vec3 brdf = BRDF(TBN(fragPosition, fragTexCoord, fragNormal, texNormal), lightNormal, viewDir, texBaseColor.rgb, texRoughness, vec3(0.3), texMetallic);
+            vec3 brdf = BRDF(TBN(fragPosition, fragTexCoord, fragNormal, texNormal), lightNormal, viewDir, texBaseColor.rgb, texRoughness, vec3(0.1), texMetallic);
             outColor += SpecularStength * vec4(brdf, 1.) * lightColor * lightIntensity;
         }
         if (lights.object[i].type == 3) {
@@ -64,4 +64,5 @@ void main() {
             outColor += SpecularStength * vec4(brdf, 1.) * lightColor * lightIntensity;
         }
     }
+    outColor = pow(outColor, vec4(.45, .45, .45, 1.));
 }

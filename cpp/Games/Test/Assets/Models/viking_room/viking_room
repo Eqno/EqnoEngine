@@ -2,12 +2,14 @@
     "Name": "ObjModel",
     "Type": "OBJ",
     "File": "Assets/Models/viking_room/viking_room.obj",
+    "Material": "Assets/Materials/VikingRoomMaterial",
+    "ImportSize": 1,
     "Meshes": {
-        "Shield_low": {
-            "Material": "Assets/Materials/SMWeaponMaterial",
-            "Textures": [
-                "Assets/Textures/viking_room/viking_room.png"
-            ]
+        "mesh_all1_Texture1_0": {
+            "Material": "Assets/Materials/VikingRoomMaterial",
+            "Textures": {
+                "BaseColor": "Assets/Textures/viking_room/viking_room.png"
+            }
         }
     }
 }

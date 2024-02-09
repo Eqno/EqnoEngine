@@ -6,7 +6,7 @@
     ],
     "Params": {
         "Color": "1,1,1,1",
-        "Roughness": 0.8,
-        "Metallic": 0.3
+        "Roughness": 0.3,
+        "Metallic": 0.9
     }
 }

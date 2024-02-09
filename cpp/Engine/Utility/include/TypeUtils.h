@@ -74,6 +74,14 @@ enum class TextureType {
   AO = 5,
 };
 
+inline std::unordered_map<std::string, TextureType> TextureTypeMap{
+    {"BaseColor", TextureType::BaseColor},
+    {"Roughness", TextureType::Roughness},
+    {"Metallic", TextureType::Metallic},
+    {"Normal", TextureType::Normal},
+    {"AO", TextureType::AO},
+};
+
 struct TextureData {
   TextureType type;
   int width;

@@ -40,14 +40,6 @@ std ::vector<BaseLight*> LightsEmpty;
     }                                                                     \
   }
 
-std::unordered_map<std::string, TextureType> TextureTypeMap{
-    {"BaseColor", TextureType::BaseColor},
-    {"Roughness", TextureType::Roughness},
-    {"Metallic", TextureType::Metallic},
-    {"Normal", TextureType::Normal},
-    {"AO", TextureType::AO},
-};
-
 void ParseFbxTextures(aiMaterial* material,
                       std::shared_ptr<MeshData> meshData) {
   if (material == nullptr) {
@@ -177,7 +169,8 @@ void BaseModel::OnCreate() {
     LoadFbxDatas(aiProcess_Triangulate | aiProcess_GenSmoothNormals |
                  aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
   } else if (JSON_CONFIG(String, "Type") == "OBJ") {
-    // LoadObjDatas(JSON_CONFIG(String, "File"), 0);
+    LoadFbxDatas(aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+                 aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
   }
 }
 
