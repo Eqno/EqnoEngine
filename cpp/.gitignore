@@ -71,6 +71,7 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
+!.Games/*.obj
 *.iobj
 *.pch
 *.ipdb
