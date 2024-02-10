@@ -15,11 +15,18 @@ class BaseCamera : public SceneObject {
   float near = 0.1f;
   float far = 1000;
 
+  float maxFov = 80;
+  float minFov = 5;
+
   float sensitivityX = 1;
   float sensitivityY = 1;
+  float sensitivityZ = 1;
 
   float moveSpeed = 0;
   float speedIncreasingRate = 0;
+
+  float maxMoveSpeed = 0.01;
+  float minMoveSpeed = 1000;
 
   float rotateX = 0;
   float rotateY = 0;

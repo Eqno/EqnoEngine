@@ -36,6 +36,7 @@ void Window::CreateWindow(const int width, const int height,
   glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
 
   glfwSetKeyCallback(window, Key::ButtonCallback);
+  glfwSetScrollCallback(window, Mouse::ScrollCallback);
   glfwSetCursorPosCallback(window, Mouse::PositionCallback);
   glfwSetMouseButtonCallback(window, Mouse::ButtonCallback);
 }

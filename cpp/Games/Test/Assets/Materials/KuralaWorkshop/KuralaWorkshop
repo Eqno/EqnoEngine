@@ -1,0 +1,12 @@
+{
+    "Name": "KuralaWorkshopMaterial",
+    
+    "Shaders": [
+        "Assets/Shaders/KuralaWorkshop"
+    ],
+    "Params": {
+        "Color": "1,1,1,1",
+        "Roughness": 0.7,
+        "Metallic": 0.4
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "Name": "KuralaWorkshopMaterial",
+    
+    "Shaders": [
+        "Assets/Shaders/DefaultLit/BlinnPhong/WithoutTexture"
+    ],
+    "Params": {
+        "Color": "1,1,1,1",
+        "Roughness": 0.3,
+        "Metallic": 0.9
+    }
+}

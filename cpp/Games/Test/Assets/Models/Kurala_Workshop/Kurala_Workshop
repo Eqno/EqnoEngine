@@ -1,0 +1,19 @@
+{
+    "Name": "Kurala_Workshop",
+    "Type": "OBJ",
+    "File": "Assets/Models/Kurala_Workshop/source/Kurala_Workshop_SF.obj",
+    "ImportSize": 1,
+    "Meshes": {
+        "Kurala_Workshop": {
+            "Material": "Assets/Materials/KuralaWorkshop/KuralaWorkshop",
+            "Textures": {
+                "BaseColor": "Assets/Models/Kurala_Workshop/source/Kurala_Workshop.jpg",
+                "Normal": "Assets/Models/Kurala_Workshop/source/Kurala_Workshop_normal.jpg",
+                "AO": "Assets/Models/Kurala_Workshop/source/Kurala_Workshop_occlusion.jpg"
+            }
+        },
+        "Base": {
+            "Material": "Assets/Materials/KuralaWorkshop/Base"
+        }
+    }
+}

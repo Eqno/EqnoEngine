@@ -19,33 +19,36 @@
 
 std ::vector<BaseLight*> LightsEmpty;
 
-#define LoadPNGTexture(type, path, textures)                           \
-  {                                                                    \
-    int width, height, channels;                                       \
-    stbi_uc* data =                                                    \
-        stbi_load((path), &width, &height, &channels, STBI_rgb_alpha); \
-    if (!data) {                                                       \
-      throw std::runtime_error("failed to load texture image!");       \
-    }                                                                  \
-    (textures).emplace_back(type, width, height, channels, data);      \
+#define LoadPNGTexture(type, _path, textures)                           \
+  {                                                                     \
+    int width, height, channels;                                        \
+    stbi_uc* data =                                                     \
+        stbi_load((_path), &width, &height, &channels, STBI_rgb_alpha); \
+    if (!data) {                                                        \
+      throw std::runtime_error("failed to load texture image!");        \
+    }                                                                   \
+    (textures).emplace_back(type, width, height, channels, data);       \
   }
 
-#define ParseFbxTextureType(_aiTexturetype, textureType)                  \
-  {                                                                       \
-    for (int j = 0; j < material->GetTextureCount(_aiTexturetype); j++) { \
-      aiString path;                                                      \
-      if (material->GetTexture(_aiTexturetype, j, &path) == AI_SUCCESS) { \
-        LoadPNGTexture(textureType, path.C_Str(), meshData->textures);    \
-      }                                                                   \
-    }                                                                     \
+#define ParseFbxTextureType(_aiTexturetype, textureType)                       \
+  {                                                                            \
+    for (int j = 0; j < material->GetTextureCount(_aiTexturetype); j++) {      \
+      aiString path;                                                           \
+      if (material->GetTexture(_aiTexturetype, j, &path) == AI_SUCCESS) {      \
+        std::string fullPath = rootPath + dataPath;                            \
+        fullPath = fullPath.substr(0, fullPath.rfind('/') + 1) + path.C_Str(); \
+        LoadPNGTexture(textureType, fullPath.c_str(), meshData->textures);     \
+      }                                                                        \
+    }                                                                          \
   }
 
-void ParseFbxTextures(aiMaterial* material,
-                      std::shared_ptr<MeshData> meshData) {
+void ParseFbxTextures(aiMaterial* material, std::shared_ptr<MeshData> meshData,
+                      const std::string& rootPath,
+                      const std::string& dataPath) {
   if (material == nullptr) {
     return;
   }
-  ParseFbxTextureType(aiTextureType::aiTextureType_BASE_COLOR,
+  ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE,
                       TextureType::BaseColor);
   ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS,
                       TextureType::Roughness);
@@ -94,9 +97,10 @@ void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
   }
 }
 
-void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
-                   const aiScene* scene, const std::string& rootPath,
-                   const std::string& modelPath,
+void ParseFbxDatas(const std::string& modelType, const aiMatrix4x4& transform,
+                   const aiNode* node, const aiScene* scene,
+                   const std::string& rootPath, const std::string& modelPath,
+                   const std::string& dataPath,
                    std::weak_ptr<BaseScene> modelScene,
                    std::vector<std::shared_ptr<MeshData>>& modelMeshes,
                    float importSize) {
@@ -122,7 +126,7 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
 
     if (texPaths.empty()) {
       // Parse Textures
-      ParseFbxTextures(matData, meshData);
+      ParseFbxTextures(matData, meshData, rootPath, dataPath);
     } else {
       // Parse Textures
       for (const auto& texPath : texPaths) {
@@ -140,16 +144,17 @@ void ParseFbxDatas(const aiMatrix4x4& transform, const aiNode* node,
   }
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-    ParseFbxDatas(nodeTransform, node->mChildren[i], scene, rootPath, modelPath,
-                  modelScene, modelMeshes, importSize);
+    ParseFbxDatas(modelType, nodeTransform, node->mChildren[i], scene, rootPath,
+                  modelPath, dataPath, modelScene, modelMeshes, importSize);
   }
 }
 
 void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
   Assimp::Importer importer;
 
+  const std::string& dataPath = JSON_CONFIG(String, "File");
   const aiScene* sceneData =
-      importer.ReadFile(GetRoot() + JSON_CONFIG(String, "File"), parserFlags);
+      importer.ReadFile(GetRoot() + dataPath, parserFlags);
 
   if (sceneData == nullptr || sceneData->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
       sceneData->mRootNode == nullptr) {
@@ -158,20 +163,15 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
   }
 
   const aiMatrix4x4 identity;
-  ParseFbxDatas(identity, sceneData->mRootNode, sceneData, GetRoot(), GetFile(),
-                scene, meshes, JSON_CONFIG(Float, "ImportSize"));
+  ParseFbxDatas(JSON_CONFIG(String, "Type"), identity, sceneData->mRootNode,
+                sceneData, GetRoot(), GetFile(), dataPath, scene, meshes,
+                JSON_CONFIG(Float, "ImportSize"));
 }
 
 void BaseModel::OnCreate() {
   SceneObject::OnCreate();
-
-  if (JSON_CONFIG(String, "Type") == "FBX") {
-    LoadFbxDatas(aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-                 aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-  } else if (JSON_CONFIG(String, "Type") == "OBJ") {
-    LoadFbxDatas(aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-                 aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-  }
+  LoadFbxDatas(aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+               aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 }
 
 void BaseModel::OnStart() {

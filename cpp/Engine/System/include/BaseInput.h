@@ -31,11 +31,17 @@
 namespace Input {
 namespace Mouse {
 inline double posX = 0, posY = 0;
+inline double scrollX = 0, scrollY = 0;
+inline double _scrollX = 0, _scrollY = 0;
 
 DEFINE_THREE_STATE_KEY(left);
 DEFINE_THREE_STATE_KEY(right);
 DEFINE_THREE_STATE_KEY(middle);
 
+inline void ScrollCallback(GLFWwindow* window, double x, double y) {
+  _scrollX = x;
+  _scrollY = y;
+}
 inline void PositionCallback(GLFWwindow* window, double x, double y) {
   posX = x;
   posY = y;
@@ -74,6 +80,8 @@ DEFINE_THREE_STATE_KEY(w);
 DEFINE_THREE_STATE_KEY(x);
 DEFINE_THREE_STATE_KEY(y);
 DEFINE_THREE_STATE_KEY(z);
+DEFINE_THREE_STATE_KEY(leftShift);
+DEFINE_THREE_STATE_KEY(rightShift);
 
 inline void ButtonCallback(GLFWwindow* window, int button, int scancode,
                            int option, int mods) {
@@ -103,9 +111,14 @@ inline void ButtonCallback(GLFWwindow* window, int button, int scancode,
   THREE_STATE_KEY_CALLBACK(GLFW_KEY_X, x);
   THREE_STATE_KEY_CALLBACK(GLFW_KEY_Y, y);
   THREE_STATE_KEY_CALLBACK(GLFW_KEY_Z, z);
+  THREE_STATE_KEY_CALLBACK(GLFW_KEY_LEFT_SHIFT, leftShift);
+  THREE_STATE_KEY_CALLBACK(GLFW_KEY_RIGHT_SHIFT, rightShift);
 }
 }  // namespace Key
 inline void RecordDownUpFlags() {
+  Mouse::scrollX = Mouse::_scrollX;
+  Mouse::scrollY = Mouse::_scrollY;
+  Mouse::_scrollX = Mouse::_scrollY = 0;
   RECORD_THREE_STATE_KEY(Mouse, left);
   RECORD_THREE_STATE_KEY(Mouse, right);
   RECORD_THREE_STATE_KEY(Mouse, middle);
@@ -136,8 +149,11 @@ inline void RecordDownUpFlags() {
   RECORD_THREE_STATE_KEY(Key, x);
   RECORD_THREE_STATE_KEY(Key, y);
   RECORD_THREE_STATE_KEY(Key, z);
+  RECORD_THREE_STATE_KEY(Key, leftShift);
+  RECORD_THREE_STATE_KEY(Key, rightShift);
 }
 inline void ResetDownUpFlags() {
+  Mouse::scrollX = Mouse::scrollY = 0;
   RESET_THREE_STATE_KEY(Mouse, left);
   RESET_THREE_STATE_KEY(Mouse, right);
   RESET_THREE_STATE_KEY(Mouse, middle);
@@ -168,6 +184,8 @@ inline void ResetDownUpFlags() {
   RESET_THREE_STATE_KEY(Key, x);
   RESET_THREE_STATE_KEY(Key, y);
   RESET_THREE_STATE_KEY(Key, z);
+  RESET_THREE_STATE_KEY(Key, leftShift);
+  RESET_THREE_STATE_KEY(Key, rightShift);
 }
 }  // namespace Input
 

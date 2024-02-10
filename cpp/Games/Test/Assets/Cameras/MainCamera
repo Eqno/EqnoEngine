@@ -7,9 +7,16 @@
     "Near": 0.1,
     "Far": 1000,
 
+    "MaxFov": 80,
+    "MinFov": 5,
+
     "SensitivityX": 20,
     "SensitivityY": 20,
+    "SensitivityZ": 3,
     
     "MoveSpeed": 20,
-    "speedIncreasingRate": 2
+    "speedIncreasingRate": 2,
+
+    "MaxMoveSpeed": 1000,
+    "MinMoveSpeed": 0.01
 }

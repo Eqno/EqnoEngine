@@ -35,11 +35,18 @@ void BaseCamera::OnCreate() {
   near = JSON_CONFIG(Float, "Near");
   far = JSON_CONFIG(Float, "Far");
 
+  maxFov = JSON_CONFIG(Float, "MaxFov");
+  minFov = JSON_CONFIG(Float, "MinFov");
+
   sensitivityX = JSON_CONFIG(Float, "SensitivityX");
   sensitivityY = JSON_CONFIG(Float, "SensitivityY");
+  sensitivityZ = JSON_CONFIG(Float, "SensitivityZ");
 
   moveSpeed = JSON_CONFIG(Float, "MoveSpeed");
   speedIncreasingRate = JSON_CONFIG(Float, "speedIncreasingRate");
+
+  maxMoveSpeed = JSON_CONFIG(Float, "MaxMoveSpeed");
+  minMoveSpeed = JSON_CONFIG(Float, "MinMoveSpeed");
 }
 
 void BaseCamera::OnUpdate() {
@@ -84,6 +91,20 @@ void BaseCamera::PerformTraslation() {
   if (Input::Key::e) {
     SetRelativePosition(transform.relativePosition +
                         transform.relativeUp * moveSpeed * DeltaTime);
+  }
+  if (Input::Mouse::scrollY > 0) {
+    if (Input::Key::leftShift) {
+      moveSpeed = std::min(maxMoveSpeed, moveSpeed * 2);
+    } else {
+      fovy = std::max(minFov, fovy - sensitivityZ);
+    }
+  }
+  if (Input::Mouse::scrollY < 0) {
+    if (Input::Key::leftShift) {
+      moveSpeed = std::max(minMoveSpeed, moveSpeed / 2);
+    } else {
+      fovy = std::min(maxFov, fovy + sensitivityZ);
+    }
   }
 }
 
