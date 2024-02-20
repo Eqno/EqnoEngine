@@ -23,19 +23,11 @@ void Vulkan::InitGraphics() {
   device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
   device.CreateLogicalDevice(window.GetSurface(), validation);
 
-  imageFormat = JSON_CONFIG(String, "SwapChainSurfaceImageFormat");
-  colorSpace = JSON_CONFIG(String, "SwapChainSurfaceColorSpace");
-  swapChain.CreateRenderTarget(imageFormat, colorSpace, device, window);
-
-  render.CreateRenderPass(swapChain.GetImageFormat(), device);
-  render.CreateCommandPool(device, window.GetSurface());
-
-  depth.CreateDepthResources(device, swapChain.GetExtent());
-  swapChain.CreateFrameBuffers(device.GetLogical(), depth,
-                               render.GetRenderPass());
-
-  render.CreateCommandBuffers(device.GetLogical());
-  render.CreateSyncObjects(device.GetLogical());
+  render.CreateRenderResources(
+      JSON_CONFIG(String, "SwapChainSurfaceImageFormat"),
+      JSON_CONFIG(String, "SwapChainSurfaceColorSpace"),
+      JSON_CONFIG(Int, "ShadowMapWidth"), JSON_CONFIG(Int, "ShadowMapHeight"),
+      device, window);
 }
 
 void Vulkan::TriggerOnUpdate() {
@@ -76,7 +68,7 @@ void Vulkan::RendererLoop() {
     lastTime = nowTime;
 
     glfwPollEvents();
-    render.DrawFrame(device, draws, depth, window, swapChain);
+    render.DrawFrame(device, draws, window);
     device.WaitIdle();
 
     Input::RecordDownUpFlags();
@@ -94,10 +86,7 @@ void Vulkan::CleanupGraphics() {
     val->Destroy();
   }
 
-  depth.DestroyDepthResource(device.GetLogical());
-  swapChain.CleanupRenderTarget(device.GetLogical());
   render.DestroyRenderResources(device.GetLogical());
-
   device.DestroyLogicalDevice();
   validation.DestroyMessenger(instance.GetVkInstance());
 
@@ -152,4 +141,4 @@ void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) {
   }
 }
 
-float Vulkan::GetViewportAspect() { return swapChain.GetViewportAspect(); }
+float Vulkan::GetViewportAspect() { return render.GetViewportAspect(); }

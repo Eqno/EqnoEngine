@@ -7,11 +7,12 @@
 #include "../include/texture.h"
 
 void Depth::CreateDepthResources(const Device& device,
-                                 const VkExtent2D& swapChainExtent) {
+                                 const uint32_t imageWidth,
+                                 const uint32_t imageHeight) {
   const VkFormat depthFormat = FindDepthFormat(device.GetPhysical());
   Texture::CreateImage(
-      device, swapChainExtent.width, swapChainExtent.height, depthFormat,
-      VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+      device, imageWidth, imageHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
   depthImageView = Texture::CreateImageView(
       device.GetLogical(), depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);

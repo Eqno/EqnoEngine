@@ -5,5 +5,7 @@
     "DefaultWindowWidth": 1280,
     "DefaultWindowHeight": 720,
     "SwapChainSurfaceImageFormat": "RGBA_UNORM",
-    "SwapChainSurfaceColorSpace": "SRGB_LINEAR"
+    "SwapChainSurfaceColorSpace": "SRGB_LINEAR",
+    "ShadowMapWidth": -1,
+    "ShadowMapHeight": -1
 }

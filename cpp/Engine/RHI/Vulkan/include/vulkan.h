@@ -12,19 +12,14 @@
 #include "window.h"
 
 class Vulkan final : public GraphicsInterface, public Base {
-  Depth depth;
   Device device;
   Window window;
   Render render;
   Instance instance;
-  SwapChain swapChain;
   Validation validation;
 
   BufferManager bufferManager;
   std::unordered_map<std::string, Draw*> draws;
-
-  std::string imageFormat = "RGBA_UNORM";
-  std::string colorSpace = "SRGB_LINEAR";
 
  public:
   template <typename... Args>
@@ -43,8 +38,7 @@ class Vulkan final : public GraphicsInterface, public Base {
 
   virtual void OnCreate() override {
     GraphicsInterface::OnCreate();
-    RegisterMember(depth, device, window, render, instance, swapChain,
-                   validation);
+    RegisterMember(device, window, render, instance, validation);
   }
   virtual void OnStart() override { GraphicsInterface::OnStart(); }
   virtual void OnUpdate() override { GraphicsInterface::OnUpdate(); }

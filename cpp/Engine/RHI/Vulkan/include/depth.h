@@ -18,8 +18,9 @@ class Depth : public Base {
   [[nodiscard]] const VkImageView& GetDepthImageView() const {
     return depthImageView;
   }
-  void CreateDepthResources(const Device& device,
-                            const VkExtent2D& swapChainExtent);
+
+  void CreateDepthResources(const Device& device, const uint32_t imageWidth,
+                            const uint32_t imageHeight);
 
   static VkFormat FindSupportedFormat(const VkPhysicalDevice& device,
                                       const std::vector<VkFormat>& candidates,
