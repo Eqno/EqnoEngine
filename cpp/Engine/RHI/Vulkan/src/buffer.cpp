@@ -159,6 +159,11 @@ void UniformBuffer::DestroyUniformBuffer(const VkDevice& device,
 
 void CameraBuffer::UpdateUniformBuffer(BaseCamera* camera,
                                        const uint32_t currentImage) {
+  if (updateLock == false) {
+    updateLock = true;
+  } else {
+    return;
+  }
   CameraData* buffer =
       reinterpret_cast<CameraData*>(uniformBuffersMapped[currentImage]);
   buffer->pos = camera->GetAbsolutePosition();
@@ -167,6 +172,11 @@ void CameraBuffer::UpdateUniformBuffer(BaseCamera* camera,
 
 void MaterialBuffer::UpdateUniformBuffer(BaseMaterial* material,
                                          const uint32_t currentImage) {
+  if (updateLock == false) {
+    updateLock = true;
+  } else {
+    return;
+  }
   MaterialData* buffer =
       reinterpret_cast<MaterialData*>(uniformBuffersMapped[currentImage]);
   buffer->color = material->GetColor();
@@ -176,6 +186,11 @@ void MaterialBuffer::UpdateUniformBuffer(BaseMaterial* material,
 
 void LightChannelBuffer::UpdateUniformBuffer(LightChannel* lightChannel,
                                              const uint32_t currentImage) {
+  if (updateLock == false) {
+    updateLock = true;
+  } else {
+    return;
+  }
   LightChannelData* buffer =
       reinterpret_cast<LightChannelData*>(uniformBuffersMapped[currentImage]);
 

@@ -63,6 +63,16 @@ void Vulkan::RendererLoop() {
     static auto lastTime = std::chrono::steady_clock::now();
     auto nowTime = std::chrono::steady_clock::now();
 
+    for (auto& buffer : bufferManager.cameraBuffers) {
+      buffer.second.second.updateLock = false;
+    }
+    for (auto& buffer : bufferManager.materialBuffers) {
+      buffer.second.second.updateLock = false;
+    }
+    for (auto& buffer : bufferManager.lightChannelBuffers) {
+      buffer.second.second.updateLock = false;
+    }
+
     seconds duration = nowTime - lastTime;
     DeltaTime = duration.count();
     lastTime = nowTime;

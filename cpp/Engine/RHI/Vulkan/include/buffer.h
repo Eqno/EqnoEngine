@@ -77,22 +77,32 @@ class UniformBuffer : public Base {
 };
 
 class CameraBuffer : public UniformBuffer {
+  friend class Vulkan;
+  bool updateLock = false;
+
  public:
   void UpdateUniformBuffer(BaseCamera* camera, const uint32_t currentImage);
 };
 
 class MaterialBuffer : public UniformBuffer {
+  friend class Vulkan;
+  bool updateLock = false;
+
  public:
   void UpdateUniformBuffer(BaseMaterial* material, const uint32_t currentImage);
 };
 
 class LightChannelBuffer : public UniformBuffer {
+  friend class Vulkan;
+  bool updateLock = false;
+
  public:
   void UpdateUniformBuffer(LightChannel* lightChannel,
                            const uint32_t currentImage);
 };
 
 class BufferManager {
+  friend class Vulkan;
 #define DefineUniformBuffer(type, data, upper, lower)                        \
  private:                                                                    \
   std::unordered_map<type*, std::pair<int, upper##Buffer>> lower##Buffers;   \
