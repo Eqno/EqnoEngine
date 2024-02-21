@@ -40,7 +40,7 @@ using nanoseconds = std::chrono::duration<float, std::nano>;
 using MaterialInfo =
     std::pair<std::string, std::vector<std::pair<std::string, std::string>>>;
 
-inline constexpr int MaxLightNum = 500;
+inline constexpr int MaxLightNum = 200;
 inline constexpr shaderc_optimization_level ShaderOptimizationLevel =
     shaderc_optimization_level_zero;
 inline const std::vector<std::string> ShaderSearchPaths = {
@@ -120,6 +120,8 @@ struct LightData {
   alignas(16) glm::vec3 pos;
   alignas(16) glm::vec4 color;
   alignas(16) glm::vec3 normal;
+  alignas(16) glm::mat4 viewMatrix;
+  alignas(16) glm::mat4 projMatrix;
 };
 
 struct LightChannelData {

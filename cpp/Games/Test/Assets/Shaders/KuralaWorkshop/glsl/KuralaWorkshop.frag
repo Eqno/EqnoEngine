@@ -20,6 +20,8 @@ struct LightData {
     vec3 pos;
     vec4 color;
     vec3 normal;
+    mat4 viewMatrix;
+    mat4 projMatrix;
 };
 layout(binding = 3) uniform LightsData {
     uint num;

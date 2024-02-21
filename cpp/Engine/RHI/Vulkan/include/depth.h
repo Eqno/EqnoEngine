@@ -7,20 +7,28 @@
 #include "base.h"
 
 class Device;
+class Render;
 class SwapChain;
 
 class Depth : public Base {
+  VkFormat depthFormat;
+
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
 
  public:
-  [[nodiscard]] const VkImageView& GetDepthImageView() const {
-    return depthImageView;
-  }
+  VkFormat GetDepthFormat() const { return depthFormat; }
+
+  [[nodiscard]] VkImage& GetDepthImage() { return depthImage; }
+  [[nodiscard]] VkImageView& GetDepthImageView() { return depthImageView; }
 
   void CreateDepthResources(const Device& device, const uint32_t imageWidth,
-                            const uint32_t imageHeight);
+                            const uint32_t imageHeight,
+                            const VkImageUsageFlags usage);
+  void TransitionDepthImageLayout(const Device& device, const Render& render,
+                                  VkImageLayout oldLayout,
+                                  VkImageLayout newLayout);
 
   static VkFormat FindSupportedFormat(const VkPhysicalDevice& device,
                                       const std::vector<VkFormat>& candidates,

@@ -14,9 +14,9 @@ using SurfaceFormats = std::vector<VkSurfaceFormatKHR>;
 
 class Window;
 class Device;
+class Render;
 
 class SwapChain : public Base {
-  Depth colorDepth;
   Depth zPrePassDepth;
   Depth shadowMapDepth;
 
@@ -30,38 +30,31 @@ class SwapChain : public Base {
   int shadowMapWidth = 0;
   int shadowMapHeight = 0;
 
-  std::vector<VkImage> images;
-  std::vector<VkImageView> imageViews;
+  std::vector<VkImage> colorImages;
+  std::vector<VkImageView> colorImageViews;
 
   std::vector<VkFramebuffer> colorFrameBuffers;
-  std::vector<VkFramebuffer> zPrePassFrameBuffers;
-  std::vector<VkFramebuffer> shadowMapFrameBuffers;
+  VkFramebuffer zPrePassFrameBuffer;
+  VkFramebuffer shadowMapFrameBuffer;
 
  public:
   virtual void TriggerRegisterMember() override {
-    RegisterMember(colorDepth, zPrePassDepth, shadowMapDepth);
+    RegisterMember(zPrePassDepth, shadowMapDepth);
   }
   void SetShadowMapSize(const int width, const int Height) {
     shadowMapWidth = width;
     shadowMapHeight = Height;
   }
-  void CreateDepthResources(const Device& device) {
-    colorDepth.CreateDepthResources(device, extent.width, extent.height);
-    zPrePassDepth.CreateDepthResources(device, extent.width, extent.height);
-    shadowMapDepth.CreateDepthResources(
-        device, shadowMapWidth >= 0 ? shadowMapWidth : extent.width,
-        shadowMapHeight >= 0 ? shadowMapHeight : extent.height);
-  }
+  void CreateDepthResources(const Device& device);
+  void TransitionDepthImageLayout(const Device& device);
   void CreateFrameBuffers(const VkDevice& device,
                           const VkRenderPass& colorRenderPass,
                           const VkRenderPass& zPrePassRenderPass,
                           const VkRenderPass& shadowMapRenderPass) {
     CreateColorFrameBuffers(device, colorRenderPass);
     CreateZPrePassFrameBuffers(device, zPrePassRenderPass);
-    CreateShadowMapFrameBuffers(
-        device, shadowMapRenderPass,
-        shadowMapWidth >= 0 ? shadowMapWidth : extent.width,
-        shadowMapHeight >= 0 ? shadowMapHeight : extent.height);
+    CreateShadowMapFrameBuffers(device, shadowMapRenderPass,
+                                GetShadowMapWidth(), GetShadowMapHeight());
   }
 
   [[nodiscard]] VkSurfaceFormatKHR ChooseSurfaceFormat(
@@ -79,17 +72,29 @@ class SwapChain : public Base {
 
   [[nodiscard]] const VkFormat& GetImageFormat() const { return imageFormat; }
 
-  [[nodiscard]] const std::vector<VkImageView>& GetImageViews() const {
-    return imageViews;
+  [[nodiscard]] const VkFramebuffer& GetColorFrameBufferByIndex(
+      uint32_t index) const {
+    return colorFrameBuffers[index];
+  }
+  [[nodiscard]] const VkFramebuffer& GetZPrePassFrameBuffer() const {
+    return zPrePassFrameBuffer;
+  }
+  [[nodiscard]] const VkFramebuffer& GetShadowMapFrameBuffer() const {
+    return shadowMapFrameBuffer;
   }
 
-  [[nodiscard]] const std::vector<VkFramebuffer>& GetFrameBuffers() const {
-    return colorFrameBuffers;
+  [[nodiscard]] uint32_t GetShadowMapWidth() const {
+    return shadowMapWidth >= 0 ? shadowMapWidth : extent.width;
   }
+  [[nodiscard]] uint32_t GetShadowMapHeight() const {
+    return shadowMapHeight >= 0 ? shadowMapHeight : extent.height;
+  }
+
+  VkFormat GetZPrePassDepthFormat() { return zPrePassDepth.GetDepthFormat(); }
+  VkFormat GetShadowMapDepthFormat() { return shadowMapDepth.GetDepthFormat(); }
 
   void CreateSwapChain(const Device& device, const Window& window);
-  void CreateImageViews(const VkDevice& device);
-
+  void CreateColorImageViews(const VkDevice& device);
   void CreateColorFrameBuffers(const VkDevice& device,
                                const VkRenderPass& colorRenderPass);
   void CreateZPrePassFrameBuffers(const VkDevice& device,
@@ -109,7 +114,6 @@ class SwapChain : public Base {
                           const Device& device, const Window& window);
   void CleanupRenderTarget(const VkDevice& device) const;
   void DestroyDepthResource(const VkDevice& device) {
-    colorDepth.DestroyDepthResource(device);
     zPrePassDepth.DestroyDepthResource(device);
     shadowMapDepth.DestroyDepthResource(device);
   }

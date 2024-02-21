@@ -35,12 +35,13 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage,
               textureImageMemory);
 
-  TransitionImageLayout(device, render, textureImage, VK_IMAGE_LAYOUT_UNDEFINED,
+  TransitionImageLayout(device, render, textureImage, imageFormat,
+                        VK_IMAGE_LAYOUT_UNDEFINED,
                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   CopyBufferToImage(device, render, stagingBuffer, textureImage,
                     static_cast<uint32_t>(texWidth),
                     static_cast<uint32_t>(texHeight));
-  TransitionImageLayout(device, render, textureImage,
+  TransitionImageLayout(device, render, textureImage, imageFormat,
                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -150,8 +151,13 @@ void Texture::CreateImage(const Device& device, const uint32_t width,
   vkBindImageMemory(device.GetLogical(), image, imageMemory, 0);
 }
 
+bool HasStencilComponent(VkFormat format) {
+  return format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+         format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
 void Texture::TransitionImageLayout(const Device& device, const Render& render,
-                                    const VkImage image,
+                                    const VkImage& image, const VkFormat format,
                                     const VkImageLayout oldLayout,
                                     const VkImageLayout newLayout) {
   VkCommandBuffer commandBuffer;
@@ -164,12 +170,20 @@ void Texture::TransitionImageLayout(const Device& device, const Render& render,
                                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                                .image = image,
                                .subresourceRange = {
-                                   .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                                    .baseMipLevel = 0,
                                    .levelCount = 1,
                                    .baseArrayLayer = 0,
                                    .layerCount = 1,
                                }};
+
+  if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    if (HasStencilComponent(format)) {
+      barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+  } else {
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  }
 
   VkPipelineStageFlags sourceStage;
   VkPipelineStageFlags destinationStage;
@@ -188,6 +202,14 @@ void Texture::TransitionImageLayout(const Device& device, const Render& render,
 
     sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+  } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+             newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
   } else {
     throw std::invalid_argument("unsupported layout transition!");
   }

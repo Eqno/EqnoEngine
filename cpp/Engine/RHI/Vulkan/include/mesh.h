@@ -7,6 +7,15 @@
 #include "texture.h"
 #include "uniform.h"
 
+#define DEFINE_GET_DESCRIPTOR_SET(member)                                   \
+  [[nodiscard]] const DescriptorSets& Get##member##DescriptorSets() const { \
+    return descriptor.Get##member##DescriptorSets();                        \
+  }                                                                         \
+  [[nodiscard]] const VkDescriptorSet& Get##member##DescriptorSetByIndex(   \
+      const uint32_t index) const {                                         \
+    return descriptor.Get##member##DescriptorSetByIndex(index);             \
+  }
+
 class Mesh : public Base {
   std::weak_ptr<MeshData> bridge;
 
@@ -19,7 +28,9 @@ class Mesh : public Base {
   void ParseVertexAndIndex();
   void ParseBufferAndDescriptor(
       const Device& device, const Render& render,
-      const VkDescriptorSetLayout& descriptorSetLayout);
+      const VkDescriptorSetLayout& colorDescriptorSetLayout,
+      const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
+      const VkDescriptorSetLayout& shadowMapDescriptorSetLayout);
 
  public:
   [[nodiscard]] const VkBuffer& GetIndexBuffer() const {
@@ -38,14 +49,9 @@ class Mesh : public Base {
     return data.GetVertices();
   }
 
-  [[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
-    return descriptor.GetDescriptorSets();
-  }
-
-  [[nodiscard]] const VkDescriptorSet& GetDescriptorSetByIndex(
-      const uint32_t index) const {
-    return descriptor.GetDescriptorSetByIndex(index);
-  }
+  DEFINE_GET_DESCRIPTOR_SET(Color)
+  DEFINE_GET_DESCRIPTOR_SET(ZPrePass)
+  DEFINE_GET_DESCRIPTOR_SET(ShadowMap)
 
   void UpdateUniformBuffer(const uint32_t currentImage) {
     descriptor.UpdateUniformBuffer(currentImage);
@@ -64,7 +70,9 @@ class Mesh : public Base {
 
   void CreateMesh(const Device& device, const Render& render,
                   std::weak_ptr<MeshData> inData,
-                  const VkDescriptorSetLayout& descriptorSetLayout);
+                  const VkDescriptorSetLayout& colorDescriptorSetLayout,
+                  const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
+                  const VkDescriptorSetLayout& shadowMapDescriptorSetLayout);
 
   void DestroyMesh(const VkDevice& device, const Render& render);
 
@@ -77,3 +85,5 @@ class Mesh : public Base {
   }
   std::weak_ptr<MeshData> GetBridgeData() { return bridge; }
 };
+
+#undef DEFINE_GET_DESCRIPTOR_SET

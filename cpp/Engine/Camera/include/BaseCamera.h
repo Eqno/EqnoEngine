@@ -37,11 +37,11 @@ class BaseCamera : public SceneObject {
       : graphics(graphics), SceneObject(std::forward<Args>(args)...) {}
   ~BaseCamera() override = default;
 
-  void ParseAspect(const std::string& content) {
-    if (content == "Auto") return;
+  static float ParseAspect(const std::string& content) {
+    if (content == "Auto") return -1;
     float width = stof(content.substr(0, content.find(':')));
     float height = stof(content.substr(content.find(':') + 1));
-    aspect = width / height;
+    return width / height;
   }
 
   virtual void OnCreate() override;

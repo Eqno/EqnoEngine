@@ -101,8 +101,9 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
       }
     } else if (strcmp(val["Type"].GetString(), "SpotLight") == 0) {
       object = BaseObject::CreateImmediately<SpotLight>(
-          parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",
-          root, val["Path"].GetString(), owner);
+          graphics, parent,
+          val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
+          val["Path"].GetString(), owner);
     } else if (strcmp(val["Type"].GetString(), "SunLight") == 0) {
       object = BaseObject::CreateImmediately<SunLight>(
           parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",

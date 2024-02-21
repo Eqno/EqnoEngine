@@ -30,7 +30,7 @@ void BaseCamera::OnCreate() {
         name, std::dynamic_pointer_cast<BaseCamera>(shared_from_this()));
   }
 
-  ParseAspect(JSON_CONFIG(String, "Aspect"));
+  aspect = ParseAspect(JSON_CONFIG(String, "Aspect"));
   fovy = JSON_CONFIG(Float, "FOVy");
   near = JSON_CONFIG(Float, "Near");
   far = JSON_CONFIG(Float, "Far");

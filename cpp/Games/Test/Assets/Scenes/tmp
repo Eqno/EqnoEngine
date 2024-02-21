@@ -1,0 +1,12 @@
+{
+            "Name": "Kurala_Workshop",
+            "Type": "BaseModel",
+            "Path": "Assets/Models/Kurala_Workshop/Kurala_Workshop",
+            "Camera": "MainCamera",
+            "LightChannel": "All",
+            "Transform": {
+                "Position": "45,0,-30",
+                "Rotation": "0,0,0",
+                "Scale": "1,1,1"
+            }
+        },

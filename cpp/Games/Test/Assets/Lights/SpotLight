@@ -2,5 +2,10 @@
     "Name": "SpotLight",
 
     "Intensity": 0.4,
-    "Color": "1,1,1,1"
+    "Color": "1,1,1,1",
+    
+    "FOVy": 70,
+    "Aspect": "Auto",
+    "Near": 0.1,
+    "Far": 1000
 }

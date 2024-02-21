@@ -7,40 +7,71 @@
 
 #include "base.h"
 
+#define DEFINE_GET_PIPELINE_AND_DSL(lower, upper)                              \
+  [[nodiscard]] const VkPipeline& Get##upper##GraphicsPipeline() const {       \
+    return lower##GraphicsPipeline;                                            \
+  }                                                                            \
+  [[nodiscard]] const VkPipelineLayout& Get##upper##PipelineLayout() const {   \
+    return lower##PipelineLayout;                                              \
+  }                                                                            \
+  [[nodiscard]] const VkDescriptorSetLayout& Get##upper##DescriptorSetLayout() \
+      const {                                                                  \
+    return lower##DescriptorSetLayout;                                         \
+  }
+
 class Shader;
 class Device;
 
 class Pipeline : public Base {
   int shaderFallbackIndex = -1;
 
-  VkDescriptorSetLayout descriptorSetLayout{};
-  VkPipelineLayout pipelineLayout{};
-  VkPipeline graphicsPipeline{};
+  VkDescriptorSetLayout colorDescriptorSetLayout;
+  VkPipelineLayout colorPipelineLayout;
+  VkPipeline colorGraphicsPipeline;
 
-  void CreateGraphicsPipeline(const VkDevice& device, const Shader& shader,
-                              const std::string& rootPath,
-                              const std::vector<std::string>& shaderPaths,
-                              const VkRenderPass& renderPass);
-  void CreateDescriptorSetLayout(const VkDevice& device, int texCount);
+  VkDescriptorSetLayout zPrePassDescriptorSetLayout;
+  VkPipelineLayout zPrePassPipelineLayout;
+  VkPipeline zPrePassGraphicsPipeline;
+
+  VkDescriptorSetLayout shadowMapDescriptorSetLayout;
+  VkPipelineLayout shadowMapPipelineLayout;
+  VkPipeline shadowMapGraphicsPipeline;
+
+  void CreateColorGraphicsPipeline(const VkDevice& device, const Shader& shader,
+                                   const std::string& rootPath,
+                                   const std::vector<std::string>& shaderPaths,
+                                   const VkRenderPass& renderPass);
+  void CreateZPrePassGraphicsPipeline(const VkDevice& device,
+                                      const Shader& shader,
+                                      const std::string& rootPath,
+                                      const std::string& depthShaderPath,
+                                      const VkRenderPass& renderPass);
+  void CreateShadowMapGraphicsPipeline(const VkDevice& device,
+                                       const Shader& shader,
+                                       const std::string& rootPath,
+                                       const std::string& depthShaderPath,
+                                       const VkRenderPass& renderPass);
+
+  void CreateColorDescriptorSetLayout(const VkDevice& device, int texCount);
+  void CreateZPrePassDescriptorSetLayout(const VkDevice& device);
+  void CreateShadowMapDescriptorSetLayout(const VkDevice& device);
 
  public:
   [[nodiscard]] int GetShaderFallbackIndex() { return shaderFallbackIndex; }
 
-  [[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {
-    return graphicsPipeline;
-  }
-
-  [[nodiscard]] const VkPipelineLayout& GetPipelineLayout() const {
-    return pipelineLayout;
-  }
-
-  [[nodiscard]] const VkDescriptorSetLayout& GetDescriptorSetLayout() const {
-    return descriptorSetLayout;
-  }
+  DEFINE_GET_PIPELINE_AND_DSL(color, Color)
+  DEFINE_GET_PIPELINE_AND_DSL(zPrePass, ZPrePass)
+  DEFINE_GET_PIPELINE_AND_DSL(shadowMap, ShadowMap)
 
   void CreatePipeline(const Device& device, const Shader& shader,
                       const std::string& rootPath,
                       const std::vector<std::string>& shaderPaths,
-                      const VkRenderPass& renderPass, int texCount);
+                      const std::string& zPrePassShaderPath,
+                      const std::string& shadowMapShaderPath,
+                      const VkRenderPass& colorRenderPass,
+                      const VkRenderPass& zPrePassRenderPass,
+                      const VkRenderPass& shadowMapRenderPass, int texCount);
   void DestroyPipeline(const VkDevice& device) const;
 };
+
+#undef DEFINE_GET_PIPELINE_AND_DSL

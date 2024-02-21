@@ -119,9 +119,12 @@ void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) {
           }
         }
 
-        Draw* draw =
-            Base::Create<Draw>(device, GetRoot(), shaders,
-                               render.GetRenderPass(), mesh->textures.size());
+        Draw* draw = Base::Create<Draw>(
+            device, GetRoot(), shaders,
+            JSON_CONFIG(String, "ZPrePassShaderPath"),
+            JSON_CONFIG(String, "ShadowMapShaderPath"),
+            render.GetColorRenderPass(), render.GetZPrePassRenderPass(),
+            render.GetShadowMapRenderPass(), mesh->textures.size());
         int createFallbackIndex = draw->GetShaderFallbackIndex();
 
         if (findFallbackIndex != -1 &&

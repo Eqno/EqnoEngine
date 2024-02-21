@@ -8,6 +8,15 @@
 
 #define UniformBufferNum 4
 
+#define DEFINE_GET_DESCRIPTOR_SET(lower, upper)                            \
+  [[nodiscard]] const DescriptorSets& Get##upper##DescriptorSets() const { \
+    return lower##DescriptorSets;                                          \
+  }                                                                        \
+  [[nodiscard]] const VkDescriptorSet& Get##upper##DescriptorSetByIndex(   \
+      const uint32_t index) const {                                        \
+    return lower##DescriptorSets[index];                                   \
+  }
+
 class Mesh;
 class Device;
 class Render;
@@ -34,14 +43,33 @@ class Descriptor : public Base {
   LightChannelBuffer* lightChannelBuffer = nullptr;
 
   TransformBuffer transformBuffer;
-  VkDescriptorPool descriptorPool;
-  DescriptorSets descriptorSets;
 
-  void CreateDescriptorSets(const VkDevice& device, const Render& render,
-                            const VkDescriptorSetLayout& descriptorSetLayout,
-                            const std::vector<Texture>& textures);
-  void CreateDescriptorPool(const VkDevice& device, const Render& render,
-                            size_t textureNum);
+  VkDescriptorPool colorDescriptorPool;
+  VkDescriptorPool zPrePassDescriptorPool;
+  VkDescriptorPool shadowMapDescriptorPool;
+
+  DescriptorSets colorDescriptorSets;
+  DescriptorSets zPrePassDescriptorSets;
+  DescriptorSets shadowMapDescriptorSets;
+
+  void CreateColorDescriptorPool(const VkDevice& device, const Render& render,
+                                 size_t textureNum);
+  void CreateZPrePassDescriptorPool(const VkDevice& device,
+                                    const Render& render);
+  void CreateShadowMapDescriptorPool(const VkDevice& device,
+                                     const Render& render);
+
+  void CreateColorDescriptorSets(
+      const VkDevice& device, const Render& render,
+      const VkDescriptorSetLayout& colorDescriptorSetLayout,
+      const std::vector<Texture>& textures);
+  void CreateZPrePassDescriptorSets(
+      const VkDevice& device, const Render& render,
+      const VkDescriptorSetLayout& zPrePassDescriptorSetLayout);
+  void CreateShadowMapDescriptorSets(
+      const VkDevice& device, const Render& render,
+      const VkDescriptorSetLayout& shadowMapDescriptorSetLayout);
+
   void UpdateBufferPointers();
   void CreateUniformBuffer(const Device& device, const Render& render);
   void DestroyUniformBuffer(const VkDevice& device, const Render& render);
@@ -70,16 +98,18 @@ class Descriptor : public Base {
       const size_t index) const {
     return transformBuffer.GetUniformBufferByIndex(index);
   }
-  [[nodiscard]] const DescriptorSets& GetDescriptorSets() const {
-    return descriptorSets;
-  }
-  [[nodiscard]] const VkDescriptorSet& GetDescriptorSetByIndex(
-      const uint32_t index) const {
-    return descriptorSets[index];
-  }
 
-  void CreateDescriptor(const Device& device, const Render& render,
-                        const VkDescriptorSetLayout& descriptorSetLayout,
-                        const std::vector<Texture>& textures);
+  DEFINE_GET_DESCRIPTOR_SET(color, Color)
+  DEFINE_GET_DESCRIPTOR_SET(zPrePass, ZPrePass)
+  DEFINE_GET_DESCRIPTOR_SET(shadowMap, ShadowMap)
+
+  void CreateDescriptor(
+      const Device& device, const Render& render,
+      const std::vector<Texture>& textures,
+      const VkDescriptorSetLayout& colorDescriptorSetLayout,
+      const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
+      const VkDescriptorSetLayout& shadowMapDescriptorSetLayout);
   void DestroyDesciptor(const VkDevice& device, const Render& render);
 };
+
+#undef DEFINE_GET_DESCRIPTOR_SET

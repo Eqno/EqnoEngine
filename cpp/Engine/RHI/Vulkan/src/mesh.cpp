@@ -2,14 +2,18 @@
 
 #include "../include/utils.h"
 
-void Mesh::CreateMesh(const Device& device, const Render& render,
-                      std::weak_ptr<MeshData> inData,
-                      const VkDescriptorSetLayout& descriptorSetLayout) {
+void Mesh::CreateMesh(
+    const Device& device, const Render& render, std::weak_ptr<MeshData> inData,
+    const VkDescriptorSetLayout& colorDescriptorSetLayout,
+    const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
+    const VkDescriptorSetLayout& shadowMapDescriptorSetLayout) {
   bridge = inData;
 
   ParseTextures(device, render);
   ParseVertexAndIndex();
-  ParseBufferAndDescriptor(device, render, descriptorSetLayout);
+  ParseBufferAndDescriptor(device, render, colorDescriptorSetLayout,
+                           zPrePassDescriptorSetLayout,
+                           shadowMapDescriptorSetLayout);
 }
 
 void Mesh::DestroyMesh(const VkDevice& device, const Render& render) {
@@ -44,7 +48,11 @@ void Mesh::ParseVertexAndIndex() {
 
 void Mesh::ParseBufferAndDescriptor(
     const Device& device, const Render& render,
-    const VkDescriptorSetLayout& descriptorSetLayout) {
+    const VkDescriptorSetLayout& colorDescriptorSetLayout,
+    const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
+    const VkDescriptorSetLayout& shadowMapDescriptorSetLayout) {
   buffer.CreateBuffers(device, data.GetVertices(), data.GetIndices(), render);
-  descriptor.CreateDescriptor(device, render, descriptorSetLayout, textures);
+  descriptor.CreateDescriptor(
+      device, render, textures, colorDescriptorSetLayout,
+      zPrePassDescriptorSetLayout, shadowMapDescriptorSetLayout);
 }

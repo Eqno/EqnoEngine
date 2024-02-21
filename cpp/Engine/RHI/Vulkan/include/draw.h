@@ -7,6 +7,18 @@
 #include "pipeline.h"
 #include "shader.h"
 
+#define DEFINE_GET_PIPELINE_MEMBER(member)                                    \
+  [[nodiscard]] const VkPipeline& Get##member##GraphicsPipeline() const {     \
+    return pipeline.Get##member##GraphicsPipeline();                          \
+  }                                                                           \
+  [[nodiscard]] const VkPipelineLayout& Get##member##PipelineLayout() const { \
+    return pipeline.Get##member##PipelineLayout();                            \
+  }                                                                           \
+  [[nodiscard]] const VkDescriptorSetLayout&                                  \
+      Get##member##DescriptorSetLayout() const {                              \
+    return pipeline.Get##member##DescriptorSetLayout();                       \
+  }
+
 class Render;
 
 class Draw : public Base {
@@ -19,17 +31,9 @@ class Draw : public Base {
     return pipeline.GetShaderFallbackIndex();
   }
 
-  [[nodiscard]] const VkPipeline& GetGraphicsPipeline() const {
-    return pipeline.GetGraphicsPipeline();
-  }
-
-  [[nodiscard]] const VkPipelineLayout& GetPipelineLayout() const {
-    return pipeline.GetPipelineLayout();
-  }
-
-  [[nodiscard]] const VkDescriptorSetLayout& GetDescriptorSetLayout() const {
-    return pipeline.GetDescriptorSetLayout();
-  }
+  DEFINE_GET_PIPELINE_MEMBER(Color)
+  DEFINE_GET_PIPELINE_MEMBER(ZPrePass)
+  DEFINE_GET_PIPELINE_MEMBER(ShadowMap)
 
   std::list<Mesh*>& GetMeshes() { return meshes; }
 
@@ -46,10 +50,17 @@ class Draw : public Base {
 
   void CreateDrawResource(const Device& device, const std::string& rootPath,
                           const std::vector<std::string>& shaderPaths,
-                          const VkRenderPass& renderPass, const int texCount);
+                          const std::string& zPrePassShaderPath,
+                          const std::string& shadowMapShaderPath,
+                          const VkRenderPass& colorRenderPass,
+                          const VkRenderPass& zPrePassRenderPass,
+                          const VkRenderPass& shadowMapRenderPass,
+                          const int texCount);
 
   void LoadDrawResource(const Device& device, const Render& render,
                         std::weak_ptr<MeshData> data);
 
   void DestroyDrawResource(const VkDevice& device, const Render& render);
 };
+
+#undef DEFINE_GET_PIPELINE_MEMBER

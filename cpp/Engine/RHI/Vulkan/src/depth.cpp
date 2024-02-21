@@ -3,19 +3,27 @@
 #include <stdexcept>
 
 #include "../include/device.h"
+#include "../include/render.h"
 #include "../include/swapchain.h"
 #include "../include/texture.h"
 
 void Depth::CreateDepthResources(const Device& device,
                                  const uint32_t imageWidth,
-                                 const uint32_t imageHeight) {
-  const VkFormat depthFormat = FindDepthFormat(device.GetPhysical());
+                                 const uint32_t imageHeight,
+                                 const VkImageUsageFlags usage) {
+  depthFormat = FindDepthFormat(device.GetPhysical());
   Texture::CreateImage(
       device, imageWidth, imageHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+      usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
   depthImageView = Texture::CreateImageView(
       device.GetLogical(), depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+}
+void Depth::TransitionDepthImageLayout(const Device& device,
+                                       const Render& render,
+                                       VkImageLayout oldLayout,
+                                       VkImageLayout newLayout) {
+  Texture::TransitionImageLayout(device, render, depthImage, depthFormat,
+                                 oldLayout, newLayout);
 }
 
 VkFormat Depth::FindSupportedFormat(const VkPhysicalDevice& device,

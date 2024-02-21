@@ -24,9 +24,6 @@ class Texture {
   void CreateTextureImageView(const VkDevice& device);
   void CreateTextureSampler(const Device& device);
 
-  static void TransitionImageLayout(const Device& device, const Render& render,
-                                    VkImage image, VkImageLayout oldLayout,
-                                    VkImageLayout newLayout);
   static void CopyBufferToImage(const Device& device, const Render& render,
                                 VkBuffer buffer, VkImage image, uint32_t width,
                                 uint32_t height);
@@ -60,6 +57,11 @@ class Texture {
                           VkImageUsageFlags usage,
                           VkMemoryPropertyFlags properties, VkImage& image,
                           VkDeviceMemory& imageMemory);
+
+  static void TransitionImageLayout(const Device& device, const Render& render,
+                                    const VkImage& image, const VkFormat format,
+                                    const VkImageLayout oldLayout,
+                                    const VkImageLayout newLayout);
 
   void CreateTexture(const Device& device, const Render& render, int width,
                      int height, int channels, stbi_uc* data);
