@@ -55,7 +55,7 @@ void Texture::CreateTextureImageView(const VkDevice& device) {
 }
 
 void Texture::CreateTextureSampler(const Device& device) {
-  VkPhysicalDeviceProperties properties{};
+  VkPhysicalDeviceProperties properties;
   vkGetPhysicalDeviceProperties(device.GetPhysical(), &properties);
 
   const VkSamplerCreateInfo samplerInfo{

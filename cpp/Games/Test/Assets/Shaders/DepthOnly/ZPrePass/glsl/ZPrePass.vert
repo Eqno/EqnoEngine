@@ -13,6 +13,5 @@ layout(location = 3) in vec3 inTangent;
 layout(location = 4) in vec2 inTexCoord;
 
 void main() {
-    // gl_Position = transform.projMatrix * transform.viewMatrix * transform.modelMatrix * vec4(inPosition, 1.);
     gl_Position = transform.projMatrix * transform.viewMatrix * transform.modelMatrix * vec4(inPosition, 1.);
 }

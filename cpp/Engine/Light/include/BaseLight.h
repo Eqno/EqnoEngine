@@ -4,6 +4,7 @@
 
 class BaseLight : public SceneObject {
  protected:
+  int id = -1;
   LightType type = LightType::Unset;
   float intensity = 1;
   glm::vec4 color = Vec4One;
@@ -20,6 +21,7 @@ class BaseLight : public SceneObject {
   virtual void OnCreate() override;
   virtual void OnDestroy() override;
 
+  virtual int GetId() { return id; }
   virtual LightType& GetType() { return type; }
   virtual float& GetIntensity() { return intensity; }
   virtual glm::vec4& GetColor() { return color; }

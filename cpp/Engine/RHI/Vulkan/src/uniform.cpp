@@ -20,7 +20,7 @@
 void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
                                            const Render& render,
                                            const size_t textureNum) {
-  std::vector<VkDescriptorPoolSize> poolSizes(textureNum + UniformBufferNum);
+  std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum + textureNum);
   for (int i = 0; i < UniformBufferNum; i++) {
     poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[i].descriptorCount =
@@ -137,8 +137,8 @@ void Descriptor::CreateColorDescriptorSets(
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    std::vector<VkWriteDescriptorSet> descriptorWrites(textures.size() +
-                                                       UniformBufferNum);
+    std::vector<VkWriteDescriptorSet> descriptorWrites(UniformBufferNum +
+                                                       textures.size());
     AddColorDescriptorWrites();
 
     std::vector<VkDescriptorImageInfo> imageInfos(textures.size());

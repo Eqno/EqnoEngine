@@ -535,7 +535,7 @@ void Render::SubmitCommandBuffer(const Device& device,
                                  const VkSemaphore& waitSemaphore,
                                  const VkCommandBuffer& commandBuffer,
                                  const VkSemaphore& signalSemaphore,
-                                 const VkFence& waitFence) {
+                                 const VkFence waitFence) {
   constexpr VkPipelineStageFlags waitStages[] = {
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
@@ -562,9 +562,6 @@ void Render::DrawFrame(const Device& device,
                   VK_TRUE, UINT64_MAX);
   vkWaitForFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame],
                   VK_TRUE, UINT64_MAX);
-  /*vkWaitForFences(device.GetLogical(), 1,
-                  &shadowMapInFlightFences[currentFrame], VK_TRUE,
-     UINT64_MAX);*/
 
   uint32_t imageIndex;
   auto result = vkAcquireNextImageKHR(
@@ -581,7 +578,6 @@ void Render::DrawFrame(const Device& device,
   }
   vkResetFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame]);
   vkResetFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame]);
-  vkResetFences(device.GetLogical(), 1, &shadowMapInFlightFences[currentFrame]);
 
   vkResetCommandBuffer(zPrePassCommandBuffers[currentFrame],
                        /*VkCommandBufferResetFlagBits*/
@@ -592,29 +588,19 @@ void Render::DrawFrame(const Device& device,
                       zPrePassFinishedSemaphores[currentFrame],
                       zPrePassInFlightFences[currentFrame]);
 
-  // vkResetCommandBuffer(shadowMapCommandBuffers[currentFrame],
-  //                      /*VkCommandBufferResetFlagBits*/
-  //                      0);
-  // RecordShadowMapCommandBuffer(draws);
-  // SubmitCommandBuffer(device, zPrePassFinishedSemaphores[currentFrame],
-  //                     shadowMapCommandBuffers[currentFrame],
-  //                     shadowMapFinishedSemaphores[currentFrame],
-  //                     shadowMapInFlightFences[currentFrame]);
-
-  // vkResetCommandBuffer(colorCommandBuffers[currentFrame],
-  //                      /*VkCommandBufferResetFlagBits*/
-  //                      0);
-  // RecordColorCommandBuffer(draws, imageIndex);
-  // SubmitCommandBuffer(device, shadowMapFinishedSemaphores[currentFrame],
-  //                     colorCommandBuffers[currentFrame],
-  //                     renderFinishedSemaphores[currentFrame],
-  //                     colorInFlightFences[currentFrame]);
+  vkResetCommandBuffer(shadowMapCommandBuffers[currentFrame],
+                       /*VkCommandBufferResetFlagBits*/
+                       0);
+  RecordShadowMapCommandBuffer(draws);
+  SubmitCommandBuffer(device, zPrePassFinishedSemaphores[currentFrame],
+                      shadowMapCommandBuffers[currentFrame],
+                      shadowMapFinishedSemaphores[currentFrame], nullptr);
 
   vkResetCommandBuffer(colorCommandBuffers[currentFrame],
                        /*VkCommandBufferResetFlagBits*/
                        0);
   RecordColorCommandBuffer(draws, imageIndex);
-  SubmitCommandBuffer(device, zPrePassFinishedSemaphores[currentFrame],
+  SubmitCommandBuffer(device, shadowMapFinishedSemaphores[currentFrame],
                       colorCommandBuffers[currentFrame],
                       renderFinishedSemaphores[currentFrame],
                       colorInFlightFences[currentFrame]);
@@ -648,7 +634,6 @@ void Render::CreateSyncObjects(const VkDevice& device) {
 
   colorInFlightFences.resize(maxFramesInFlight);
   zPrePassInFlightFences.resize(maxFramesInFlight);
-  shadowMapInFlightFences.resize(maxFramesInFlight);
 
   constexpr VkSemaphoreCreateInfo semaphoreInfo{
       .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -671,9 +656,7 @@ void Render::CreateSyncObjects(const VkDevice& device) {
         vkCreateFence(device, &fenceInfo, nullptr, &colorInFlightFences[i]) !=
             VK_SUCCESS ||
         vkCreateFence(device, &fenceInfo, nullptr,
-                      &zPrePassInFlightFences[i]) != VK_SUCCESS ||
-        vkCreateFence(device, &fenceInfo, nullptr,
-                      &shadowMapInFlightFences[i]) != VK_SUCCESS) {
+                      &zPrePassInFlightFences[i]) != VK_SUCCESS) {
       throw std::runtime_error(
           "failed to create synchronization objects for a frame!");
     }
@@ -699,6 +682,5 @@ void Render::DestroySyncObjects(const VkDevice& device) const {
 
     vkDestroyFence(device, colorInFlightFences[i], nullptr);
     vkDestroyFence(device, zPrePassInFlightFences[i], nullptr);
-    vkDestroyFence(device, shadowMapInFlightFences[i], nullptr);
   }
 }

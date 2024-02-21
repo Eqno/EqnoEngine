@@ -109,7 +109,7 @@ void Pipeline::CreateColorGraphicsPipeline(
     ShaderStages& shaderStages = shaderStagesSet[i];
     const VkGraphicsPipelineCreateInfo pipelineInfo{
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        .stageCount = 2,
+        .stageCount = static_cast<uint32_t>(shaderStages.size()),
         .pStages = shaderStages.data(),
         .pVertexInputState = &vertexInputInfo,
         .pInputAssemblyState = &inputAssembly,
@@ -185,7 +185,7 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
       shader.AutoCreateStages(device, rootPath, depthShaderPath));
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = 2,
+      .stageCount = static_cast<uint32_t>(shaderStages.size()),
       .pStages = shaderStages.data(),
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &inputAssembly,
@@ -259,7 +259,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
       shader.AutoCreateStages(device, rootPath, depthShaderPath));
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = 2,
+      .stageCount = static_cast<uint32_t>(shaderStages.size()),
       .pStages = shaderStages.data(),
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &inputAssembly,

@@ -184,6 +184,7 @@ void LightChannelBuffer::UpdateUniformBuffer(LightChannel* lightChannel,
 
   for (int i = 0; i < lights.size(); ++i) {
     if (auto lightPtr = lights[i].lock()) {
+      buffer->object[i].id = lightPtr->GetId();
       buffer->object[i].type = lightPtr->GetType();
       buffer->object[i].intensity = lightPtr->GetIntensity();
       buffer->object[i].color = lightPtr->GetColor();

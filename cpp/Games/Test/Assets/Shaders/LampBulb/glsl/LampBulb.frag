@@ -1,6 +1,7 @@
 #version 450
 
 struct LightData {
+    int id;
     uint type;
     float intensity;
     vec3 pos;

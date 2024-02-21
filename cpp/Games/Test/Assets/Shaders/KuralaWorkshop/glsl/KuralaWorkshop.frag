@@ -15,6 +15,7 @@ layout(binding = 1) uniform MaterialData {
 } material;
 
 struct LightData {
+    int id;
     uint type;
     float intensity;
     vec3 pos;

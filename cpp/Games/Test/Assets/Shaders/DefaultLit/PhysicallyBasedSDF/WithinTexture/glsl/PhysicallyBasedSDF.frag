@@ -9,6 +9,7 @@ layout(binding = 0) uniform CameraData {
 } camera;
 
 struct LightData {
+    int id;
     uint type;
     float intensity;
     vec3 pos;
@@ -43,8 +44,8 @@ void main() {
     vec3 texNormal = normalize(texture(normalSampler, fragTexCoord).xyz);
     float texAO = texture(AOSampler, fragTexCoord)[0];
 
-    float DiffuseStrength = 2.;
-    float SpecularStength = 4.;
+    float DiffuseStrength = .5;
+    float SpecularStength = 6.;
     outColor = DiffuseStrength * texBaseColor / PI * texAO;
 
     for (int i=0; i<lights.num; ++i) {

@@ -5,7 +5,7 @@ void BaseLight::OnCreate() {
   SceneObject::OnCreate();
 
   if (auto scenePtr = scene.lock()) {
-    scenePtr->RegisterLight(
+    id = scenePtr->RegisterLight(
         name, std::dynamic_pointer_cast<BaseLight>(shared_from_this()));
   }
 

@@ -56,6 +56,9 @@ std::weak_ptr<BaseCamera> BaseScene::GetCameraByName(const std::string& name) {
 std::weak_ptr<BaseLight> BaseScene::GetLightByName(const std::string& name) {
   return lights[name];
 }
+std::weak_ptr<BaseLight> BaseScene::GetLightById(int id) {
+  return lightsById[id];
+}
 std::weak_ptr<LightChannel> BaseScene::GetLightChannelByName(
     const std::string& name) {
   return lightChannels[name];
@@ -64,9 +67,21 @@ void BaseScene::RegisterCamera(const std::string& name,
                                std::shared_ptr<BaseCamera> camera) {
   cameras[name] = camera;
 }
-void BaseScene::RegisterLight(const std::string& name,
-                              std::shared_ptr<BaseLight> light) {
+int BaseScene::GetAvailableLightId() {
+  for (int i = 0; i < MaxLightNum; i++) {
+    auto iter = lightsById.find(i);
+    if (iter == lightsById.end() || !iter->second.lock()) {
+      return i;
+    }
+  }
+  throw std::runtime_error("light id exceed max num!");
+}
+int BaseScene::RegisterLight(const std::string& name,
+                             std::shared_ptr<BaseLight> light) {
   lights[name] = light;
+  int id = GetAvailableLightId();
+  lightsById[id] = lights[name];
+  return id;
 }
 void BaseScene::RegisterLightChannel(const std::string& name,
                                      std::shared_ptr<LightChannel> channel) {

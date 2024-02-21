@@ -14,6 +14,7 @@ struct aiMaterial;
 class BaseScene final : public BaseObject {
   std::shared_ptr<SceneObject> rootObject;
   std::weak_ptr<GraphicsInterface> graphics;
+  std::unordered_map<int, std::weak_ptr<BaseLight>> lightsById;
 
   std::unordered_map<std::string, std::shared_ptr<BaseMaterial>> materials;
   std::unordered_map<std::string, std::shared_ptr<BaseCamera>> cameras;
@@ -21,6 +22,9 @@ class BaseScene final : public BaseObject {
   std::unordered_map<std::string, std::shared_ptr<LightChannel>> lightChannels;
 
  public:
+  int GetAvailableLightId();
+  std::weak_ptr<BaseLight> GetLightById(int id);
+
   std::weak_ptr<BaseMaterial> GetMaterialByPath(const std::string& path,
                                                 aiMaterial* matData);
   std::weak_ptr<BaseCamera> GetCameraByName(const std::string& name);
@@ -29,7 +33,7 @@ class BaseScene final : public BaseObject {
 
   void RegisterCamera(const std::string& name,
                       std::shared_ptr<BaseCamera> camera);
-  void RegisterLight(const std::string& name, std::shared_ptr<BaseLight> light);
+  int RegisterLight(const std::string& name, std::shared_ptr<BaseLight> light);
   void RegisterLightChannel(const std::string& name,
                             std::shared_ptr<LightChannel> channel);
 

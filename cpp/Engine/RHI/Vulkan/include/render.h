@@ -28,7 +28,6 @@ class Render : public Base {
 
   std::vector<VkFence> colorInFlightFences;
   std::vector<VkFence> zPrePassInFlightFences;
-  std::vector<VkFence> shadowMapInFlightFences;
   int maxFramesInFlight = VulkanConfig::MAX_FRAMES_IN_FLIGHT;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -71,7 +70,7 @@ class Render : public Base {
                            const VkSemaphore& waitSemaphore,
                            const VkCommandBuffer& commandBuffer,
                            const VkSemaphore& signalSemaphore,
-                           const VkFence& waitFence);
+                           const VkFence waitFence);
 
  public:
   virtual void TriggerRegisterMember() override { RegisterMember(swapChain); }

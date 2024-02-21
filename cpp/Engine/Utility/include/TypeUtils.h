@@ -115,6 +115,7 @@ struct TransformData {
 };
 
 struct LightData {
+  alignas(4) int id;
   alignas(4) LightType type;
   alignas(4) float intensity;
   alignas(16) glm::vec3 pos;
