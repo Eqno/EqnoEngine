@@ -10,22 +10,6 @@
 #include "../include/swapchain.h"
 #include "../include/vertex.h"
 
-#define CREATE_DEPTH_ATTACHMENT(member, attachmentIndex)               \
-  const VkAttachmentDescription depthAttachment{                       \
-      .format = swapChain.Get##member##DepthFormat(),                  \
-      .samples = VK_SAMPLE_COUNT_1_BIT,                                \
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,                           \
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,                     \
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,                \
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,              \
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,                      \
-      .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, \
-  };                                                                   \
-  constexpr VkAttachmentReference depthAttachmentRef {                 \
-    .attachment = attachmentIndex,                                     \
-    .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,        \
-  }
-
 void Render::CreateColorRenderPass(const Device& device) {
   const VkAttachmentDescription colorAttachment{
       .format = swapChain.GetImageFormat(),
@@ -41,7 +25,20 @@ void Render::CreateColorRenderPass(const Device& device) {
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
-  CREATE_DEPTH_ATTACHMENT(ZPrePass, 1);
+  const VkAttachmentDescription depthAttachment{
+      .format = swapChain.GetZPrePassDepthFormat(),
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+  };
+  constexpr VkAttachmentReference depthAttachmentRef{
+      .attachment = 1,
+      .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+  };
   VkSubpassDescription subPass{
       .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
       .colorAttachmentCount = 1,
@@ -109,7 +106,20 @@ void Render::CreateColorRenderPass(const Device& device) {
 }
 
 void Render::CreateZPrePassRenderPass(const Device& device) {
-  CREATE_DEPTH_ATTACHMENT(ZPrePass, 0);
+  const VkAttachmentDescription depthAttachment{
+      .format = swapChain.GetZPrePassDepthFormat(),
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+  };
+  constexpr VkAttachmentReference depthAttachmentRef{
+      .attachment = 0,
+      .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+  };
 
   VkSubpassDescription subPass{
       .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -158,7 +168,20 @@ void Render::CreateZPrePassRenderPass(const Device& device) {
 }
 
 void Render::CreateShadowMapRenderPass(const Device& device) {
-  CREATE_DEPTH_ATTACHMENT(ShadowMap, 0);
+  const VkAttachmentDescription depthAttachment{
+      .format = swapChain.GetShadowMapDepthFormat(),
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+  };
+  constexpr VkAttachmentReference depthAttachmentRef{
+      .attachment = 0,
+      .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+  };
 
   VkSubpassDescription subPass{
       .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -679,5 +702,3 @@ void Render::DestroySyncObjects(const VkDevice& device) const {
     vkDestroyFence(device, shadowMapInFlightFences[i], nullptr);
   }
 }
-
-#undef CREATE_DEPTH_ATTACHMENT
