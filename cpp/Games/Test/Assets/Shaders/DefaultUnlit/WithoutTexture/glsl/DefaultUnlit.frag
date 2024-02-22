@@ -6,6 +6,8 @@ layout(binding = 1) uniform MaterialData {
     float metallic;
 } material;
 
+layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;
 layout(location = 2) in vec3 fragNormal;

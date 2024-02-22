@@ -15,6 +15,8 @@ layout(binding = 3) uniform LightsData {
     LightData object[500];
 } lights;
 
+layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;
 layout(location = 2) in vec3 fragNormal;

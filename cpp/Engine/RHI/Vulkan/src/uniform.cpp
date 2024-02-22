@@ -18,15 +18,20 @@
 /////////////////////////// POOLS ///////////////////////////
 
 void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
-                                           const Render& render,
+                                           Render& render,
                                            const size_t textureNum) {
-  std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum + textureNum);
+  std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum + 1 +
+                                              textureNum);
   for (int i = 0; i < UniformBufferNum; i++) {
     poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[i].descriptorCount =
         static_cast<uint32_t>(render.GetMaxFramesInFlight());
   }
-  for (size_t i = 0; i < textureNum; i++) {
+  poolSizes[UniformBufferNum].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  poolSizes[UniformBufferNum].descriptorCount =
+      render.GetShadowMapDepthNum() *
+      static_cast<uint32_t>(render.GetMaxFramesInFlight());
+  for (size_t i = 1; i < 1 + textureNum; i++) {
     poolSizes[i + UniformBufferNum].type =
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[i + UniformBufferNum].descriptorCount =
@@ -112,7 +117,7 @@ void Descriptor::CreateShadowMapDescriptorPool(const VkDevice& device,
   AddDescriptorWrite(shadowMap, 0, TransformData, &shadowMapBuffer);
 
 void Descriptor::CreateColorDescriptorSets(
-    const VkDevice& device, const Render& render,
+    const VkDevice& device, Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout,
     const std::vector<Texture>& textures) {
   const std::vector layouts(render.GetMaxFramesInFlight(), descriptorSetLayout);
@@ -132,9 +137,29 @@ void Descriptor::CreateColorDescriptorSets(
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    std::vector<VkWriteDescriptorSet> descriptorWrites(UniformBufferNum +
+    std::vector<VkWriteDescriptorSet> descriptorWrites(UniformBufferNum + 1 +
                                                        textures.size());
     AddColorDescriptorWrites();
+
+    uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
+    std::vector<VkDescriptorImageInfo> shadowMapImageInfos(shadowMapDepthNum);
+
+    for (size_t j = 0; j < shadowMapDepthNum; j++) {
+      shadowMapImageInfos[j] = {
+          .sampler = render.GetShadowMapDepthSamplerByIndex(j),
+          .imageView = render.GetShadowMapDepthImageViewByIndex(j),
+          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+      };
+    }
+    descriptorWrites[UniformBufferNum] = {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = colorDescriptorSets[i],
+        .dstBinding = static_cast<uint32_t>(UniformBufferNum),
+        .dstArrayElement = 0,
+        .descriptorCount = shadowMapDepthNum,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .pImageInfo = shadowMapImageInfos.data(),
+    };
 
     std::vector<VkDescriptorImageInfo> imageInfos(textures.size());
     for (size_t j = 0; j < textures.size(); j++) {
@@ -143,10 +168,10 @@ void Descriptor::CreateColorDescriptorSets(
           .imageView = textures[j].GetTextureImageView(),
           .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       };
-      descriptorWrites[j + UniformBufferNum] = {
+      descriptorWrites[UniformBufferNum + 1 + j] = {
           .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
           .dstSet = colorDescriptorSets[i],
-          .dstBinding = static_cast<uint32_t>(j + UniformBufferNum),
+          .dstBinding = static_cast<uint32_t>(UniformBufferNum + 1 + j),
           .dstArrayElement = 0,
           .descriptorCount = 1,
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -319,8 +344,7 @@ void Descriptor::DestroyUniformBuffer(const VkDevice& device,
 /////////////////////////// DESCRIPTOR ///////////////////////////
 
 void Descriptor::CreateDescriptor(
-    const Device& device, const Render& render,
-    const std::vector<Texture>& textures,
+    const Device& device, Render& render, const std::vector<Texture>& textures,
     const VkDescriptorSetLayout& colorDescriptorSetLayout,
     const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
     const VkDescriptorSetLayout& shadowMapDescriptorSetLayout) {

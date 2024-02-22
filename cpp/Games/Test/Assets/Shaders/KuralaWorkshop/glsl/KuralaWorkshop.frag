@@ -29,9 +29,10 @@ layout(binding = 3) uniform LightsData {
     LightData object[MaxLightNum];
 } lights;
 
-layout(binding = 4) uniform sampler2D baseColorSampler;
-layout(binding = 5) uniform sampler2D normalSampler;
-layout(binding = 6) uniform sampler2D AOSampler;
+layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+layout(binding = 5) uniform sampler2D baseColorSampler;
+layout(binding = 6) uniform sampler2D normalSampler;
+layout(binding = 7) uniform sampler2D AOSampler;
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;

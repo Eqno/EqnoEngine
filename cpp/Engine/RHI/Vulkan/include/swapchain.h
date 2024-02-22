@@ -1,7 +1,9 @@
 #pragma once
 
+#include <Engine/Utility/include/TypeUtils.h>
 #include <vulkan/vulkan_core.h>
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -18,7 +20,7 @@ class Render;
 
 class SwapChain : public Base {
   Depth zPrePassDepth;
-  Depth shadowMapDepth;
+  std::array<Depth, MaxLightNum> shadowMapDepths;
 
   VkSwapchainKHR chain;
   VkExtent2D extent;
@@ -33,13 +35,16 @@ class SwapChain : public Base {
   std::vector<VkImage> colorImages;
   std::vector<VkImageView> colorImageViews;
 
-  std::vector<VkFramebuffer> colorFrameBuffers;
   VkFramebuffer zPrePassFrameBuffer;
-  VkFramebuffer shadowMapFrameBuffer;
+  std::vector<VkFramebuffer> colorFrameBuffers;
+  std::vector<VkFramebuffer> shadowMapFrameBuffers;
 
  public:
   virtual void TriggerRegisterMember() override {
-    RegisterMember(zPrePassDepth, shadowMapDepth);
+    RegisterMember(zPrePassDepth);
+    for (Depth& depth : shadowMapDepths) {
+      RegisterMember(depth);
+    }
   }
   void SetShadowMapSize(const int width, const int Height) {
     shadowMapWidth = width;
@@ -52,7 +57,7 @@ class SwapChain : public Base {
                           const VkRenderPass& zPrePassRenderPass,
                           const VkRenderPass& shadowMapRenderPass) {
     CreateColorFrameBuffers(device, colorRenderPass);
-    CreateZPrePassFrameBuffers(device, zPrePassRenderPass);
+    CreateZPrePassFrameBuffer(device, zPrePassRenderPass);
     CreateShadowMapFrameBuffers(device, shadowMapRenderPass,
                                 GetShadowMapWidth(), GetShadowMapHeight());
   }
@@ -79,8 +84,9 @@ class SwapChain : public Base {
   [[nodiscard]] const VkFramebuffer& GetZPrePassFrameBuffer() const {
     return zPrePassFrameBuffer;
   }
-  [[nodiscard]] const VkFramebuffer& GetShadowMapFrameBuffer() const {
-    return shadowMapFrameBuffer;
+  [[nodiscard]] const VkFramebuffer& GetShadowMapFrameBufferByIndex(
+      uint32_t index) const {
+    return shadowMapFrameBuffers[index];
   }
 
   [[nodiscard]] uint32_t GetShadowMapWidth() const {
@@ -90,15 +96,32 @@ class SwapChain : public Base {
     return shadowMapHeight >= 0 ? shadowMapHeight : extent.height;
   }
 
-  VkFormat GetZPrePassDepthFormat() { return zPrePassDepth.GetDepthFormat(); }
-  VkFormat GetShadowMapDepthFormat() { return shadowMapDepth.GetDepthFormat(); }
+  [[nodiscard]] size_t GetShadowMapDepthNum() { return shadowMapDepths.size(); }
+  [[nodiscard]] const VkImage& GetShadowMapDepthImageByIndex(uint32_t index) {
+    return shadowMapDepths[index].GetDepthImage();
+  }
+  [[nodiscard]] const VkSampler& GetShadowMapDepthSamplerByIndex(
+      uint32_t index) {
+    return shadowMapDepths[index].GetDepthSampler();
+  }
+  [[nodiscard]] const VkImageView& GetShadowMapDepthImageViewByIndex(
+      uint32_t index) {
+    return shadowMapDepths[index].GetDepthImageView();
+  }
+
+  [[nodiscard]] VkFormat GetZPrePassDepthFormat() const {
+    return zPrePassDepth.GetDepthFormat();
+  }
+  [[nodiscard]] VkFormat GetShadowMapDepthFormat() const {
+    return shadowMapDepths[0].GetDepthFormat();
+  }
 
   void CreateSwapChain(const Device& device, const Window& window);
   void CreateColorImageViews(const VkDevice& device);
   void CreateColorFrameBuffers(const VkDevice& device,
                                const VkRenderPass& colorRenderPass);
-  void CreateZPrePassFrameBuffers(const VkDevice& device,
-                                  const VkRenderPass& zPrePassRenderPass);
+  void CreateZPrePassFrameBuffer(const VkDevice& device,
+                                 const VkRenderPass& zPrePassRenderPass);
   void CreateShadowMapFrameBuffers(const VkDevice& device,
                                    const VkRenderPass& shadowMapRenderPass,
                                    const uint32_t shadowMapWidth,
@@ -115,7 +138,9 @@ class SwapChain : public Base {
   void CleanupRenderTarget(const VkDevice& device) const;
   void DestroyDepthResource(const VkDevice& device) {
     zPrePassDepth.DestroyDepthResource(device);
-    shadowMapDepth.DestroyDepthResource(device);
+    for (Depth& depth : shadowMapDepths) {
+      depth.DestroyDepthResource(device);
+    }
   }
 
   float GetViewportAspect() {

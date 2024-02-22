@@ -116,7 +116,9 @@ void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
     vkDestroyFramebuffer(device, frameBuffer, nullptr);
   }
   vkDestroyFramebuffer(device, zPrePassFrameBuffer, nullptr);
-  vkDestroyFramebuffer(device, shadowMapFrameBuffer, nullptr);
+  for (const auto& frameBuffer : shadowMapFrameBuffers) {
+    vkDestroyFramebuffer(device, frameBuffer, nullptr);
+  }
   for (const auto& imageView : colorImageViews) {
     vkDestroyImageView(device, imageView, nullptr);
   }
@@ -145,8 +147,7 @@ void SwapChain::CreateColorFrameBuffers(const VkDevice& device,
     }
   }
 }
-
-void SwapChain::CreateZPrePassFrameBuffers(
+void SwapChain::CreateZPrePassFrameBuffer(
     const VkDevice& device, const VkRenderPass& zPrePassRenderPass) {
   VkFramebufferCreateInfo frameBufferInfo{
       .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -165,18 +166,21 @@ void SwapChain::CreateZPrePassFrameBuffers(
 void SwapChain::CreateShadowMapFrameBuffers(
     const VkDevice& device, const VkRenderPass& shadowMapRenderPass,
     const uint32_t shadowMapWidth, const uint32_t shadowMapHeight) {
-  VkFramebufferCreateInfo frameBufferInfo{
-      .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      .renderPass = shadowMapRenderPass,
-      .attachmentCount = 1,
-      .pAttachments = &shadowMapDepth.GetDepthImageView(),
-      .width = shadowMapWidth,
-      .height = shadowMapHeight,
-      .layers = 1,
-  };
-  if (vkCreateFramebuffer(device, &frameBufferInfo, nullptr,
-                          &shadowMapFrameBuffer) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create frame buffer!");
+  shadowMapFrameBuffers.resize(shadowMapDepths.size());
+  for (size_t i = 0; i < shadowMapDepths.size(); i++) {
+    VkFramebufferCreateInfo frameBufferInfo{
+        .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        .renderPass = shadowMapRenderPass,
+        .attachmentCount = 1,
+        .pAttachments = &shadowMapDepths[i].GetDepthImageView(),
+        .width = shadowMapWidth,
+        .height = shadowMapHeight,
+        .layers = 1,
+    };
+    if (vkCreateFramebuffer(device, &frameBufferInfo, nullptr,
+                            &shadowMapFrameBuffers[i]) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create frame buffer!");
+    }
   }
 }
 
@@ -215,17 +219,22 @@ void SwapChain::CreateDepthResources(const Device& device) {
       device, extent.width, extent.height,
       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-  shadowMapDepth.CreateDepthResources(
-      device, GetShadowMapWidth(), GetShadowMapHeight(),
-      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+  for (Depth& depth : shadowMapDepths) {
+    depth.CreateDepthResources(device, GetShadowMapWidth(),
+                               GetShadowMapHeight(),
+                               VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                   VK_IMAGE_USAGE_SAMPLED_BIT);
+  }
 }
 
 void SwapChain::TransitionDepthImageLayout(const Device& device) {
-  //zPrePassDepth.TransitionDepthImageLayout(
-  //    device, *dynamic_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
-  //    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-  shadowMapDepth.TransitionDepthImageLayout(
+  zPrePassDepth.TransitionDepthImageLayout(
       device, *dynamic_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+  for (Depth& depth : shadowMapDepths) {
+    depth.TransitionDepthImageLayout(
+        device, *dynamic_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+  }
 }

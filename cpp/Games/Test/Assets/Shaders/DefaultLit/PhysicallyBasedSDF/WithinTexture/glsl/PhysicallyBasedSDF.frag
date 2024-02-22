@@ -23,11 +23,12 @@ layout(binding = 3) uniform LightsData {
     LightData object[MaxLightNum];
 } lights;
 
-layout(binding = 4) uniform sampler2D baseColorSampler;
-layout(binding = 5) uniform sampler2D roughnessSampler;
-layout(binding = 6) uniform sampler2D metallicSampler;
-layout(binding = 7) uniform sampler2D normalSampler;
-layout(binding = 8) uniform sampler2D AOSampler;
+layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+layout(binding = 5) uniform sampler2D baseColorSampler;
+layout(binding = 6) uniform sampler2D roughnessSampler;
+layout(binding = 7) uniform sampler2D metallicSampler;
+layout(binding = 8) uniform sampler2D normalSampler;
+layout(binding = 9) uniform sampler2D AOSampler;
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
@@ -45,7 +46,7 @@ void main() {
     float texAO = texture(AOSampler, fragTexCoord)[0];
 
     float DiffuseStrength = .5;
-    float SpecularStength = 6.;
+    float SpecularStength = 5.;
     outColor = DiffuseStrength * texBaseColor / PI * texAO;
 
     for (int i=0; i<lights.num; ++i) {

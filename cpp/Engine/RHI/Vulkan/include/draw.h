@@ -48,16 +48,13 @@ class Draw : public Base {
     CreateDrawResource(std::forward<Args>(args)...);
   }
 
-  void CreateDrawResource(const Device& device, const std::string& rootPath,
+  void CreateDrawResource(const Device& device, Render& render,
+                          const std::string& rootPath, const int texCount,
                           const std::vector<std::string>& shaderPaths,
                           const std::string& zPrePassShaderPath,
-                          const std::string& shadowMapShaderPath,
-                          const VkRenderPass& colorRenderPass,
-                          const VkRenderPass& zPrePassRenderPass,
-                          const VkRenderPass& shadowMapRenderPass,
-                          const int texCount);
+                          const std::string& shadowMapShaderPath);
 
-  void LoadDrawResource(const Device& device, const Render& render,
+  void LoadDrawResource(const Device& device, Render& render,
                         std::weak_ptr<MeshData> data);
 
   void DestroyDrawResource(const VkDevice& device, const Render& render);

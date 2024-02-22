@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan_core.h>
+
 #include <unordered_map>
 
 #include "base.h"
@@ -9,13 +11,14 @@
 #include "uniform.h"
 #include "window.h"
 
-#define DEFINE_GET_RENDER_PASS_AND_COMMAND_BUFFERS(lower, upper)     \
+#define DEFINE_GET_RENDER_PASS(lower, upper)                         \
   [[nodiscard]] const VkRenderPass& Get##upper##RenderPass() const { \
     return lower##RenderPass;                                        \
-  }                                                                  \
-  [[nodiscard]] const std::vector<VkCommandBuffer>&                  \
-      Get##upper##CommandBuffers() const {                           \
-    return lower##CommandBuffers;                                    \
+  }
+#define DEFINE_GET_COMMAND_BUFFERS(lower, upper)    \
+  [[nodiscard]] const std::vector<VkCommandBuffer>& \
+      Get##upper##CommandBuffers() const {          \
+    return lower##CommandBuffers;                   \
   }
 
 class Mesh;
@@ -32,8 +35,8 @@ class Render : public Base {
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> zPrePassFinishedSemaphores;
-  std::vector<VkSemaphore> shadowMapFinishedSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;
+  std::vector<std::vector<VkSemaphore>> shadowMapFinishedSemaphores;
 
   VkRenderPass colorRenderPass;
   VkRenderPass zPrePassRenderPass;
@@ -48,7 +51,7 @@ class Render : public Base {
   VkCommandPool commandPool;
   std::vector<VkCommandBuffer> colorCommandBuffers;
   std::vector<VkCommandBuffer> zPrePassCommandBuffers;
-  std::vector<VkCommandBuffer> shadowMapCommandBuffers;
+  std::vector<std::vector<VkCommandBuffer>> shadowMapCommandBuffers;
 
   void CreateRenderPasses(const Device& device);
   void CreateCommandPool(const Device& device, const VkSurfaceKHR& surface);
@@ -57,12 +60,13 @@ class Render : public Base {
 
   void DestroyRenderPasses(const VkDevice& device) const;
   void DestroyCommandPool(const VkDevice& device) const;
-  void DestroySyncObjects(const VkDevice& device) const;
+  void DestroySyncObjects(const VkDevice& device);
 
   void RecordZPrePassCommandBuffer(
       std::unordered_map<std::string, Draw*>& draws) const;
   void RecordShadowMapCommandBuffer(
-      std::unordered_map<std::string, Draw*>& draws) const;
+      const Device& device, std::unordered_map<std::string, Draw*>& draws,
+      BaseLight* light);
   void RecordColorCommandBuffer(std::unordered_map<std::string, Draw*>& draws,
                                 uint32_t imageIndex) const;
 
@@ -74,11 +78,11 @@ class Render : public Base {
 
  public:
   virtual void TriggerRegisterMember() override { RegisterMember(swapChain); }
-  void CreateRenderResources(const std::string& imageFormat,
+  void CreateRenderResources(const Device& device, const Window& window,
+                             const std::string& imageFormat,
                              const std::string& colorSpace,
                              const int shadowMapWidth,
-                             const int shadowMapHeight, const Device& device,
-                             const Window& window) {
+                             const int shadowMapHeight) {
     swapChain.CreateRenderTarget(imageFormat, colorSpace, device, window);
     swapChain.SetShadowMapSize(shadowMapWidth, shadowMapHeight);
     swapChain.CreateDepthResources(device);
@@ -119,14 +123,28 @@ class Render : public Base {
   [[nodiscard]] const VkFormat& GetSwapChainImageFormat() const {
     return swapChain.GetImageFormat();
   }
-
   [[nodiscard]] const VkCommandPool& GetCommandPool() const {
     return commandPool;
   }
+  [[nodiscard]] size_t GetShadowMapDepthNum() {
+    return swapChain.GetShadowMapDepthNum();
+  }
+  [[nodiscard]] VkImage GetShadowMapDepthImageByIndex(uint32_t index) {
+    return swapChain.GetShadowMapDepthImageByIndex(index);
+  }
+  [[nodiscard]] VkSampler GetShadowMapDepthSamplerByIndex(uint32_t index) {
+    return swapChain.GetShadowMapDepthSamplerByIndex(index);
+  }
+  [[nodiscard]] VkImageView GetShadowMapDepthImageViewByIndex(uint32_t index) {
+    return swapChain.GetShadowMapDepthImageViewByIndex(index);
+  }
 
-  DEFINE_GET_RENDER_PASS_AND_COMMAND_BUFFERS(color, Color)
-  DEFINE_GET_RENDER_PASS_AND_COMMAND_BUFFERS(zPrePass, ZPrePass)
-  DEFINE_GET_RENDER_PASS_AND_COMMAND_BUFFERS(shadowMap, ShadowMap)
+  DEFINE_GET_RENDER_PASS(color, Color)
+  DEFINE_GET_RENDER_PASS(zPrePass, ZPrePass)
+  DEFINE_GET_RENDER_PASS(shadowMap, ShadowMap)
+
+  DEFINE_GET_COMMAND_BUFFERS(color, Color)
+  DEFINE_GET_COMMAND_BUFFERS(zPrePass, ZPrePass)
 
   [[nodiscard]] int GetCurrentFrame() const { return currentFrame; }
   [[nodiscard]] int GetMaxFramesInFlight() const { return maxFramesInFlight; }
@@ -135,4 +153,5 @@ class Render : public Base {
   }
 };
 
-#undef DEFINE_GET_RENDER_PASS_AND_COMMAND_BUFFERS
+#undef DEFINE_GET_COMMAND_BUFFERS
+#undef DEFINE_GET_RENDER_PASS

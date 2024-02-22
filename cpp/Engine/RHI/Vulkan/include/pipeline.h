@@ -21,6 +21,7 @@
 
 class Shader;
 class Device;
+class Render;
 
 class Pipeline : public Base {
   int shaderFallbackIndex = -1;
@@ -52,7 +53,8 @@ class Pipeline : public Base {
                                        const std::string& depthShaderPath,
                                        const VkRenderPass& renderPass);
 
-  void CreateColorDescriptorSetLayout(const VkDevice& device, int texCount);
+  void CreateColorDescriptorSetLayout(const VkDevice& device, Render& render,
+                                      int texCount);
   void CreateZPrePassDescriptorSetLayout(const VkDevice& device);
   void CreateShadowMapDescriptorSetLayout(const VkDevice& device);
 
@@ -63,14 +65,12 @@ class Pipeline : public Base {
   DEFINE_GET_PIPELINE_AND_DSL(zPrePass, ZPrePass)
   DEFINE_GET_PIPELINE_AND_DSL(shadowMap, ShadowMap)
 
-  void CreatePipeline(const Device& device, const Shader& shader,
+  void CreatePipeline(const Device& device, Render& render,
+                      const Shader& shader, int texCount,
                       const std::string& rootPath,
                       const std::vector<std::string>& shaderPaths,
                       const std::string& zPrePassShaderPath,
-                      const std::string& shadowMapShaderPath,
-                      const VkRenderPass& colorRenderPass,
-                      const VkRenderPass& zPrePassRenderPass,
-                      const VkRenderPass& shadowMapRenderPass, int texCount);
+                      const std::string& shadowMapShaderPath);
   void DestroyPipeline(const VkDevice& device) const;
 };
 

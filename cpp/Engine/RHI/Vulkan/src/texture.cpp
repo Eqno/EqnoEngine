@@ -6,78 +6,49 @@
 #include "../include/device.h"
 #include "../include/render.h"
 
-void Texture::CreateTextureImage(const Device& device, const Render& render,
-                                 const int texWidth, const int texHeight,
-                                 const int texChannels, stbi_uc* pixels) {
-  const VkDeviceSize imageSize =
-      static_cast<VkDeviceSize>(texWidth) * texHeight * 4;
-
-  if (!pixels) {
-    throw std::runtime_error("texture pixels invalid!");
-  }
-
-  VkBuffer stagingBuffer;
-  VkDeviceMemory stagingBufferMemory;
-  DataBuffer::CreateBuffer(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                           stagingBuffer, stagingBufferMemory);
-
-  void* imageData = nullptr;
-  vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, imageSize, 0,
-              &imageData);
-  memcpy(imageData, pixels, imageSize);
-  vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
-
-  stbi_image_free(pixels);
-  CreateImage(device, texWidth, texHeight, imageFormat, VK_IMAGE_TILING_OPTIMAL,
-              VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage,
-              textureImageMemory);
-
-  TransitionImageLayout(device, render, textureImage, imageFormat,
-                        VK_IMAGE_LAYOUT_UNDEFINED,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  CopyBufferToImage(device, render, stagingBuffer, textureImage,
-                    static_cast<uint32_t>(texWidth),
-                    static_cast<uint32_t>(texHeight));
-  TransitionImageLayout(device, render, textureImage, imageFormat,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-  vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
-  vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
-}
-
-void Texture::CreateTextureImageView(const VkDevice& device) {
-  textureImageView = CreateImageView(device, textureImage, imageFormat,
-                                     VK_IMAGE_ASPECT_COLOR_BIT);
-}
-
-void Texture::CreateTextureSampler(const Device& device) {
-  VkPhysicalDeviceProperties properties;
-  vkGetPhysicalDeviceProperties(device.GetPhysical(), &properties);
-
-  const VkSamplerCreateInfo samplerInfo{
-      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-      .magFilter = VK_FILTER_LINEAR,
-      .minFilter = VK_FILTER_LINEAR,
-      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-      .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-      .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-      .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-      .anisotropyEnable = VK_TRUE,
-      .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
-      .compareEnable = VK_FALSE,
-      .compareOp = VK_COMPARE_OP_ALWAYS,
-      .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-      .unnormalizedCoordinates = VK_FALSE,
+std::pair<VkImage, VkDeviceMemory> Texture::CreateImage(
+    const Device& device, const uint32_t width, const uint32_t height,
+    const VkFormat format, const VkImageTiling tiling,
+    const VkImageUsageFlags usage, const VkMemoryPropertyFlags properties) {
+  const VkImageCreateInfo imageInfo{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      .imageType = VK_IMAGE_TYPE_2D,
+      .format = format,
+      .extent =
+          {
+              .width = width,
+              .height = height,
+              .depth = 1,
+          },
+      .mipLevels = 1,
+      .arrayLayers = 1,
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .tiling = tiling,
+      .usage = usage,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
   };
-
-  if (vkCreateSampler(device.GetLogical(), &samplerInfo, nullptr,
-                      &textureSampler) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create texture sampler!");
+  VkImage image;
+  if (vkCreateImage(device.GetLogical(), &imageInfo, nullptr, &image) !=
+      VK_SUCCESS) {
+    throw std::runtime_error("failed to create image!");
   }
+  VkMemoryRequirements memRequirements;
+  vkGetImageMemoryRequirements(device.GetLogical(), image, &memRequirements);
+
+  const VkMemoryAllocateInfo allocInfo{
+      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      .allocationSize = memRequirements.size,
+      .memoryTypeIndex = DataBuffer::MemoryType(
+          device.GetPhysical(), memRequirements.memoryTypeBits, properties),
+  };
+  VkDeviceMemory imageMemory;
+  if (vkAllocateMemory(device.GetLogical(), &allocInfo, nullptr,
+                       &imageMemory) != VK_SUCCESS) {
+    throw std::runtime_error("failed to allocate image memory!");
+  }
+  vkBindImageMemory(device.GetLogical(), image, imageMemory, 0);
+  return {image, imageMemory};
 }
 
 VkImageView Texture::CreateImageView(const VkDevice& device,
@@ -104,56 +75,91 @@ VkImageView Texture::CreateImageView(const VkDevice& device,
   return imageView;
 }
 
-void Texture::CreateImage(const Device& device, const uint32_t width,
-                          const uint32_t height, const VkFormat format,
-                          const VkImageTiling tiling,
-                          const VkImageUsageFlags usage,
-                          const VkMemoryPropertyFlags properties,
-                          VkImage& image, VkDeviceMemory& imageMemory) {
-  const VkImageCreateInfo imageInfo{
-      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .imageType = VK_IMAGE_TYPE_2D,
-      .format = format,
-      .extent =
-          {
-              .width = width,
-              .height = height,
-              .depth = 1,
-          },
-      .mipLevels = 1,
-      .arrayLayers = 1,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .tiling = tiling,
-      .usage = usage,
-      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-  };
+VkSampler Texture::CreateSampler(const Device& device,
+                                 VkBool32 anisotropyEnable,
+                                 VkBool32 compareEnable,
+                                 VkCompareOp compareOp) {
+  VkPhysicalDeviceProperties properties;
+  vkGetPhysicalDeviceProperties(device.GetPhysical(), &properties);
 
-  if (vkCreateImage(device.GetLogical(), &imageInfo, nullptr, &image) !=
+  const VkSamplerCreateInfo samplerInfo{
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+      .magFilter = VK_FILTER_LINEAR,
+      .minFilter = VK_FILTER_LINEAR,
+      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+      .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .anisotropyEnable = anisotropyEnable,
+      .maxAnisotropy = anisotropyEnable == VK_TRUE
+                           ? properties.limits.maxSamplerAnisotropy
+                           : 1,
+      .compareEnable = compareEnable,
+      .compareOp = compareOp,
+      .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+      .unnormalizedCoordinates = VK_FALSE,
+  };
+  VkSampler sampler;
+  if (vkCreateSampler(device.GetLogical(), &samplerInfo, nullptr, &sampler) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to create image!");
+    throw std::runtime_error("failed to create texture sampler!");
   }
-
-  VkMemoryRequirements memRequirements;
-  vkGetImageMemoryRequirements(device.GetLogical(), image, &memRequirements);
-
-  const VkMemoryAllocateInfo allocInfo{
-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .allocationSize = memRequirements.size,
-      .memoryTypeIndex = DataBuffer::MemoryType(
-          device.GetPhysical(), memRequirements.memoryTypeBits, properties),
-  };
-
-  if (vkAllocateMemory(device.GetLogical(), &allocInfo, nullptr,
-                       &imageMemory) != VK_SUCCESS) {
-    throw std::runtime_error("failed to allocate image memory!");
-  }
-  vkBindImageMemory(device.GetLogical(), image, imageMemory, 0);
+  return sampler;
 }
 
-bool HasStencilComponent(VkFormat format) {
-  return format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
-         format == VK_FORMAT_D24_UNORM_S8_UINT;
+void Texture::CreateTextureImage(const Device& device, const Render& render,
+                                 const int texWidth, const int texHeight,
+                                 const int texChannels, stbi_uc* pixels) {
+  const VkDeviceSize imageSize =
+      static_cast<VkDeviceSize>(texWidth) * texHeight * 4;
+
+  if (!pixels) {
+    throw std::runtime_error("texture pixels invalid!");
+  }
+
+  VkBuffer stagingBuffer;
+  VkDeviceMemory stagingBufferMemory;
+  DataBuffer::CreateBuffer(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                           stagingBuffer, stagingBufferMemory);
+
+  void* imageData = nullptr;
+  vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, imageSize, 0,
+              &imageData);
+  memcpy(imageData, pixels, imageSize);
+  vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
+
+  stbi_image_free(pixels);
+  auto [image, imageMemory] = CreateImage(
+      device, texWidth, texHeight, imageFormat, VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  textureImage = image;
+  textureImageMemory = imageMemory;
+
+  TransitionImageLayout(device, render, textureImage, imageFormat,
+                        VK_IMAGE_LAYOUT_UNDEFINED,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  CopyBufferToImage(device, render, stagingBuffer, textureImage,
+                    static_cast<uint32_t>(texWidth),
+                    static_cast<uint32_t>(texHeight));
+  TransitionImageLayout(device, render, textureImage, imageFormat,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+  vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
+  vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
+}
+
+void Texture::CreateTextureImageView(const VkDevice& device) {
+  textureImageView = CreateImageView(device, textureImage, imageFormat,
+                                     VK_IMAGE_ASPECT_COLOR_BIT);
+}
+
+void Texture::CreateTextureSampler(const Device& device) {
+  textureSampler =
+      CreateSampler(device, VK_TRUE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
 }
 
 void Texture::TransitionImageLayout(const Device& device, const Render& render,
@@ -176,9 +182,10 @@ void Texture::TransitionImageLayout(const Device& device, const Render& render,
                                    .layerCount = 1,
                                }};
 
-  if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+  if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
+      newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    if (HasStencilComponent(format)) {
+    if (Depth::HasStencilComponent(format)) {
       barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
   } else {
@@ -210,6 +217,15 @@ void Texture::TransitionImageLayout(const Device& device, const Render& render,
 
     sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+  } else if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL &&
+             newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                  VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
   } else {
     throw std::invalid_argument("unsupported layout transition!");
   }

@@ -12,11 +12,17 @@ void Depth::CreateDepthResources(const Device& device,
                                  const uint32_t imageHeight,
                                  const VkImageUsageFlags usage) {
   depthFormat = FindDepthFormat(device.GetPhysical());
-  Texture::CreateImage(
+  auto [image, imageMemory] = Texture::CreateImage(
       device, imageWidth, imageHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-      usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+      usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  depthImage = image;
+  depthImageMemory = imageMemory;
   depthImageView = Texture::CreateImageView(
       device.GetLogical(), depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+  if (usage == (usage | VK_IMAGE_USAGE_SAMPLED_BIT)) {
+    depthSampler =
+        Texture::CreateSampler(device, VK_FALSE, VK_TRUE, VK_COMPARE_OP_LESS);
+  }
 }
 void Depth::TransitionDepthImageLayout(const Device& device,
                                        const Render& render,
@@ -60,6 +66,9 @@ bool Depth::HasStencilComponent(const VkFormat format) {
 }
 
 void Depth::DestroyDepthResource(const VkDevice& device) const {
+  if (depthSampler != VK_NULL_HANDLE) {
+    vkDestroySampler(device, depthSampler, nullptr);
+  }
   vkDestroyImageView(device, depthImageView, nullptr);
   vkDestroyImage(device, depthImage, nullptr);
   vkFreeMemory(device, depthImageMemory, nullptr);

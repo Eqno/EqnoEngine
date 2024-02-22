@@ -27,7 +27,7 @@ class Mesh : public Base {
   void ParseTextures(const Device& device, const Render& render);
   void ParseVertexAndIndex();
   void ParseBufferAndDescriptor(
-      const Device& device, const Render& render,
+      const Device& device, Render& render,
       const VkDescriptorSetLayout& colorDescriptorSetLayout,
       const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
       const VkDescriptorSetLayout& shadowMapDescriptorSetLayout);
@@ -72,7 +72,7 @@ class Mesh : public Base {
     CreateMesh(std::forward<Args>(args)...);
   }
 
-  void CreateMesh(const Device& device, const Render& render,
+  void CreateMesh(const Device& device, Render& render,
                   std::weak_ptr<MeshData> inData,
                   const VkDescriptorSetLayout& colorDescriptorSetLayout,
                   const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,

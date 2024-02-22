@@ -1,5 +1,7 @@
 #include "../include/render.h"
 
+#include <Engine/Light/include/BaseLight.h>
+
 #include <ranges>
 #include <stdexcept>
 
@@ -269,7 +271,11 @@ void Render::CreateCommandBuffers(
 void Render::CreateCommandBuffersSet(const VkDevice& device) {
   CreateCommandBuffers(device, colorCommandBuffers);
   CreateCommandBuffers(device, zPrePassCommandBuffers);
-  CreateCommandBuffers(device, shadowMapCommandBuffers);
+
+  shadowMapCommandBuffers.resize(GetShadowMapDepthNum());
+  for (int i = 0; i < GetShadowMapDepthNum(); i++) {
+    CreateCommandBuffers(device, shadowMapCommandBuffers[i]);
+  }
 }
 
 void Render::CopyCommandBuffer(const Device& device, const VkBuffer& srcBuffer,
@@ -322,6 +328,8 @@ void Render::RecordZPrePassCommandBuffer(
 
   constexpr VkCommandBufferBeginInfo commandBufferBeginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      .pInheritanceInfo = nullptr,
   };
   if (vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo) !=
       VK_SUCCESS) {
@@ -388,11 +396,15 @@ void Render::RecordZPrePassCommandBuffer(
 }
 
 void Render::RecordShadowMapCommandBuffer(
-    std::unordered_map<std::string, Draw*>& draws) const {
-  const VkCommandBuffer& commandBuffer = shadowMapCommandBuffers[currentFrame];
+    const Device& device, std::unordered_map<std::string, Draw*>& draws,
+    BaseLight* light) {
+  const VkCommandBuffer& commandBuffer =
+      shadowMapCommandBuffers[light->GetId()][currentFrame];
 
   constexpr VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      .pInheritanceInfo = nullptr,
   };
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
     throw std::runtime_error("failed to begin recording command buffer!");
@@ -403,7 +415,7 @@ void Render::RecordShadowMapCommandBuffer(
   VkRenderPassBeginInfo renderPassBeginInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
       .renderPass = shadowMapRenderPass,
-      .framebuffer = swapChain.GetShadowMapFrameBuffer(),
+      .framebuffer = swapChain.GetShadowMapFrameBufferByIndex(light->GetId()),
       .clearValueCount = static_cast<uint32_t>(clearValues.size()),
       .pClearValues = clearValues.data(),
   };
@@ -429,13 +441,15 @@ void Render::RecordShadowMapCommandBuffer(
       .extent = {swapChain.GetShadowMapWidth(), swapChain.GetShadowMapHeight()},
   };
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-  vkCmdSetDepthBias(commandBuffer, 1.5f, 0.0f, 2.5f);
+  vkCmdSetDepthBias(commandBuffer, 0, 0, 0);
 
   for (Draw* draw : draws | std::views::values) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       draw->GetShadowMapGraphicsPipeline());
 
     for (const auto& mesh : draw->GetMeshes()) {
+      mesh->UpdateShadowMapUniformBuffer(currentFrame, light);
+
       const VkBuffer vertexBuffers[] = {mesh->GetVertexBuffer()};
       constexpr VkDeviceSize offsets[] = {0};
       vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -454,6 +468,14 @@ void Render::RecordShadowMapCommandBuffer(
     }
   }
   vkCmdEndRenderPass(commandBuffer);
+
+  // Convert shadow map depth to shader source
+  Texture::TransitionImageLayout(
+      device, *this, swapChain.GetShadowMapDepthImageByIndex(light->GetId()),
+      swapChain.GetShadowMapDepthFormat(),
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
   }
@@ -466,6 +488,8 @@ void Render::RecordColorCommandBuffer(
 
   constexpr VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      .pInheritanceInfo = nullptr,
   };
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
     throw std::runtime_error("failed to begin recording command buffer!");
@@ -589,23 +613,23 @@ void Render::DrawFrame(
                       zPrePassFinishedSemaphores[currentFrame],
                       zPrePassInFlightFences[currentFrame]);
 
-  vkResetCommandBuffer(shadowMapCommandBuffers[currentFrame],
-                       /*VkCommandBufferResetFlagBits*/
-                       0);
-  RecordShadowMapCommandBuffer(draws);
+  VkSemaphore lastSemaphore = zPrePassFinishedSemaphores[currentFrame];
   auto iter = lightsById.begin();
   while (iter != lightsById.end()) {
     if (auto lightPtr = iter->second.lock()) {
-      for (Draw* draw : draws | std::views::values) {
-        for (const auto& mesh : draw->GetMeshes()) {
-          mesh->UpdateShadowMapUniformBuffer(currentFrame, lightPtr.get());
-        }
-      }
-      SubmitCommandBuffer(device, zPrePassFinishedSemaphores[currentFrame],
-                          shadowMapCommandBuffers[currentFrame],
-                          shadowMapFinishedSemaphores[currentFrame], nullptr);
+      vkResetCommandBuffer(
+          shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
+          /*VkCommandBufferResetFlagBits*/
+          0);
+      RecordShadowMapCommandBuffer(device, draws, lightPtr.get());
+      VkSemaphore nextSemaphore =
+          shadowMapFinishedSemaphores[lightPtr->GetId()][currentFrame];
+      SubmitCommandBuffer(
+          device, lastSemaphore,
+          shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
+          nextSemaphore, nullptr);
+      lastSemaphore = nextSemaphore;
       iter++;
-      break;
     } else {
       iter = lightsById.erase(iter);
     }
@@ -615,8 +639,7 @@ void Render::DrawFrame(
                        /*VkCommandBufferResetFlagBits*/
                        0);
   RecordColorCommandBuffer(draws, imageIndex);
-  SubmitCommandBuffer(device, shadowMapFinishedSemaphores[currentFrame],
-                      colorCommandBuffers[currentFrame],
+  SubmitCommandBuffer(device, lastSemaphore, colorCommandBuffers[currentFrame],
                       renderFinishedSemaphores[currentFrame],
                       colorInFlightFences[currentFrame]);
 
@@ -642,13 +665,18 @@ void Render::DrawFrame(
 }
 
 void Render::CreateSyncObjects(const VkDevice& device) {
+  shadowMapFinishedSemaphores.resize(GetShadowMapDepthNum());
+
   imageAvailableSemaphores.resize(maxFramesInFlight);
   zPrePassFinishedSemaphores.resize(maxFramesInFlight);
-  shadowMapFinishedSemaphores.resize(maxFramesInFlight);
   renderFinishedSemaphores.resize(maxFramesInFlight);
 
   colorInFlightFences.resize(maxFramesInFlight);
   zPrePassInFlightFences.resize(maxFramesInFlight);
+
+  for (int i = 0; i < GetShadowMapDepthNum(); i++) {
+    shadowMapFinishedSemaphores[i].resize(maxFramesInFlight);
+  }
 
   constexpr VkSemaphoreCreateInfo semaphoreInfo{
       .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -665,15 +693,19 @@ void Render::CreateSyncObjects(const VkDevice& device) {
         vkCreateSemaphore(device, &semaphoreInfo, nullptr,
                           &zPrePassFinishedSemaphores[i]) != VK_SUCCESS ||
         vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-                          &shadowMapFinishedSemaphores[i]) != VK_SUCCESS ||
-        vkCreateSemaphore(device, &semaphoreInfo, nullptr,
                           &renderFinishedSemaphores[i]) != VK_SUCCESS ||
         vkCreateFence(device, &fenceInfo, nullptr, &colorInFlightFences[i]) !=
             VK_SUCCESS ||
         vkCreateFence(device, &fenceInfo, nullptr,
                       &zPrePassInFlightFences[i]) != VK_SUCCESS) {
-      throw std::runtime_error(
-          "failed to create synchronization objects for a frame!");
+      throw std::runtime_error("failed to create render semaphores or fences!");
+    }
+    for (int j = 0; j < GetShadowMapDepthNum(); j++) {
+      if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+                            &shadowMapFinishedSemaphores[j][i]) != VK_SUCCESS) {
+        throw std::runtime_error(
+            "failed to create render semaphores or fences!");
+      }
     }
   }
 }
@@ -688,12 +720,15 @@ void Render::DestroyCommandPool(const VkDevice& device) const {
   vkDestroyCommandPool(device, commandPool, nullptr);
 }
 
-void Render::DestroySyncObjects(const VkDevice& device) const {
+void Render::DestroySyncObjects(const VkDevice& device) {
   for (int i = 0; i < maxFramesInFlight; i++) {
     vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-    vkDestroySemaphore(device, shadowMapFinishedSemaphores[i], nullptr);
     vkDestroySemaphore(device, zPrePassFinishedSemaphores[i], nullptr);
     vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+
+    for (int j = 0; j < GetShadowMapDepthNum(); j++) {
+      vkDestroySemaphore(device, shadowMapFinishedSemaphores[j][i], nullptr);
+    }
 
     vkDestroyFence(device, colorInFlightFences[i], nullptr);
     vkDestroyFence(device, zPrePassInFlightFences[i], nullptr);

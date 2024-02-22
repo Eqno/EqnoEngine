@@ -20,7 +20,8 @@ layout(binding = 3) uniform LightsData {
     LightData object[500];
 } lights;
 
-layout(binding = 4) uniform sampler2D baseColorSampler;
+layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+layout(binding = 5) uniform sampler2D baseColorSampler;
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;
@@ -45,12 +46,25 @@ void main() {
         vec4 light = lights.object[i].color * lights.object[i].intensity;
 
         ambient += light * ambientStrength;
-        float diff = max(dot(normalize(fragNormal), lightDir), 0.);
-        diffuse += diff * light * diffuseStrength;
-        
-        vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(normalize(fragNormal), halfwayDir), 0.), shininessStrength);
-        specular += spec * light * specularStrength;
+        vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition, 1.);
+        shadowMapPos /= shadowMapPos.w;
+
+        if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0) {
+            shadowMapPos.x = 0.5 * shadowMapPos.x + 0.5;
+            shadowMapPos.y = 0.5 * shadowMapPos.y + 0.5;
+
+            if (lights.object[i].id == 0 || lights.object[i].id == 1) {
+                float shadowMapZ = texture(shadowMapSamplers[lights.object[i].id], shadowMapPos.xyz);
+            }
+            // if (shadowMapZ >= shadowMapPos.z) {
+            //     float diff = max(dot(normalize(fragNormal), lightDir), 0.);
+            //     diffuse += diff * light * diffuseStrength;
+                
+            //     vec3 halfwayDir = normalize(lightDir + viewDir);
+            //     float spec = pow(max(dot(normalize(fragNormal), halfwayDir), 0.), shininessStrength);
+            //     specular += spec * light * specularStrength;
+            // }
+        }
     }
     vec4 texColor = texture(baseColorSampler, fragTexCoord);
     outColor = (ambient + diffuse + specular) * fragColor * texColor;

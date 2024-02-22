@@ -16,12 +16,16 @@ class Depth : public Base {
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
+  VkSampler depthSampler = VK_NULL_HANDLE;
 
  public:
   VkFormat GetDepthFormat() const { return depthFormat; }
 
-  [[nodiscard]] VkImage& GetDepthImage() { return depthImage; }
-  [[nodiscard]] VkImageView& GetDepthImageView() { return depthImageView; }
+  [[nodiscard]] const VkImage& GetDepthImage() { return depthImage; }
+  [[nodiscard]] const VkSampler& GetDepthSampler() { return depthSampler; }
+  [[nodiscard]] const VkImageView& GetDepthImageView() {
+    return depthImageView;
+  }
 
   void CreateDepthResources(const Device& device, const uint32_t imageWidth,
                             const uint32_t imageHeight,

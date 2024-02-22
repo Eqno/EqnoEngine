@@ -60,7 +60,7 @@ class Descriptor : public Base {
   DescriptorSets zPrePassDescriptorSets;
   DescriptorSets shadowMapDescriptorSets;
 
-  void CreateColorDescriptorPool(const VkDevice& device, const Render& render,
+  void CreateColorDescriptorPool(const VkDevice& device, Render& render,
                                  size_t textureNum);
   void CreateZPrePassDescriptorPool(const VkDevice& device,
                                     const Render& render);
@@ -68,7 +68,7 @@ class Descriptor : public Base {
                                      const Render& render);
 
   void CreateColorDescriptorSets(
-      const VkDevice& device, const Render& render,
+      const VkDevice& device, Render& render,
       const VkDescriptorSetLayout& colorDescriptorSetLayout,
       const std::vector<Texture>& textures);
   void CreateZPrePassDescriptorSets(
@@ -116,7 +116,7 @@ class Descriptor : public Base {
   DEFINE_GET_DESCRIPTOR_SET(shadowMap, ShadowMap)
 
   void CreateDescriptor(
-      const Device& device, const Render& render,
+      const Device& device, Render& render,
       const std::vector<Texture>& textures,
       const VkDescriptorSetLayout& colorDescriptorSetLayout,
       const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,

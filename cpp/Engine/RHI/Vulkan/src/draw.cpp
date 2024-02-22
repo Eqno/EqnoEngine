@@ -4,14 +4,11 @@
 
 #include "../include/config.h"
 
-void Draw::CreateDrawResource(const Device& device, const std::string& rootPath,
+void Draw::CreateDrawResource(const Device& device, Render& render,
+                              const std::string& rootPath, const int texCount,
                               const std::vector<std::string>& shaderPaths,
                               const std::string& zPrePassShaderPath,
-                              const std::string& shadowMapShaderPath,
-                              const VkRenderPass& colorRenderPass,
-                              const VkRenderPass& zPrePassRenderPass,
-                              const VkRenderPass& shadowMapRenderPass,
-                              const int texCount) {
+                              const std::string& shadowMapShaderPath) {
   shader.AddDefinitions({{"MaxLightNum", std::to_string(MaxLightNum)}});
   std::vector<std::string> shaderSearchPaths;
   for (const std::string& searchPath : ShaderSearchPaths) {
@@ -19,13 +16,11 @@ void Draw::CreateDrawResource(const Device& device, const std::string& rootPath,
   }
   shader.SetFileIncluder(shaderSearchPaths);
   shader.SetOptimizationLevel(ShaderOptimizationLevel);
-  pipeline.CreatePipeline(device, shader, rootPath, shaderPaths,
-                          zPrePassShaderPath, shadowMapShaderPath,
-                          colorRenderPass, zPrePassRenderPass,
-                          shadowMapRenderPass, texCount);
+  pipeline.CreatePipeline(device, render, shader, texCount, rootPath,
+                          shaderPaths, zPrePassShaderPath, shadowMapShaderPath);
 }
 
-void Draw::LoadDrawResource(const Device& device, const Render& render,
+void Draw::LoadDrawResource(const Device& device, Render& render,
                             std::weak_ptr<MeshData> data) {
   Mesh* mesh =
       Create<Mesh>(device, render, data, pipeline.GetColorDescriptorSetLayout(),

@@ -45,19 +45,18 @@ class Texture {
   [[nodiscard]] const VkImageView& GetTextureImageView() const {
     return textureImageView;
   }
-
   [[nodiscard]] VkSampler GetTextureSampler() const { return textureSampler; }
 
+  static std::pair<VkImage, VkDeviceMemory> CreateImage(
+      const Device& device, uint32_t width, uint32_t height, VkFormat format,
+      VkImageTiling tiling, VkImageUsageFlags usage,
+      VkMemoryPropertyFlags properties);
   static VkImageView CreateImageView(const VkDevice& device, VkImage image,
                                      VkFormat format,
                                      VkImageAspectFlags aspectFlags);
-
-  static void CreateImage(const Device& device, uint32_t width, uint32_t height,
-                          VkFormat format, VkImageTiling tiling,
-                          VkImageUsageFlags usage,
-                          VkMemoryPropertyFlags properties, VkImage& image,
-                          VkDeviceMemory& imageMemory);
-
+  static VkSampler CreateSampler(const Device& device,
+                                 VkBool32 anisotropyEnable,
+                                 VkBool32 compareEnable, VkCompareOp compareOp);
   static void TransitionImageLayout(const Device& device, const Render& render,
                                     const VkImage& image, const VkFormat format,
                                     const VkImageLayout oldLayout,

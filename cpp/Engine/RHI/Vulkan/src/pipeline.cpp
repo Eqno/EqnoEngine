@@ -5,6 +5,7 @@
 
 #include "../include/depth.h"
 #include "../include/device.h"
+#include "../include/render.h"
 #include "../include/shader.h"
 #include "../include/uniform.h"
 #include "../include/vertex.h"
@@ -284,7 +285,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
 }
 
 void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
-                                              int texCount) {
+                                              Render& render, int texCount) {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
   for (unsigned int i = 0; i < UniformBufferNum; i++) {
     bindings.push_back({
@@ -295,8 +296,15 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
         .pImmutableSamplers = nullptr,
     });
   }
-  for (unsigned int i = 0; i < texCount; i++) {
-    bindings.emplace_back(VkDescriptorSetLayoutBinding{
+  bindings.push_back({
+      .binding = UniformBufferNum,
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .descriptorCount = static_cast<uint32_t>(render.GetShadowMapDepthNum()),
+      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .pImmutableSamplers = nullptr,
+  });
+  for (unsigned int i = 1; i < 1 + texCount; i++) {
+    bindings.push_back({
         .binding = i + UniformBufferNum,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .descriptorCount = 1,
@@ -355,25 +363,24 @@ void Pipeline::CreateShadowMapDescriptorSetLayout(const VkDevice& device) {
   }
 }
 
-void Pipeline::CreatePipeline(const Device& device, const Shader& shader,
+void Pipeline::CreatePipeline(const Device& device, Render& render,
+                              const Shader& shader, int texCount,
                               const std::string& rootPath,
                               const std::vector<std::string>& shaderPaths,
                               const std::string& zPrePassShaderPath,
-                              const std::string& shadowMapShaderPath,
-                              const VkRenderPass& colorRenderPass,
-                              const VkRenderPass& zPrePassRenderPass,
-                              const VkRenderPass& shadowMapRenderPass,
-                              int texCount) {
-  CreateColorDescriptorSetLayout(device.GetLogical(), texCount);
+                              const std::string& shadowMapShaderPath) {
+  CreateColorDescriptorSetLayout(device.GetLogical(), render, texCount);
   CreateZPrePassDescriptorSetLayout(device.GetLogical());
   CreateShadowMapDescriptorSetLayout(device.GetLogical());
 
   CreateColorGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                              shaderPaths, colorRenderPass);
+                              shaderPaths, render.GetColorRenderPass());
   CreateZPrePassGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                                 zPrePassShaderPath, zPrePassRenderPass);
+                                 zPrePassShaderPath,
+                                 render.GetZPrePassRenderPass());
   CreateShadowMapGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                                  shadowMapShaderPath, shadowMapRenderPass);
+                                  shadowMapShaderPath,
+                                  render.GetShadowMapRenderPass());
 }
 
 void Pipeline::DestroyPipeline(const VkDevice& device) const {

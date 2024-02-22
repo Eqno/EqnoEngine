@@ -24,10 +24,9 @@ void Vulkan::InitGraphics() {
   device.CreateLogicalDevice(window.GetSurface(), validation);
 
   render.CreateRenderResources(
-      JSON_CONFIG(String, "SwapChainSurfaceImageFormat"),
+      device, window, JSON_CONFIG(String, "SwapChainSurfaceImageFormat"),
       JSON_CONFIG(String, "SwapChainSurfaceColorSpace"),
-      JSON_CONFIG(Int, "ShadowMapWidth"), JSON_CONFIG(Int, "ShadowMapHeight"),
-      device, window);
+      JSON_CONFIG(Int, "ShadowMapWidth"), JSON_CONFIG(Int, "ShadowMapHeight"));
 }
 
 void Vulkan::TriggerOnUpdate() {
@@ -140,11 +139,9 @@ void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) {
         }
 
         Draw* draw = Base::Create<Draw>(
-            device, GetRoot(), shaders,
+            device, render, GetRoot(), mesh->textures.size(), shaders,
             JSON_CONFIG(String, "ZPrePassShaderPath"),
-            JSON_CONFIG(String, "ShadowMapShaderPath"),
-            render.GetColorRenderPass(), render.GetZPrePassRenderPass(),
-            render.GetShadowMapRenderPass(), mesh->textures.size());
+            JSON_CONFIG(String, "ShadowMapShaderPath"));
         int createFallbackIndex = draw->GetShaderFallbackIndex();
 
         if (findFallbackIndex != -1 &&
