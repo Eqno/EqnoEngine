@@ -64,17 +64,15 @@ void Descriptor::CreateZPrePassDescriptorPool(const VkDevice& device,
 
 void Descriptor::CreateShadowMapDescriptorPool(const VkDevice& device,
                                                const Render& render) {
-  std::vector<VkDescriptorPoolSize> poolSizes(2);
-  for (int i = 0; i < 2; i++) {
-    poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[i].descriptorCount =
-        static_cast<uint32_t>(render.GetMaxFramesInFlight());
-  }
+  VkDescriptorPoolSize poolSize{
+      .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = static_cast<uint32_t>(render.GetMaxFramesInFlight())};
+
   const VkDescriptorPoolCreateInfo poolInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       .maxSets = static_cast<uint32_t>(render.GetMaxFramesInFlight()),
-      .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-      .pPoolSizes = poolSizes.data(),
+      .poolSizeCount = 1,
+      .pPoolSizes = &poolSize,
   };
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr,
                              &shadowMapDescriptorPool) != VK_SUCCESS) {
@@ -110,11 +108,8 @@ void Descriptor::CreateShadowMapDescriptorPool(const VkDevice& device,
   }
 #define AddZPrePassDescriptorWrites() \
   AddDescriptorWrite(zPrePass, 0, TransformData, &transformBuffer)
-#define AddShadowMapDescriptorWrites()                                      \
-  {                                                                         \
-    AddDescriptorWrite(shadowMap, 0, TransformData, &transformBuffer);      \
-    AddDescriptorWrite(shadowMap, 1, LightChannelData, lightChannelBuffer); \
-  }
+#define AddShadowMapDescriptorWrites() \
+  AddDescriptorWrite(shadowMap, 0, TransformData, &shadowMapBuffer);
 
 void Descriptor::CreateColorDescriptorSets(
     const VkDevice& device, const Render& render,
@@ -213,7 +208,7 @@ void Descriptor::CreateShadowMapDescriptorSets(
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    std::vector<VkWriteDescriptorSet> descriptorWrites(2);
+    std::vector<VkWriteDescriptorSet> descriptorWrites(1);
     AddShadowMapDescriptorWrites();
 
     vkUpdateDescriptorSets(device,
@@ -271,11 +266,24 @@ void TransformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
   }
 }
 
+void ShadowMapBuffer::UpdateUniformBuffer(const uint32_t currentImage,
+                                          BaseLight* shadowMapLight) {
+  if (auto bridgePtr = GetBridgeData().lock()) {
+    TransformData* buffer =
+        reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
+    glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
+    buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
+    buffer->viewMatrix = shadowMapLight->GetViewMatrix();
+    buffer->projMatrix = shadowMapLight->GetProjMatrix();
+  }
+}
+
 /////////////////////////// BUFFER ///////////////////////////
 
 void Descriptor::CreateUniformBuffer(const Device& device,
                                      const Render& render) {
   transformBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
+  shadowMapBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
 
   UpdateBufferPointers();
   if (bufferManager == nullptr) {
@@ -298,6 +306,7 @@ void Descriptor::CreateUniformBuffer(const Device& device,
 void Descriptor::DestroyUniformBuffer(const VkDevice& device,
                                       const Render& render) {
   transformBuffer.DestroyUniformBuffer(device, render);
+  shadowMapBuffer.DestroyUniformBuffer(device, render);
 
   if (bufferManager == nullptr) {
     return;
@@ -336,6 +345,10 @@ void Descriptor::DestroyDesciptor(const VkDevice& device,
   vkDestroyDescriptorPool(device, shadowMapDescriptorPool, nullptr);
 
   DestroyUniformBuffer(device, render);
+}
+
+std::weak_ptr<MeshData> ShadowMapBuffer::GetBridgeData() {
+  return dynamic_cast<Descriptor*>(owner)->GetBridgeData();
 }
 
 std::weak_ptr<MeshData> TransformBuffer::GetBridgeData() {

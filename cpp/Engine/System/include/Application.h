@@ -25,6 +25,7 @@ class Application final : public BaseObject {
       : BaseObject(std::forward<Args>(args)...,
                    std::shared_ptr<BaseObject>(nullptr)) {}
   ~Application() override = default;
+  std::unordered_map<int, std::weak_ptr<BaseLight>>& GetLightsById();
 
   void TriggerOnUpdate();
   void RunApplication();

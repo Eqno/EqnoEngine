@@ -63,6 +63,24 @@ void Vulkan::RendererLoop() {
     static auto lastTime = std::chrono::steady_clock::now();
     auto nowTime = std::chrono::steady_clock::now();
 
+    seconds duration = nowTime - lastTime;
+    DeltaTime = duration.count();
+    lastTime = nowTime;
+
+    glfwPollEvents();
+    bool frameDrawn = false;
+    if (auto ownerPtr = _owner.lock()) {
+      if (auto appPtr = dynamic_pointer_cast<Application>(ownerPtr)) {
+        render.DrawFrame(device, draws, appPtr->GetLightsById(), window);
+        frameDrawn = true;
+      }
+    }
+    if (frameDrawn == false) {
+      std::unordered_map<int, std::weak_ptr<BaseLight>> lightsById;
+      render.DrawFrame(device, draws, lightsById, window);
+    }
+    device.WaitIdle();
+
     for (auto& buffer : bufferManager.cameraBuffers) {
       buffer.second.second.updateLock = false;
     }
@@ -72,14 +90,6 @@ void Vulkan::RendererLoop() {
     for (auto& buffer : bufferManager.lightChannelBuffers) {
       buffer.second.second.updateLock = false;
     }
-
-    seconds duration = nowTime - lastTime;
-    DeltaTime = duration.count();
-    lastTime = nowTime;
-
-    glfwPollEvents();
-    render.DrawFrame(device, draws, window);
-    device.WaitIdle();
 
     Input::RecordDownUpFlags();
     if (auto ownerPtr = _owner.lock()) {

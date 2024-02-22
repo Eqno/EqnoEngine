@@ -336,20 +336,17 @@ void Pipeline::CreateZPrePassDescriptorSetLayout(const VkDevice& device) {
 }
 
 void Pipeline::CreateShadowMapDescriptorSetLayout(const VkDevice& device) {
-  std::vector<VkDescriptorSetLayoutBinding> bindings;
-  for (unsigned int i = 0; i < 2; i++) {
-    bindings.push_back({
-        .binding = i,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = 1,
-        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        .pImmutableSamplers = nullptr,
-    });
-  }
+  VkDescriptorSetLayoutBinding binding{
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+      .pImmutableSamplers = nullptr,
+  };
   VkDescriptorSetLayoutCreateInfo layoutInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-      .bindingCount = static_cast<uint32_t>(bindings.size()),
-      .pBindings = bindings.data(),
+      .bindingCount = 1,
+      .pBindings = &binding,
   };
   if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                   &shadowMapDescriptorSetLayout) !=

@@ -30,6 +30,12 @@ class TransformBuffer : public UniformBuffer {
   std::weak_ptr<MeshData> GetBridgeData();
   void UpdateUniformBuffer(const uint32_t currentImage);
 };
+class ShadowMapBuffer : public UniformBuffer {
+ public:
+  std::weak_ptr<MeshData> GetBridgeData();
+  void UpdateUniformBuffer(const uint32_t currentImage,
+                           BaseLight* shadowMapLight);
+};
 
 class Descriptor : public Base {
   BufferManager* bufferManager = nullptr;
@@ -44,6 +50,7 @@ class Descriptor : public Base {
   LightChannelBuffer* lightChannelBuffer = nullptr;
 
   TransformBuffer transformBuffer;
+  ShadowMapBuffer shadowMapBuffer;
 
   VkDescriptorPool colorDescriptorPool;
   VkDescriptorPool zPrePassDescriptorPool;
@@ -85,9 +92,13 @@ class Descriptor : public Base {
   std::weak_ptr<MeshData> GetBridgeData();
 
   virtual void TriggerRegisterMember() override {
-    RegisterMember(transformBuffer);
+    RegisterMember(transformBuffer, shadowMapBuffer);
   }
   void UpdateUniformBuffer(const uint32_t currentImage);
+  void UpdateShadowMapUniformBuffer(const uint32_t currentImage,
+                                    BaseLight* shadowMapLight) {
+    shadowMapBuffer.UpdateUniformBuffer(currentImage, shadowMapLight);
+  }
 
   [[nodiscard]] const TransformBuffer& GetUniformBuffer() const {
     return transformBuffer;

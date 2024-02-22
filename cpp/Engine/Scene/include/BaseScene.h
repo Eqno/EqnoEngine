@@ -24,6 +24,9 @@ class BaseScene final : public BaseObject {
  public:
   int GetAvailableLightId();
   std::weak_ptr<BaseLight> GetLightById(int id);
+  std::unordered_map<int, std::weak_ptr<BaseLight>>& GetLightsById() {
+    return lightsById;
+  }
 
   std::weak_ptr<BaseMaterial> GetMaterialByPath(const std::string& path,
                                                 aiMaterial* matData);

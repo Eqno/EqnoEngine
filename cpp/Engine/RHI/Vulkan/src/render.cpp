@@ -555,9 +555,10 @@ void Render::SubmitCommandBuffer(const Device& device,
   }
 }
 
-void Render::DrawFrame(const Device& device,
-                       std::unordered_map<std::string, Draw*>& draws,
-                       Window& window) {
+void Render::DrawFrame(
+    const Device& device, std::unordered_map<std::string, Draw*>& draws,
+    std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
+    Window& window) {
   vkWaitForFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame],
                   VK_TRUE, UINT64_MAX);
   vkWaitForFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame],
@@ -592,9 +593,23 @@ void Render::DrawFrame(const Device& device,
                        /*VkCommandBufferResetFlagBits*/
                        0);
   RecordShadowMapCommandBuffer(draws);
-  SubmitCommandBuffer(device, zPrePassFinishedSemaphores[currentFrame],
-                      shadowMapCommandBuffers[currentFrame],
-                      shadowMapFinishedSemaphores[currentFrame], nullptr);
+  auto iter = lightsById.begin();
+  while (iter != lightsById.end()) {
+    if (auto lightPtr = iter->second.lock()) {
+      for (Draw* draw : draws | std::views::values) {
+        for (const auto& mesh : draw->GetMeshes()) {
+          mesh->UpdateShadowMapUniformBuffer(currentFrame, lightPtr.get());
+        }
+      }
+      SubmitCommandBuffer(device, zPrePassFinishedSemaphores[currentFrame],
+                          shadowMapCommandBuffers[currentFrame],
+                          shadowMapFinishedSemaphores[currentFrame], nullptr);
+      iter++;
+      break;
+    } else {
+      iter = lightsById.erase(iter);
+    }
+  }
 
   vkResetCommandBuffer(colorCommandBuffers[currentFrame],
                        /*VkCommandBufferResetFlagBits*/

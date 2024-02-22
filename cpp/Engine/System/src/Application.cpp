@@ -86,3 +86,8 @@ void Application::OnDestroy() {
   graphics->Destroy();
   JsonUtils::ClearDocumentCache();
 }
+
+std::unordered_map<int, std::weak_ptr<BaseLight>>&
+Application::GetLightsById() {
+  return scene->GetLightsById();
+}

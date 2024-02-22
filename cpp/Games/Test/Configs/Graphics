@@ -8,6 +8,6 @@
     "SwapChainSurfaceColorSpace": "SRGB_LINEAR",
     "ShadowMapWidth": -1,
     "ShadowMapHeight": -1,
-    "ZPrePassShaderPath": "Assets/Shaders/DepthOnly/ZPrePass",
-    "ShadowMapShaderPath": "Assets/Shaders/DepthOnly/ShadowMap"
+    "ZPrePassShaderPath": "Assets/Shaders/DepthOnly",
+    "ShadowMapShaderPath": "Assets/Shaders/DepthOnly"
 }

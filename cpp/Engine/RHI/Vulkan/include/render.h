@@ -104,7 +104,9 @@ class Render : public Base {
                              VkCommandBuffer* commandBuffer) const;
 
   void DrawFrame(const Device& device,
-                 std::unordered_map<std::string, Draw*>& draws, Window& window);
+                 std::unordered_map<std::string, Draw*>& draws,
+                 std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
+                 Window& window);
 
   void DestroyRenderResources(const VkDevice& device) {
     swapChain.DestroyDepthResource(device);

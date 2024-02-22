@@ -56,6 +56,10 @@ class Mesh : public Base {
   void UpdateUniformBuffer(const uint32_t currentImage) {
     descriptor.UpdateUniformBuffer(currentImage);
   }
+  void UpdateShadowMapUniformBuffer(const uint32_t currentImage,
+                                    BaseLight* shadowMapLight) {
+    descriptor.UpdateShadowMapUniformBuffer(currentImage, shadowMapLight);
+  }
 
   explicit Mesh(Base* owner) : Base(owner) {}
   ~Mesh() override = default;
