@@ -20,6 +20,10 @@ class BaseLight : public SceneObject {
 
   virtual void OnCreate() override;
   virtual void OnDestroy() override;
+  virtual void OnUpdate() override {
+    UpdateViewMatrix();
+    UpdateProjMatrix();
+  }
 
   virtual int GetId() { return id; }
   virtual LightType& GetType() { return type; }

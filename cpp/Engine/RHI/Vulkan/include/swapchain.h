@@ -14,6 +14,7 @@
 using PresentModes = std::vector<VkPresentModeKHR>;
 using SurfaceFormats = std::vector<VkSurfaceFormatKHR>;
 
+class Draw;
 class Window;
 class Device;
 class Render;
@@ -97,6 +98,10 @@ class SwapChain : public Base {
   }
 
   [[nodiscard]] size_t GetShadowMapDepthNum() { return shadowMapDepths.size(); }
+  [[nodiscard]] Depth& GetShadowMapDepthByIndex(uint32_t index) {
+    return shadowMapDepths[index];
+  }
+
   [[nodiscard]] const VkImage& GetShadowMapDepthImageByIndex(uint32_t index) {
     return shadowMapDepths[index].GetDepthImage();
   }
@@ -128,6 +133,7 @@ class SwapChain : public Base {
                                    const uint32_t shadowMapHeight);
 
   void RecreateSwapChain(const Device& device, const Window& window,
+                         std::unordered_map<std::string, Draw*>& draws,
                          const VkRenderPass& colorRenderPass,
                          const VkRenderPass& zPrePassRenderPass,
                          const VkRenderPass& shadowMapRenderPass);

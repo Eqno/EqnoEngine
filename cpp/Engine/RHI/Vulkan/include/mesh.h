@@ -53,6 +53,9 @@ class Mesh : public Base {
   DEFINE_GET_DESCRIPTOR_SET(ZPrePass)
   DEFINE_GET_DESCRIPTOR_SET(ShadowMap)
 
+  void UpdateColorDescriptorSets(const VkDevice& device, Render& render) {
+    descriptor.UpdateColorDescriptorSets(device, render);
+  }
   void UpdateUniformBuffer(const uint32_t currentImage) {
     descriptor.UpdateUniformBuffer(currentImage);
   }

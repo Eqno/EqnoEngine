@@ -30,9 +30,9 @@ class Depth : public Base {
   void CreateDepthResources(const Device& device, const uint32_t imageWidth,
                             const uint32_t imageHeight,
                             const VkImageUsageFlags usage);
-  void TransitionDepthImageLayout(const Device& device, const Render& render,
-                                  VkImageLayout oldLayout,
-                                  VkImageLayout newLayout);
+  void TransitionDepthImageLayout(
+      const Device& device, const Render& render, VkImageLayout oldLayout,
+      VkImageLayout newLayout, VkCommandBuffer commandBuffer = VK_NULL_HANDLE);
 
   static VkFormat FindSupportedFormat(const VkPhysicalDevice& device,
                                       const std::vector<VkFormat>& candidates,

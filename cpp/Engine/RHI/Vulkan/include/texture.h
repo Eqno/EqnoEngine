@@ -57,10 +57,12 @@ class Texture {
   static VkSampler CreateSampler(const Device& device,
                                  VkBool32 anisotropyEnable,
                                  VkBool32 compareEnable, VkCompareOp compareOp);
-  static void TransitionImageLayout(const Device& device, const Render& render,
-                                    const VkImage& image, const VkFormat format,
-                                    const VkImageLayout oldLayout,
-                                    const VkImageLayout newLayout);
+  static void TransitionImageLayout(
+      const Device& device, const Render& render, const VkImage& image,
+      const VkFormat format, const VkImageLayout oldLayout,
+      const VkImageLayout newLayout,
+      const VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+      VkCommandBuffer commandBuffer = VK_NULL_HANDLE);
 
   void CreateTexture(const Device& device, const Render& render, int width,
                      int height, int channels, stbi_uc* data);

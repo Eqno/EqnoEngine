@@ -27,9 +27,11 @@ void Depth::CreateDepthResources(const Device& device,
 void Depth::TransitionDepthImageLayout(const Device& device,
                                        const Render& render,
                                        VkImageLayout oldLayout,
-                                       VkImageLayout newLayout) {
+                                       VkImageLayout newLayout,
+                                       VkCommandBuffer commandBuffer) {
   Texture::TransitionImageLayout(device, render, depthImage, depthFormat,
-                                 oldLayout, newLayout);
+                                 oldLayout, newLayout,
+                                 VK_IMAGE_ASPECT_DEPTH_BIT, commandBuffer);
 }
 
 VkFormat Depth::FindSupportedFormat(const VkPhysicalDevice& device,

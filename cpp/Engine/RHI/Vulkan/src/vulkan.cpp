@@ -26,7 +26,10 @@ void Vulkan::InitGraphics() {
   render.CreateRenderResources(
       device, window, JSON_CONFIG(String, "SwapChainSurfaceImageFormat"),
       JSON_CONFIG(String, "SwapChainSurfaceColorSpace"),
-      JSON_CONFIG(Int, "ShadowMapWidth"), JSON_CONFIG(Int, "ShadowMapHeight"));
+      JSON_CONFIG(Int, "ShadowMapWidth"), JSON_CONFIG(Int, "ShadowMapHeight"),
+      JSON_CONFIG(Float, "DepthBiasConstantFactor"),
+      JSON_CONFIG(Float, "DepthBiasClamp"),
+      JSON_CONFIG(Float, "DepthBiasSlopeFactor"));
 }
 
 void Vulkan::TriggerOnUpdate() {

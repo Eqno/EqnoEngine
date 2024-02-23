@@ -2,5 +2,11 @@
     "Name": "SpotLight",
 
     "Intensity": 0.6,
-    "Color": "1,1,1,1"
+    "Color": "1,1,1,1",
+    "Left": -30,
+    "Right": 30,
+    "Bottom": -30,
+    "Top": 30,
+    "Near": 0.01,
+    "Far": 1000
 }

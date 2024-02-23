@@ -53,17 +53,15 @@ void main() {
             shadowMapPos.x = 0.5 * shadowMapPos.x + 0.5;
             shadowMapPos.y = 0.5 * shadowMapPos.y + 0.5;
 
-            if (lights.object[i].id == 0 || lights.object[i].id == 1) {
-                float shadowMapZ = texture(shadowMapSamplers[lights.object[i].id], shadowMapPos.xyz);
-            }
-            // if (shadowMapZ >= shadowMapPos.z) {
-            //     float diff = max(dot(normalize(fragNormal), lightDir), 0.);
-            //     diffuse += diff * light * diffuseStrength;
+            float shadowMapZ = texture(shadowMapSamplers[lights.object[i].id], shadowMapPos.xyz);
+            if (shadowMapZ >= shadowMapPos.z) {
+                float diff = max(dot(normalize(fragNormal), lightDir), 0.);
+                diffuse += diff * light * diffuseStrength;
                 
-            //     vec3 halfwayDir = normalize(lightDir + viewDir);
-            //     float spec = pow(max(dot(normalize(fragNormal), halfwayDir), 0.), shininessStrength);
-            //     specular += spec * light * specularStrength;
-            // }
+                vec3 halfwayDir = normalize(lightDir + viewDir);
+                float spec = pow(max(dot(normalize(fragNormal), halfwayDir), 0.), shininessStrength);
+                specular += spec * light * specularStrength;
+            }
         }
     }
     vec4 texColor = texture(baseColorSampler, fragTexCoord);

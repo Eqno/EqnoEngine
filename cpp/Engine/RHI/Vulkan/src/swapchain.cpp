@@ -2,10 +2,12 @@
 
 #include <algorithm>
 #include <array>
+#include <ranges>
 #include <stdexcept>
 
 #include "../include/depth.h"
 #include "../include/device.h"
+#include "../include/draw.h"
 #include "../include/render.h"
 #include "../include/texture.h"
 #include "../include/window.h"
@@ -185,6 +187,7 @@ void SwapChain::CreateShadowMapFrameBuffers(
 }
 
 void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
+                                  std::unordered_map<std::string, Draw*>& draws,
                                   const VkRenderPass& colorRenderPass,
                                   const VkRenderPass& zPrePassRenderPass,
                                   const VkRenderPass& shadowMapRenderPass) {
@@ -196,6 +199,14 @@ void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
 
   CreateRenderTarget(device, window);
   CreateDepthResources(device);
+  TransitionDepthImageLayout(device);
+
+  for (Draw* draw : draws | std::views::values) {
+    for (const auto& mesh : draw->GetMeshes()) {
+      mesh->UpdateColorDescriptorSets(device.GetLogical(),
+                                      *dynamic_cast<Render*>(owner));
+    }
+  }
   CreateFrameBuffers(device.GetLogical(), colorRenderPass, zPrePassRenderPass,
                      shadowMapRenderPass);
 }
@@ -233,8 +244,8 @@ void SwapChain::TransitionDepthImageLayout(const Device& device) {
       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
   for (Depth& depth : shadowMapDepths) {
-    depth.TransitionDepthImageLayout(
-        device, *dynamic_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    depth.TransitionDepthImageLayout(device, *dynamic_cast<Render*>(owner),
+                                     VK_IMAGE_LAYOUT_UNDEFINED,
+                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
 }

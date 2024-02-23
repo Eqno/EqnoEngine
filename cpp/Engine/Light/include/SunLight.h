@@ -4,6 +4,13 @@
 #include <vulkan/vulkan_core.h>
 
 class SunLight : public BaseLight {
+  float left = -100;
+  float right = 100;
+  float bottom = -100;
+  float top = 100;
+  float near = 0.1f;
+  float far = 1000;
+
  public:
   template <typename... Args>
   explicit SunLight(Args&&... args) : BaseLight(std::forward<Args>(args)...) {}
@@ -12,6 +19,13 @@ class SunLight : public BaseLight {
   virtual void OnCreate() override {
     BaseLight::OnCreate();
     type = LightType::Sun;
+
+    left = JSON_CONFIG(Float, "Left");
+    right = JSON_CONFIG(Float, "Right");
+    bottom = JSON_CONFIG(Float, "Bottom");
+    top = JSON_CONFIG(Float, "Top");
+    near = JSON_CONFIG(Float, "Near");
+    far = JSON_CONFIG(Float, "Far");
   }
 
   virtual void UpdateViewMatrix() override {
@@ -21,7 +35,7 @@ class SunLight : public BaseLight {
   }
 
   virtual void UpdateProjMatrix() override {
-    projMatrix = glm::ortho(-200, 200, -200, 200);
+    projMatrix = glm::ortho(left, right, bottom, top, near, far);
     projMatrix[1][1] *= -1;
   }
 };

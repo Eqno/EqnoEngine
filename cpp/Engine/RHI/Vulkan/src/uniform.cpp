@@ -260,6 +260,34 @@ void Descriptor::UpdateBufferPointers() {
   }
 }
 
+void Descriptor::UpdateColorDescriptorSets(const VkDevice& device,
+                                           Render& render) {
+  for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
+    VkWriteDescriptorSet descriptorWrite;
+
+    uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
+    std::vector<VkDescriptorImageInfo> shadowMapImageInfos(shadowMapDepthNum);
+
+    for (size_t j = 0; j < shadowMapDepthNum; j++) {
+      shadowMapImageInfos[j] = {
+          .sampler = render.GetShadowMapDepthSamplerByIndex(j),
+          .imageView = render.GetShadowMapDepthImageViewByIndex(j),
+          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+      };
+    }
+    descriptorWrite = {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = colorDescriptorSets[i],
+        .dstBinding = static_cast<uint32_t>(UniformBufferNum),
+        .dstArrayElement = 0,
+        .descriptorCount = shadowMapDepthNum,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .pImageInfo = shadowMapImageInfos.data(),
+    };
+    vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+  }
+}
+
 void Descriptor::UpdateUniformBuffer(const uint32_t currentImage) {
   transformBuffer.UpdateUniformBuffer(currentImage);
 

@@ -29,6 +29,10 @@ class Render : public Base {
   SwapChain swapChain;
   uint32_t currentFrame = 0;
 
+  float depthBiasConstantFactor = 1.5f;
+  float depthBiasClamp = 0;
+  float depthBiasSlopeFactor = 2.5f;
+
   std::vector<VkFence> colorInFlightFences;
   std::vector<VkFence> zPrePassInFlightFences;
   int maxFramesInFlight = VulkanConfig::MAX_FRAMES_IN_FLIGHT;
@@ -63,12 +67,13 @@ class Render : public Base {
   void DestroySyncObjects(const VkDevice& device);
 
   void RecordZPrePassCommandBuffer(
-      std::unordered_map<std::string, Draw*>& draws) const;
+      const Device& device, std::unordered_map<std::string, Draw*>& draws);
   void RecordShadowMapCommandBuffer(
       const Device& device, std::unordered_map<std::string, Draw*>& draws,
       BaseLight* light);
-  void RecordColorCommandBuffer(std::unordered_map<std::string, Draw*>& draws,
-                                uint32_t imageIndex) const;
+  void RecordColorCommandBuffer(const Device& device,
+                                std::unordered_map<std::string, Draw*>& draws,
+                                uint32_t imageIndex);
 
   void SubmitCommandBuffer(const Device& device,
                            const VkSemaphore& waitSemaphore,
@@ -82,7 +87,13 @@ class Render : public Base {
                              const std::string& imageFormat,
                              const std::string& colorSpace,
                              const int shadowMapWidth,
-                             const int shadowMapHeight) {
+                             const int shadowMapHeight,
+                             float depthBiasConstantFactor,
+                             float depthBiasClamp, float depthBiasSlopeFactor) {
+    this->depthBiasConstantFactor = depthBiasConstantFactor;
+    this->depthBiasClamp = depthBiasClamp;
+    this->depthBiasSlopeFactor = depthBiasSlopeFactor;
+
     swapChain.CreateRenderTarget(imageFormat, colorSpace, device, window);
     swapChain.SetShadowMapSize(shadowMapWidth, shadowMapHeight);
     swapChain.CreateDepthResources(device);

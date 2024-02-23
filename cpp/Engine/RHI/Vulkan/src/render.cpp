@@ -323,7 +323,7 @@ void Render::EndSingleTimeCommands(const Device& device,
 }
 
 void Render::RecordZPrePassCommandBuffer(
-    std::unordered_map<std::string, Draw*>& draws) const {
+    const Device& device, std::unordered_map<std::string, Draw*>& draws) {
   const VkCommandBuffer& commandBuffer = zPrePassCommandBuffers[currentFrame];
 
   constexpr VkCommandBufferBeginInfo commandBufferBeginInfo{
@@ -390,6 +390,13 @@ void Render::RecordZPrePassCommandBuffer(
     }
   }
   vkCmdEndRenderPass(commandBuffer);
+
+  // Convert shader source to shadow map depth
+  for (uint32_t i = 0; i < GetShadowMapDepthNum(); i++) {
+    swapChain.GetShadowMapDepthByIndex(i).TransitionDepthImageLayout(
+        device, *this, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandBuffer);
+  }
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
   }
@@ -441,7 +448,8 @@ void Render::RecordShadowMapCommandBuffer(
       .extent = {swapChain.GetShadowMapWidth(), swapChain.GetShadowMapHeight()},
   };
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-  vkCmdSetDepthBias(commandBuffer, 0, 0, 0);
+  vkCmdSetDepthBias(commandBuffer, depthBiasConstantFactor, depthBiasClamp,
+                    depthBiasSlopeFactor);
 
   for (Draw* draw : draws | std::views::values) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -469,21 +477,14 @@ void Render::RecordShadowMapCommandBuffer(
   }
   vkCmdEndRenderPass(commandBuffer);
 
-  // Convert shadow map depth to shader source
-  Texture::TransitionImageLayout(
-      device, *this, swapChain.GetShadowMapDepthImageByIndex(light->GetId()),
-      swapChain.GetShadowMapDepthFormat(),
-      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
   }
 }
 
 void Render::RecordColorCommandBuffer(
-    std::unordered_map<std::string, Draw*>& draws,
-    const uint32_t imageIndex) const {
+    const Device& device, std::unordered_map<std::string, Draw*>& draws,
+    const uint32_t imageIndex) {
   const VkCommandBuffer& commandBuffer = colorCommandBuffers[currentFrame];
 
   constexpr VkCommandBufferBeginInfo beginInfo{
@@ -494,6 +495,13 @@ void Render::RecordColorCommandBuffer(
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
     throw std::runtime_error("failed to begin recording command buffer!");
   }
+  // Convert shadow map depth to shader source
+  for (uint32_t i = 0; i < GetShadowMapDepthNum(); i++) {
+    swapChain.GetShadowMapDepthByIndex(i).TransitionDepthImageLayout(
+        device, *this, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBuffer);
+  }
+
   constexpr std::array clearValues{
       VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 1.0f}}},
       VkClearValue{.depthStencil = {1.0f, 0}},
@@ -594,7 +602,7 @@ void Render::DrawFrame(
       imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    swapChain.RecreateSwapChain(device, window, colorRenderPass,
+    swapChain.RecreateSwapChain(device, window, draws, colorRenderPass,
                                 zPrePassRenderPass, shadowMapRenderPass);
     return;
   }
@@ -607,7 +615,7 @@ void Render::DrawFrame(
   vkResetCommandBuffer(zPrePassCommandBuffers[currentFrame],
                        /*VkCommandBufferResetFlagBits*/
                        0);
-  RecordZPrePassCommandBuffer(draws);
+  RecordZPrePassCommandBuffer(device, draws);
   SubmitCommandBuffer(device, imageAvailableSemaphores[currentFrame],
                       zPrePassCommandBuffers[currentFrame],
                       zPrePassFinishedSemaphores[currentFrame],
@@ -638,7 +646,7 @@ void Render::DrawFrame(
   vkResetCommandBuffer(colorCommandBuffers[currentFrame],
                        /*VkCommandBufferResetFlagBits*/
                        0);
-  RecordColorCommandBuffer(draws, imageIndex);
+  RecordColorCommandBuffer(device, draws, imageIndex);
   SubmitCommandBuffer(device, lastSemaphore, colorCommandBuffers[currentFrame],
                       renderFinishedSemaphores[currentFrame],
                       colorInFlightFences[currentFrame]);
@@ -656,7 +664,7 @@ void Render::DrawFrame(
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
       window.GetFrameBufferResized()) {
     window.SetFrameBufferResized(false);
-    swapChain.RecreateSwapChain(device, window, colorRenderPass,
+    swapChain.RecreateSwapChain(device, window, draws, colorRenderPass,
                                 zPrePassRenderPass, shadowMapRenderPass);
   } else if (result != VK_SUCCESS) {
     throw std::runtime_error("failed to present swap chain image!");
