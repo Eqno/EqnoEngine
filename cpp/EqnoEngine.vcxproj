@@ -205,6 +205,7 @@
     <ProjectGuid>{dc2c732a-5a25-41e3-b631-0b6c0e415d43}</ProjectGuid>
     <RootNamespace>GLFWTestVulkan</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>EqnoEngine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

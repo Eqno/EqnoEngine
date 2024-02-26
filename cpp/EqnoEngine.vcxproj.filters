@@ -411,9 +411,6 @@
     <ClInclude Include="Engine\Light\include\SunLight.h">
       <Filter>Engine\Light\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\RHI\Vulkan\include\light.h">
-      <Filter>Engine\RHI\Vulkan\include</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\RHI\Vulkan\deps\libshaderc_util\include\io_shaderc.h">
       <Filter>Engine\RHI\Vulkan\deps\libshaderc_util\include</Filter>
     </ClInclude>
@@ -658,9 +655,6 @@
     </ClCompile>
     <ClCompile Include="Engine\Light\src\SunLight.cpp">
       <Filter>Engine\Light\src</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\RHI\Vulkan\src\light.cpp">
-      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
