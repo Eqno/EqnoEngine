@@ -17,7 +17,7 @@ struct LightData {
 };
 layout(binding = 3) uniform LightsData {
     uint num;
-    LightData object[500];
+    LightData object[MaxLightNum];
 } lights;
 
 layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
@@ -49,7 +49,7 @@ void main() {
         vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition, 1.);
         shadowMapPos /= shadowMapPos.w;
 
-        if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0) {
+        if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0 && lights.object[i].id == 0) {
             shadowMapPos.x = 0.5 * shadowMapPos.x + 0.5;
             shadowMapPos.y = 0.5 * shadowMapPos.y + 0.5;
 

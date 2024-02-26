@@ -10,7 +10,7 @@
     "ShadowMapHeight": -1,
     "ZPrePassShaderPath": "Assets/Shaders/DepthOnly",
     "ShadowMapShaderPath": "Assets/Shaders/DepthOnly",
-    "DepthBiasConstantFactor": 1.5,
+    "DepthBiasConstantFactor": 2,
     "DepthBiasClamp": 0,
-    "DepthBiasSlopeFactor": 2.5
+    "DepthBiasSlopeFactor": 3
 }

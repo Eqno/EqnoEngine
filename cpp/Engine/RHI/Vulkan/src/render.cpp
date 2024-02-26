@@ -587,15 +587,48 @@ void Render::SubmitCommandBuffer(const Device& device,
   }
 }
 
-void Render::DrawFrame(
-    const Device& device, std::unordered_map<std::string, Draw*>& draws,
-    std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
-    Window& window) {
+void Render::WaitFences(
+    const Device& device,
+    std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
   vkWaitForFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame],
                   VK_TRUE, UINT64_MAX);
   vkWaitForFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame],
                   VK_TRUE, UINT64_MAX);
+  auto iter = lightsById.begin();
+  while (iter != lightsById.end()) {
+    if (auto lightPtr = iter->second.lock()) {
+      vkWaitForFences(device.GetLogical(), 1,
+                      &shadowMapInFlightFences[lightPtr->GetId()][currentFrame],
+                      VK_TRUE, UINT64_MAX);
+      iter++;
+    } else {
+      iter = lightsById.erase(iter);
+    }
+  }
+}
 
+void Render::ResetFences(
+    const Device& device,
+    std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
+  vkResetFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame]);
+  vkResetFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame]);
+  auto iter = lightsById.begin();
+  while (iter != lightsById.end()) {
+    if (auto lightPtr = iter->second.lock()) {
+      vkResetFences(device.GetLogical(), 1,
+                    &shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
+      iter++;
+    } else {
+      iter = lightsById.erase(iter);
+    }
+  }
+}
+
+void Render::DrawFrame(
+    const Device& device, std::unordered_map<std::string, Draw*>& draws,
+    std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
+    Window& window) {
+  WaitFences(device, lightsById);
   uint32_t imageIndex;
   auto result = vkAcquireNextImageKHR(
       device.GetLogical(), swapChain.Get(), UINT64_MAX,
@@ -609,8 +642,7 @@ void Render::DrawFrame(
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error("failed to acquire swap chain image!");
   }
-  vkResetFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame]);
-  vkResetFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame]);
+  ResetFences(device, lightsById);
 
   vkResetCommandBuffer(zPrePassCommandBuffers[currentFrame],
                        /*VkCommandBufferResetFlagBits*/
@@ -635,7 +667,8 @@ void Render::DrawFrame(
       SubmitCommandBuffer(
           device, lastSemaphore,
           shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
-          nextSemaphore, nullptr);
+          nextSemaphore,
+          shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
       lastSemaphore = nextSemaphore;
       iter++;
     } else {
@@ -674,6 +707,7 @@ void Render::DrawFrame(
 
 void Render::CreateSyncObjects(const VkDevice& device) {
   shadowMapFinishedSemaphores.resize(GetShadowMapDepthNum());
+  shadowMapInFlightFences.resize(GetShadowMapDepthNum());
 
   imageAvailableSemaphores.resize(maxFramesInFlight);
   zPrePassFinishedSemaphores.resize(maxFramesInFlight);
@@ -684,6 +718,7 @@ void Render::CreateSyncObjects(const VkDevice& device) {
 
   for (int i = 0; i < GetShadowMapDepthNum(); i++) {
     shadowMapFinishedSemaphores[i].resize(maxFramesInFlight);
+    shadowMapInFlightFences[i].resize(maxFramesInFlight);
   }
 
   constexpr VkSemaphoreCreateInfo semaphoreInfo{
@@ -710,7 +745,9 @@ void Render::CreateSyncObjects(const VkDevice& device) {
     }
     for (int j = 0; j < GetShadowMapDepthNum(); j++) {
       if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-                            &shadowMapFinishedSemaphores[j][i]) != VK_SUCCESS) {
+                            &shadowMapFinishedSemaphores[j][i]) != VK_SUCCESS ||
+          vkCreateFence(device, &fenceInfo, nullptr,
+                        &shadowMapInFlightFences[j][i]) != VK_SUCCESS) {
         throw std::runtime_error(
             "failed to create render semaphores or fences!");
       }
@@ -736,6 +773,7 @@ void Render::DestroySyncObjects(const VkDevice& device) {
 
     for (int j = 0; j < GetShadowMapDepthNum(); j++) {
       vkDestroySemaphore(device, shadowMapFinishedSemaphores[j][i], nullptr);
+      vkDestroyFence(device, shadowMapInFlightFences[j][i], nullptr);
     }
 
     vkDestroyFence(device, colorInFlightFences[i], nullptr);

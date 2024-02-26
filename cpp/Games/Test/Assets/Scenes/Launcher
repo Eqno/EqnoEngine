@@ -18,28 +18,14 @@
                 "Scale": "1,1,1"
             }
         }, {
-            "Name": "LampBulb",
-            "Type": "BaseModel",
-            "Path": "Assets/Models/LampBulb/LampBulb",
-            "Camera": "MainCamera",
-            "LightChannel": "All",
+            "Name": "SpotLight",
+            "Type": "SpotLight",
+            "Path": "Assets/Lights/SpotLight",
             "Transform": {
-                "Position": "0,17,-20",
-                "Rotation": "180,0,0",
+                "Position": "0,20,-25",
+                "Rotation": "90,0,0",
                 "Scale": "1,1,1"
-            },
-            "Sons": [
-                {
-                    "Name": "SpotLight",
-                    "Type": "SpotLight",
-                    "Path": "Assets/Lights/SpotLight",
-                    "Transform": {
-                        "Position": "0,3,0",
-                        "Rotation": "-90,0,0",
-                        "Scale": "1,1,1"
-                    }
-                }
-            ]
+            }
         }, {
             "Name": "SunLight",
             "Type": "SunLight",
@@ -85,6 +71,17 @@
                     }
                 }
             ]
+        }, {
+            "Name": "Kurala_Workshop",
+            "Type": "BaseModel",
+            "Path": "Assets/Models/Kurala_Workshop/Kurala_Workshop",
+            "Camera": "MainCamera",
+            "LightChannel": "All",
+            "Transform": {
+                "Position": "45,0,-30",
+                "Rotation": "0,0,0",
+                "Scale": "1,1,1"
+            }
         }
     ]
 }

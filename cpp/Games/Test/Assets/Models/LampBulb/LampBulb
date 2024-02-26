@@ -6,7 +6,7 @@
     "ImportSize": 0.003,
     "Meshes": {
         "Sphere": {
-            "Material": "Assets/Materials/LampBulbMaterial"
+            "Material": "Assets/Materials/DefaultUnLitMaterial"
         }
     }
 }

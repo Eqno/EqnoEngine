@@ -28,6 +28,7 @@ class Depth;
 class Render : public Base {
   SwapChain swapChain;
   uint32_t currentFrame = 0;
+  int maxFramesInFlight = VulkanConfig::MAX_FRAMES_IN_FLIGHT;
 
   float depthBiasConstantFactor = 1.5f;
   float depthBiasClamp = 0;
@@ -35,7 +36,7 @@ class Render : public Base {
 
   std::vector<VkFence> colorInFlightFences;
   std::vector<VkFence> zPrePassInFlightFences;
-  int maxFramesInFlight = VulkanConfig::MAX_FRAMES_IN_FLIGHT;
+  std::vector<std::vector<VkFence>> shadowMapInFlightFences;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> zPrePassFinishedSemaphores;
@@ -118,6 +119,12 @@ class Render : public Base {
   void EndSingleTimeCommands(const Device& device,
                              VkCommandBuffer* commandBuffer) const;
 
+  void WaitFences(
+      const Device& device,
+      std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById);
+  void ResetFences(
+      const Device& device,
+      std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById);
   void DrawFrame(const Device& device,
                  std::unordered_map<std::string, Draw*>& draws,
                  std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
