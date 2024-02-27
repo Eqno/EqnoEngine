@@ -21,6 +21,12 @@ class BaseLight : public SceneObject {
   virtual void OnCreate() override;
   virtual void OnDestroy() override;
   virtual void OnUpdate() override {
+    static int count = 0;
+    count++;
+    if (count > 2000 && id == 0) {
+      Destroy();
+      return;
+    }
     UpdateViewMatrix();
     UpdateProjMatrix();
   }

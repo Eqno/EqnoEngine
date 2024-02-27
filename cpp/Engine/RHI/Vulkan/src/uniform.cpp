@@ -6,6 +6,7 @@
 #include <Engine/Model/include/BaseMaterial.h>
 
 #include <chrono>
+#include <ranges>
 #include <stdexcept>
 
 #include "../include/buffer.h"
@@ -28,9 +29,8 @@ void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
         static_cast<uint32_t>(render.GetMaxFramesInFlight());
   }
   poolSizes[UniformBufferNum].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  poolSizes[UniformBufferNum].descriptorCount =
-      render.GetShadowMapDepthNum() *
-      static_cast<uint32_t>(render.GetMaxFramesInFlight());
+  poolSizes[UniformBufferNum].descriptorCount = static_cast<uint32_t>(
+      render.GetMaxFramesInFlight() * render.GetShadowMapDepthNum());
   for (size_t i = 1; i < 1 + textureNum; i++) {
     poolSizes[i + UniformBufferNum].type =
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -67,8 +67,9 @@ void Descriptor::CreateZPrePassDescriptorPool(const VkDevice& device,
   }
 }
 
-void Descriptor::CreateShadowMapDescriptorPool(const VkDevice& device,
-                                               const Render& render) {
+void Descriptor::CreateShadowMapDescriptorPool(
+    const VkDevice& device, const Render& render,
+    VkDescriptorPool& descriptorPool) {
   VkDescriptorPoolSize poolSize{
       .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .descriptorCount = static_cast<uint32_t>(render.GetMaxFramesInFlight())};
@@ -79,8 +80,8 @@ void Descriptor::CreateShadowMapDescriptorPool(const VkDevice& device,
       .poolSizeCount = 1,
       .pPoolSizes = &poolSize,
   };
-  if (vkCreateDescriptorPool(device, &poolInfo, nullptr,
-                             &shadowMapDescriptorPool) != VK_SUCCESS) {
+  if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) !=
+      VK_SUCCESS) {
     throw std::runtime_error("failed to create descriptor pool!");
   }
 }
@@ -113,8 +114,6 @@ void Descriptor::CreateShadowMapDescriptorPool(const VkDevice& device,
   }
 #define AddZPrePassDescriptorWrites() \
   AddDescriptorWrite(zPrePass, 0, TransformData, &transformBuffer)
-#define AddShadowMapDescriptorWrites() \
-  AddDescriptorWrite(shadowMap, 0, TransformData, &shadowMapBuffer);
 
 void Descriptor::CreateColorDescriptorSets(
     const VkDevice& device, Render& render,
@@ -215,30 +214,41 @@ void Descriptor::CreateZPrePassDescriptorSets(
 
 void Descriptor::CreateShadowMapDescriptorSets(
     const VkDevice& device, const Render& render,
-    const VkDescriptorSetLayout& descriptorSetLayout) {
+    const VkDescriptorSetLayout& descriptorSetLayout,
+    const VkDescriptorPool& descriptorPool,
+    const ShadowMapBuffer& shadowMapBuffer, DescriptorSets& descriptorSets) {
   const std::vector layouts(render.GetMaxFramesInFlight(), descriptorSetLayout);
 
   const VkDescriptorSetAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-      .descriptorPool = shadowMapDescriptorPool,
+      .descriptorPool = descriptorPool,
       .descriptorSetCount =
           static_cast<uint32_t>(render.GetMaxFramesInFlight()),
       .pSetLayouts = layouts.data(),
   };
 
-  shadowMapDescriptorSets.resize(render.GetMaxFramesInFlight());
-  if (vkAllocateDescriptorSets(device, &allocInfo,
-                               shadowMapDescriptorSets.data()) != VK_SUCCESS) {
+  descriptorSets.resize(render.GetMaxFramesInFlight());
+  if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) !=
+      VK_SUCCESS) {
     throw std::runtime_error("Failed to allocate descriptor sets!");
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    std::vector<VkWriteDescriptorSet> descriptorWrites(1);
-    AddShadowMapDescriptorWrites();
-
-    vkUpdateDescriptorSets(device,
-                           static_cast<uint32_t>(descriptorWrites.size()),
-                           descriptorWrites.data(), 0, nullptr);
+    VkDescriptorBufferInfo bufferInfo{
+        .buffer = shadowMapBuffer.GetUniformBufferByIndex(i),
+        .offset = 0,
+        .range = sizeof(TransformData),
+    };
+    VkWriteDescriptorSet descriptorWrite{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = descriptorSets[i],
+        .dstBinding = 0,
+        .dstArrayElement = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = &bufferInfo,
+    };
+    vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
   }
 }
 
@@ -331,12 +341,30 @@ void ShadowMapBuffer::UpdateUniformBuffer(const uint32_t currentImage,
   }
 }
 
+void Descriptor::UpdateShadowMapUniformBuffers(
+    const Device& device, const Render& render, const uint32_t currentImage,
+    std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
+  auto iter = lightsById.begin();
+  while (iter != lightsById.end()) {
+    if (auto lightPtr = iter->second.lock()) {
+      CreateShadowMapUniformBufferByIndex(device, render, lightPtr->GetId())
+          .UpdateUniformBuffer(currentImage, lightPtr.get());
+      CreateShadowMapDescriptorSetByIndices(device, render, lightPtr->GetId(),
+                                            currentImage);
+      iter++;
+    } else {
+      RemoveShadowMapUniformBufferByIndex(device.GetLogical(), render,
+                                          iter->first);
+      RemoveShadowMapDescriptorSetsByIndex(device.GetLogical(), iter->first);
+      iter = lightsById.erase(iter);
+    }
+  }
+}
+
 /////////////////////////// BUFFER ///////////////////////////
 
-void Descriptor::CreateUniformBuffer(const Device& device,
-                                     const Render& render) {
+void Descriptor::CreateUniformBuffer(const Device& device, Render& render) {
   transformBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
-  shadowMapBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
 
   UpdateBufferPointers();
   if (bufferManager == nullptr) {
@@ -359,7 +387,10 @@ void Descriptor::CreateUniformBuffer(const Device& device,
 void Descriptor::DestroyUniformBuffer(const VkDevice& device,
                                       const Render& render) {
   transformBuffer.DestroyUniformBuffer(device, render);
-  shadowMapBuffer.DestroyUniformBuffer(device, render);
+  for (const ShadowMapBuffer& shadowMapBuffer :
+       shadowMapBuffers | std::views::values) {
+    shadowMapBuffer.DestroyUniformBuffer(device, render);
+  }
 
   if (bufferManager == nullptr) {
     return;
@@ -380,22 +411,23 @@ void Descriptor::CreateDescriptor(
 
   CreateColorDescriptorPool(device.GetLogical(), render, textures.size());
   CreateZPrePassDescriptorPool(device.GetLogical(), render);
-  CreateShadowMapDescriptorPool(device.GetLogical(), render);
 
   CreateColorDescriptorSets(device.GetLogical(), render,
                             colorDescriptorSetLayout, textures);
   CreateZPrePassDescriptorSets(device.GetLogical(), render,
                                zPrePassDescriptorSetLayout);
-  CreateShadowMapDescriptorSets(device.GetLogical(), render,
-                                shadowMapDescriptorSetLayout);
+
+  this->shadowMapDescriptorSetLayout = shadowMapDescriptorSetLayout;
 }
 
 void Descriptor::DestroyDesciptor(const VkDevice& device,
                                   const Render& render) {
   vkDestroyDescriptorPool(device, colorDescriptorPool, nullptr);
   vkDestroyDescriptorPool(device, zPrePassDescriptorPool, nullptr);
-  vkDestroyDescriptorPool(device, shadowMapDescriptorPool, nullptr);
-
+  for (const VkDescriptorPool& descriptorPool :
+       shadowMapDescriptorPools | std::views::values) {
+    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+  }
   DestroyUniformBuffer(device, render);
 }
 
@@ -413,4 +445,67 @@ std::weak_ptr<MeshData> Descriptor::GetBridgeData() {
 
 #undef AddColorDescriptorWrites
 #undef AddZPrePassDescriptorWrites
-#undef AddShadowMapDescriptorWrites
+
+ShadowMapBuffer& Descriptor::CreateShadowMapUniformBufferByIndex(
+    const Device& device, const Render& render, const uint32_t lightId) {
+  if (shadowMapBuffers.contains(lightId) == false) {
+    RegisterMember(shadowMapBuffers[lightId]);
+    shadowMapBuffers[lightId].CreateUniformBuffer(device, render,
+                                                  sizeof(TransformData));
+  }
+  return shadowMapBuffers[lightId];
+}
+
+void Descriptor::RemoveShadowMapUniformBufferByIndex(const VkDevice& device,
+                                                     const Render& render,
+                                                     const uint32_t lightId) {
+  if (shadowMapBuffers.contains(lightId)) {
+    shadowMapBuffers[lightId].DestroyUniformBuffer(device, render);
+    shadowMapBuffers.erase(lightId);
+  }
+}
+
+const VkDescriptorPool& Descriptor::CreateShadowMapDescriptorPoolByIndex(
+    const VkDevice& device, const Render& render, const uint32_t lightId) {
+  if (shadowMapDescriptorPools.contains(lightId) == false) {
+    CreateShadowMapDescriptorPool(device, render,
+                                  shadowMapDescriptorPools[lightId]);
+  }
+  return shadowMapDescriptorPools[lightId];
+}
+
+void Descriptor::RemoveShadowMapDescriptorPoolByIndex(const VkDevice& device,
+                                                      const uint32_t lightId) {
+  if (shadowMapDescriptorPools.contains(lightId)) {
+    vkDestroyDescriptorPool(device, shadowMapDescriptorPools[lightId], nullptr);
+    shadowMapDescriptorPools.erase(lightId);
+  }
+}
+
+const DescriptorSets& Descriptor::CreateShadowMapDescriptorSetsByIndex(
+    const Device& device, const Render& render, const uint32_t lightId) {
+  if (shadowMapDescriptorSets.contains(lightId) == false) {
+    CreateShadowMapDescriptorSets(
+        device.GetLogical(), render, shadowMapDescriptorSetLayout,
+        CreateShadowMapDescriptorPoolByIndex(device.GetLogical(), render,
+                                             lightId),
+        CreateShadowMapUniformBufferByIndex(device, render, lightId),
+        shadowMapDescriptorSets[lightId]);
+  }
+  return shadowMapDescriptorSets[lightId];
+}
+
+const VkDescriptorSet& Descriptor::CreateShadowMapDescriptorSetByIndices(
+    const Device& device, const Render& render, const uint32_t lightId,
+    const uint32_t currentFrame) {
+  return CreateShadowMapDescriptorSetsByIndex(device, render,
+                                              lightId)[currentFrame];
+}
+
+void Descriptor::RemoveShadowMapDescriptorSetsByIndex(const VkDevice& device,
+                                                      const uint32_t lightId) {
+  if (shadowMapDescriptorSets.contains(lightId)) {
+    RemoveShadowMapDescriptorPoolByIndex(device, lightId);
+    shadowMapDescriptorSets.erase(lightId);
+  }
+}

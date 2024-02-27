@@ -32,7 +32,8 @@ void Vulkan::InitGraphics() {
       JSON_CONFIG(Float, "DepthBiasSlopeFactor"));
 }
 
-void Vulkan::TriggerOnUpdate() {
+void Vulkan::TriggerOnUpdate(
+    std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
   auto drawIter = draws.begin();
   while (drawIter != draws.end()) {
     auto& meshes = drawIter->second->GetMeshes();
@@ -46,6 +47,8 @@ void Vulkan::TriggerOnUpdate() {
       } else {
         // Update uniform buffer if mesh alive
         (*meshIter)->UpdateUniformBuffer(render.GetCurrentFrame());
+        (*meshIter)->UpdateShadowMapUniformBuffers(
+            device, render, render.GetCurrentFrame(), lightsById);
         meshIter++;
       }
     }
@@ -68,6 +71,17 @@ void Vulkan::RendererLoop() {
     seconds duration = nowTime - lastTime;
     DeltaTime = duration.count();
     lastTime = nowTime;
+
+    Input::RecordDownUpFlags();
+    if (auto ownerPtr = _owner.lock()) {
+      std::dynamic_pointer_cast<Application>(ownerPtr)->TriggerOnUpdate();
+    }
+    if (auto ownerPtr = _owner.lock()) {
+      if (auto appPtr = dynamic_pointer_cast<Application>(ownerPtr)) {
+        TriggerOnUpdate(appPtr->GetLightsById());
+      }
+    }
+    Input::ResetDownUpFlags();
 
     glfwPollEvents();
     bool frameDrawn = false;
@@ -92,13 +106,6 @@ void Vulkan::RendererLoop() {
     for (auto& buffer : bufferManager.lightChannelBuffers) {
       buffer.second.second.updateLock = false;
     }
-
-    Input::RecordDownUpFlags();
-    if (auto ownerPtr = _owner.lock()) {
-      std::dynamic_pointer_cast<Application>(ownerPtr)->TriggerOnUpdate();
-    }
-    TriggerOnUpdate();
-    Input::ResetDownUpFlags();
   }
 }
 

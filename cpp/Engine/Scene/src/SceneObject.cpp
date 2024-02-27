@@ -106,6 +106,7 @@ void SceneObject::OnDestroy() {
         parentPtr->GetSons().erase(iter);
         break;
       }
+      iter++;
     }
   }
 }

@@ -460,8 +460,6 @@ void Render::RecordShadowMapCommandBuffer(
                       draw->GetShadowMapGraphicsPipeline());
 
     for (const auto& mesh : draw->GetMeshes()) {
-      mesh->UpdateShadowMapUniformBuffer(currentFrame, light);
-      
       const VkBuffer vertexBuffers[] = {mesh->GetVertexBuffer()};
       constexpr VkDeviceSize offsets[] = {0};
       vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -469,10 +467,11 @@ void Render::RecordShadowMapCommandBuffer(
       vkCmdBindIndexBuffer(commandBuffer, mesh->GetIndexBuffer(), 0,
                            VK_INDEX_TYPE_UINT32);
 
-      vkCmdBindDescriptorSets(
-          commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-          draw->GetShadowMapPipelineLayout(), 0, 1,
-          &mesh->GetShadowMapDescriptorSetByIndex(currentFrame), 0, nullptr);
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                              draw->GetShadowMapPipelineLayout(), 0, 1,
+                              &mesh->GetShadowMapDescriptorSetByIndices(
+                                  light->GetId(), currentFrame),
+                              0, nullptr);
 
       vkCmdDrawIndexed(commandBuffer,
                        static_cast<uint32_t>(mesh->GetIndices().size()), 1, 0,
@@ -600,15 +599,12 @@ void Render::WaitFences(
                   VK_TRUE, UINT64_MAX);
   vkWaitForFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame],
                   VK_TRUE, UINT64_MAX);
-  auto iter = lightsById.begin();
-  while (iter != lightsById.end()) {
-    if (auto lightPtr = iter->second.lock()) {
+
+  for (const auto& iter : lightsById) {
+    if (auto lightPtr = iter.second.lock()) {
       vkWaitForFences(device.GetLogical(), 1,
                       &shadowMapInFlightFences[lightPtr->GetId()][currentFrame],
                       VK_TRUE, UINT64_MAX);
-      iter++;
-    } else {
-      iter = lightsById.erase(iter);
     }
   }
 }
@@ -618,14 +614,11 @@ void Render::ResetFences(
     std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
   vkResetFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame]);
   vkResetFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame]);
-  auto iter = lightsById.begin();
-  while (iter != lightsById.end()) {
-    if (auto lightPtr = iter->second.lock()) {
+
+  for (const auto& iter : lightsById) {
+    if (auto lightPtr = iter.second.lock()) {
       vkResetFences(device.GetLogical(), 1,
                     &shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
-      iter++;
-    } else {
-      iter = lightsById.erase(iter);
     }
   }
 }
@@ -660,9 +653,8 @@ void Render::DrawFrame(
                       zPrePassInFlightFences[currentFrame]);
 
   VkSemaphore lastSemaphore = zPrePassFinishedSemaphores[currentFrame];
-  auto iter = lightsById.begin();
-  while (iter != lightsById.end()) {
-    if (auto lightPtr = iter->second.lock()) {
+  for (const auto& iter : lightsById) {
+    if (auto lightPtr = iter.second.lock()) {
       vkResetCommandBuffer(
           shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
           /*VkCommandBufferResetFlagBits*/
@@ -676,9 +668,6 @@ void Render::DrawFrame(
           nextSemaphore,
           shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
       lastSemaphore = nextSemaphore;
-      iter++;
-    } else {
-      iter = lightsById.erase(iter);
     }
   }
 

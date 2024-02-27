@@ -93,7 +93,9 @@ void BaseScene::UnregisterMaterial(const std::string& name) {
 void BaseScene::UnregisterCamera(const std::string& name) {
   cameras.erase(name);
 }
-void BaseScene::UnregisterLight(const std::string& name) { lights.erase(name); }
+void BaseScene::UnregisterLight(const std::string& name) { 
+    std::cout << lights[name].use_count() << std::endl;
+    lights.erase(name); }
 void BaseScene::UnregisterLightChannel(const std::string& name) {
   lightChannels.erase(name);
 }

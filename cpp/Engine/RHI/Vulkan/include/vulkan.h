@@ -28,7 +28,8 @@ class Vulkan final : public GraphicsInterface, public Base {
 
   void CreateWindow(const std::string& title) override;
   void InitGraphics() override;
-  void TriggerOnUpdate() override;
+  void TriggerOnUpdate(
+      std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById);
   void RendererLoop() override;
   void CleanupGraphics() override;
 

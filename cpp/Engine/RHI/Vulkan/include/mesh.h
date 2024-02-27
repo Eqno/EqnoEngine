@@ -51,7 +51,15 @@ class Mesh : public Base {
 
   DEFINE_GET_DESCRIPTOR_SET(Color)
   DEFINE_GET_DESCRIPTOR_SET(ZPrePass)
-  DEFINE_GET_DESCRIPTOR_SET(ShadowMap)
+
+  [[nodiscard]] const DescriptorSets& GetShadowMapDescriptorSetsByIndex(
+      const uint32_t index) {
+    return descriptor.GetShadowMapDescriptorSetsByIndex(index);
+  }
+  [[nodiscard]] const VkDescriptorSet& GetShadowMapDescriptorSetByIndices(
+      const uint32_t lightId, const uint32_t currentFrame) {
+    return descriptor.GetShadowMapDescriptorSetByIndices(lightId, currentFrame);
+  }
 
   void UpdateColorDescriptorSets(const VkDevice& device, Render& render) {
     descriptor.UpdateColorDescriptorSets(device, render);
@@ -59,9 +67,11 @@ class Mesh : public Base {
   void UpdateUniformBuffer(const uint32_t currentImage) {
     descriptor.UpdateUniformBuffer(currentImage);
   }
-  void UpdateShadowMapUniformBuffer(const uint32_t currentImage,
-                                    BaseLight* shadowMapLight) {
-    descriptor.UpdateShadowMapUniformBuffer(currentImage, shadowMapLight);
+  void UpdateShadowMapUniformBuffers(
+      const Device& device, Render& render, const uint32_t currentImage,
+      std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
+    descriptor.UpdateShadowMapUniformBuffers(device, render, currentImage,
+                                             lightsById);
   }
 
   explicit Mesh(Base* owner) : Base(owner) {}
