@@ -3,7 +3,7 @@
     
     "LightChannels": {
         "All": [
-            "SunLight", "SpotLight", "SunLight2"
+            "SunLight", "SpotLight", "SpotLight2", "SpotLight3"
         ],
         "None": []
     },
@@ -19,6 +19,24 @@
             }
         }, {
             "Name": "SpotLight",
+            "Type": "SpotLight",
+            "Path": "Assets/Lights/SpotLight",
+            "Transform": {
+                "Position": "0,20,-25",
+                "Rotation": "90,0,0",
+                "Scale": "1,1,1"
+            }
+        }, {
+            "Name": "SpotLight2",
+            "Type": "SpotLight",
+            "Path": "Assets/Lights/SpotLight",
+            "Transform": {
+                "Position": "0,20,-25",
+                "Rotation": "90,0,0",
+                "Scale": "1,1,1"
+            }
+        }, {
+            "Name": "SpotLight3",
             "Type": "SpotLight",
             "Path": "Assets/Lights/SpotLight",
             "Transform": {

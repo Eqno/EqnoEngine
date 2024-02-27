@@ -200,6 +200,7 @@ void Render::CreateShadowMapRenderPass(const Device& device) {
       .srcAccessMask = VK_ACCESS_SHADER_READ_BIT,
       .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+      .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
   };
   constexpr VkSubpassDependency depEndFromDepthBuffer{
       .srcSubpass = 0,
@@ -210,6 +211,7 @@ void Render::CreateShadowMapRenderPass(const Device& device) {
       .srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
       .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+      .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
   };
   std::array dependencies{depBegToDepthBuffer, depEndFromDepthBuffer};
   const VkRenderPassCreateInfo renderPassInfo{
@@ -240,7 +242,8 @@ void Render::CreateCommandPool(const Device& device,
 
   const VkCommandPoolCreateInfo poolInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-      .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+      .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
+               VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
       .queueFamilyIndex =
           graphicsFamily.has_value() ? graphicsFamily.value() : 0,
   };
@@ -416,6 +419,7 @@ void Render::RecordShadowMapCommandBuffer(
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
     throw std::runtime_error("failed to begin recording command buffer!");
   }
+
   constexpr std::array clearValues{
       VkClearValue{.depthStencil = {1.0f, 0}},
   };
@@ -457,7 +461,7 @@ void Render::RecordShadowMapCommandBuffer(
 
     for (const auto& mesh : draw->GetMeshes()) {
       mesh->UpdateShadowMapUniformBuffer(currentFrame, light);
-
+      
       const VkBuffer vertexBuffers[] = {mesh->GetVertexBuffer()};
       constexpr VkDeviceSize offsets[] = {0};
       vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -569,7 +573,9 @@ void Render::SubmitCommandBuffer(const Device& device,
                                  const VkSemaphore& signalSemaphore,
                                  const VkFence waitFence) {
   constexpr VkPipelineStageFlags waitStages[] = {
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+      VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+  };
 
   const VkSubmitInfo submitInfo{
       .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

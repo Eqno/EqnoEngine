@@ -144,7 +144,7 @@ void Descriptor::CreateColorDescriptorSets(
     uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
     std::vector<VkDescriptorImageInfo> shadowMapImageInfos(shadowMapDepthNum);
 
-    for (size_t j = 0; j < shadowMapDepthNum; j++) {
+    for (uint32_t j = 0; j < shadowMapDepthNum; j++) {
       shadowMapImageInfos[j] = {
           .sampler = render.GetShadowMapDepthSamplerByIndex(j),
           .imageView = render.GetShadowMapDepthImageViewByIndex(j),

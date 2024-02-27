@@ -5,7 +5,7 @@
 #include <vulkan/vulkan_core.h>
 
 namespace VulkanConfig {
-	constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+	constexpr int MAX_FRAMES_IN_FLIGHT = 3;
 	constexpr bool ENABLE_VALIDATION_LAYER = true;
 
 	constexpr int DEFAULT_WINDOW_WIDTH = 800;

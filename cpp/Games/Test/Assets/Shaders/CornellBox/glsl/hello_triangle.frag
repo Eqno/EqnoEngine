@@ -49,7 +49,7 @@ void main() {
         vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition, 1.);
         shadowMapPos /= shadowMapPos.w;
 
-        if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0 && lights.object[i].id == 0) {
+        if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0  && shadowMapPos.z > -1.0 && shadowMapPos.z < 1.0) {
             shadowMapPos.x = 0.5 * shadowMapPos.x + 0.5;
             shadowMapPos.y = 0.5 * shadowMapPos.y + 0.5;
 
