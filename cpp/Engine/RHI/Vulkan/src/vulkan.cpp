@@ -63,49 +63,53 @@ void Vulkan::TriggerOnUpdate(
   }
 }
 
-void Vulkan::RendererLoop() {
-  while (!glfwWindowShouldClose(window.window)) {
-    static auto lastTime = std::chrono::steady_clock::now();
-    auto nowTime = std::chrono::steady_clock::now();
+void Vulkan::GetAppPointer() {
+  if (auto ownerPtr = _owner.lock()) {
+    if (auto appPtr = dynamic_pointer_cast<Application>(ownerPtr)) {
+      appPointer = appPtr.get();
+    }
+  }
+}
 
-    seconds duration = nowTime - lastTime;
-    DeltaTime = duration.count();
-    lastTime = nowTime;
+void Vulkan::UpdateDeltaTime() {
+  static auto lastTime = std::chrono::steady_clock::now();
+  auto nowTime = std::chrono::steady_clock::now();
+
+  seconds duration = nowTime - lastTime;
+  DeltaTime = duration.count();
+  lastTime = nowTime;
+}
+
+void Vulkan::ReleaseBufferLocks() {
+  for (auto& buffer : bufferManager.cameraBuffers) {
+    buffer.second.second.updateLock = false;
+  }
+  for (auto& buffer : bufferManager.materialBuffers) {
+    buffer.second.second.updateLock = false;
+  }
+  for (auto& buffer : bufferManager.lightChannelBuffers) {
+    buffer.second.second.updateLock = false;
+  }
+}
+
+void Vulkan::RendererLoop() {
+  GetAppPointer();
+  if (appPointer == nullptr) {
+    return;
+  }
+
+  while (!glfwWindowShouldClose(window.window)) {
+    UpdateDeltaTime();
 
     Input::RecordDownUpFlags();
-    if (auto ownerPtr = _owner.lock()) {
-      std::dynamic_pointer_cast<Application>(ownerPtr)->TriggerOnUpdate();
-    }
-    if (auto ownerPtr = _owner.lock()) {
-      if (auto appPtr = dynamic_pointer_cast<Application>(ownerPtr)) {
-        TriggerOnUpdate(appPtr->GetLightsById());
-      }
-    }
+    appPointer->TriggerOnUpdate();
+    TriggerOnUpdate(appPointer->GetLightsById());
+    ReleaseBufferLocks();
     Input::ResetDownUpFlags();
 
     glfwPollEvents();
-    bool frameDrawn = false;
-    if (auto ownerPtr = _owner.lock()) {
-      if (auto appPtr = dynamic_pointer_cast<Application>(ownerPtr)) {
-        render.DrawFrame(device, draws, appPtr->GetLightsById(), window);
-        frameDrawn = true;
-      }
-    }
-    if (frameDrawn == false) {
-      std::unordered_map<int, std::weak_ptr<BaseLight>> lightsById;
-      render.DrawFrame(device, draws, lightsById, window);
-    }
+    render.DrawFrame(device, draws, appPointer->GetLightsById(), window);
     device.WaitIdle();
-
-    for (auto& buffer : bufferManager.cameraBuffers) {
-      buffer.second.second.updateLock = false;
-    }
-    for (auto& buffer : bufferManager.materialBuffers) {
-      buffer.second.second.updateLock = false;
-    }
-    for (auto& buffer : bufferManager.lightChannelBuffers) {
-      buffer.second.second.updateLock = false;
-    }
   }
 }
 

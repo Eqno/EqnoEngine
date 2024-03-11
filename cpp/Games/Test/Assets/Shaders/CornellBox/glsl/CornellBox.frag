@@ -31,10 +31,10 @@ layout(location = 3) in vec2 fragTexCoord;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    float ambientStrength = .2;
-    float diffuseStrength = .4;
+    float ambientStrength = .3;
+    float diffuseStrength = .6;
     float shininessStrength = 2.;
-    float specularStrength = .4;
+    float specularStrength = .8;
 
     vec4 ambient = vec4(0.);
     vec4 diffuse = vec4(0.);

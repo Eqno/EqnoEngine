@@ -194,21 +194,21 @@ void LightChannelBuffer::UpdateUniformBuffer(LightChannel* lightChannel,
   LightChannelData* buffer =
       reinterpret_cast<LightChannelData*>(uniformBuffersMapped[currentImage]);
 
-  std::vector<std::weak_ptr<BaseLight>>& lights = lightChannel->GetLights();
-  buffer->num = lights.size();
+  int lightCount = 0;
+  auto getLightsFunc = lightChannel->GetLights();
+  while (BaseLight* lightPtr = getLightsFunc()) {
+    buffer->object[lightCount].id = lightPtr->GetId();
+    buffer->object[lightCount].type = lightPtr->GetType();
+    buffer->object[lightCount].intensity = lightPtr->GetIntensity();
+    buffer->object[lightCount].color = lightPtr->GetColor();
 
-  for (int i = 0; i < lights.size(); ++i) {
-    if (auto lightPtr = lights[i].lock()) {
-      buffer->object[i].id = lightPtr->GetId();
-      buffer->object[i].type = lightPtr->GetType();
-      buffer->object[i].intensity = lightPtr->GetIntensity();
-      buffer->object[i].color = lightPtr->GetColor();
+    buffer->object[lightCount].pos = lightPtr->GetAbsolutePosition();
+    buffer->object[lightCount].normal = lightPtr->GetAbsoluteForward();
 
-      buffer->object[i].pos = lightPtr->GetAbsolutePosition();
-      buffer->object[i].normal = lightPtr->GetAbsoluteForward();
+    buffer->object[lightCount].viewMatrix = lightPtr->GetViewMatrix();
+    buffer->object[lightCount].projMatrix = lightPtr->GetProjMatrix();
 
-      buffer->object[i].viewMatrix = lightPtr->GetViewMatrix();
-      buffer->object[i].projMatrix = lightPtr->GetProjMatrix();
-    }
+    lightCount++;
   }
+  buffer->num = lightCount;
 }

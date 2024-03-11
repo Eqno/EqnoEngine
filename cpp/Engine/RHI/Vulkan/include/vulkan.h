@@ -19,6 +19,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   Validation validation;
 
   BufferManager bufferManager;
+  Application* appPointer = nullptr;
   std::unordered_map<std::string, Draw*> draws;
 
  public:
@@ -32,6 +33,10 @@ class Vulkan final : public GraphicsInterface, public Base {
       std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById);
   void RendererLoop() override;
   void CleanupGraphics() override;
+
+  void GetAppPointer();
+  void UpdateDeltaTime();
+  void ReleaseBufferLocks();
 
   BufferManager& GetBufferManager() { return bufferManager; }
   void ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) override;

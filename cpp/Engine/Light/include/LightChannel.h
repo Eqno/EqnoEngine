@@ -2,6 +2,7 @@
 
 #include <Engine/Light/include/BaseLight.h>
 
+#include <list>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -9,7 +10,8 @@
 class LightChannel : public BaseObject {
   std::weak_ptr<BaseScene> scene;
   std::string name = "Unset";
-  std::vector<std::weak_ptr<BaseLight>> lights;
+  std::list<std::weak_ptr<BaseLight>> lights;
+  std::list<std::weak_ptr<BaseLight>>::iterator lightsIter;
 
  public:
   template <typename... Args>
@@ -24,5 +26,19 @@ class LightChannel : public BaseObject {
   }
 
   const std::string& GetName() { return name; }
-  std ::vector<std::weak_ptr<BaseLight>>& GetLights() { return lights; }
+  std::function<BaseLight*()> GetLights() {
+    lightsIter = lights.begin();
+    return [&]() -> BaseLight* {
+      while (lightsIter != lights.end()) {
+        if (auto lightPtr = lightsIter->lock()) {
+          auto ret = lightPtr.get();
+          lightsIter++;
+          return ret;
+        } else {
+          lightsIter = lights.erase(lightsIter);
+        }
+      }
+      return nullptr;
+    };
+  }
 };

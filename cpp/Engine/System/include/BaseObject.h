@@ -102,6 +102,7 @@ class BaseObject : public std::enable_shared_from_this<BaseObject> {
   BaseObject(const BaseObject& app) = delete;
   BaseObject(BaseObject&& app) = delete;
 
+
   virtual void OnCreate();
   virtual void OnStart();
   virtual void OnUpdate();

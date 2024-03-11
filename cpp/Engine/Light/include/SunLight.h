@@ -28,6 +28,8 @@ class SunLight : public BaseLight {
     far = JSON_CONFIG(Float, "Far");
   }
 
+  virtual void OnUpdate() { BaseLight::OnUpdate(); }
+
   virtual void UpdateViewMatrix() override {
     viewMatrix = lookAt(transform.absolutePosition,
                         transform.absolutePosition + transform.absoluteForward,
