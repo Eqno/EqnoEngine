@@ -5,6 +5,9 @@
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/Utility/include/JsonUtils.h>
 
+#include <mutex>
+#include <thread>
+
 void Vulkan::CreateWindow(const std::string& title) {
   int width = JSON_CONFIG(Int, "DefaultWindowWidth");
   int height = JSON_CONFIG(Int, "DefaultWindowHeight");
@@ -92,25 +95,33 @@ void Vulkan::ReleaseBufferLocks() {
   }
 }
 
-void Vulkan::RendererLoop() {
-  GetAppPointer();
-  if (appPointer == nullptr) {
-    return;
-  }
-
-  while (!glfwWindowShouldClose(window.window)) {
+void Vulkan::GameLoop() {
+  while (GetRenderLoopEnd() == false) {
     UpdateDeltaTime();
 
     Input::RecordDownUpFlags();
     appPointer->TriggerOnUpdate();
+    Input::ResetDownUpFlags();
+  }
+}
+
+void Vulkan::RenderLoop() {
+  GetAppPointer();
+  if (appPointer == nullptr) {
+    return;
+  }
+  SetRenderLoopEnd(false);
+  std::thread(&Vulkan::GameLoop, this).detach();
+  while (!glfwWindowShouldClose(window.window)) {
+    ParseMeshDatas();
     TriggerOnUpdate(appPointer->GetLightsById());
     ReleaseBufferLocks();
-    Input::ResetDownUpFlags();
 
     glfwPollEvents();
     render.DrawFrame(device, draws, appPointer->GetLightsById(), window);
     device.WaitIdle();
   }
+  SetRenderLoopEnd(true);
 }
 
 void Vulkan::CleanupGraphics() {
@@ -128,51 +139,68 @@ void Vulkan::CleanupGraphics() {
   window.DestroyWindow();
 }
 
-void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) {
-  for (std::weak_ptr<MeshData> meshData : meshDatas) {
-    auto mesh = meshData.lock();
-    if (!mesh) {
-      return;
-    }
-    if (auto materialPtr = mesh->uniform.material.lock()) {
-      std::vector<std::string>& shaders = materialPtr->GetShaders();
-      if (shaders.empty()) {
-        continue;
-      }
+void Vulkan::ParseMeshDatas() {
+  if (needToUpdateMeshDatas.exchange(false)) {
+    updateMeshDataMutex.lock();
 
-      mesh->uniform.bufferManager = &bufferManager;
-      if (draws.contains(shaders[0])) {
-        draws[shaders[0]]->LoadDrawResource(device, render, mesh);
-      } else {
-        int findFallbackIndex = -1;
-        for (int i = 1; i < shaders.size(); i++) {
-          if (draws.contains(shaders[i])) {
-            findFallbackIndex = i;
-            break;
+    while (meshDataQueue.empty() == false) {
+      std::vector<std::weak_ptr<MeshData>>& meshDatas = meshDataQueue.front();
+
+      for (std::weak_ptr<MeshData> meshData : meshDatas) {
+        auto mesh = meshData.lock();
+        if (!mesh) {
+          continue;
+        }
+        if (auto materialPtr = mesh->uniform.material.lock()) {
+          std::vector<std::string>& shaders = materialPtr->GetShaders();
+          if (shaders.empty()) {
+            continue;
+          }
+
+          mesh->uniform.bufferManager = &bufferManager;
+          if (draws.contains(shaders[0])) {
+            draws[shaders[0]]->LoadDrawResource(device, render, mesh);
+          } else {
+            int findFallbackIndex = -1;
+            for (int i = 1; i < shaders.size(); i++) {
+              if (draws.contains(shaders[i])) {
+                findFallbackIndex = i;
+                break;
+              }
+            }
+
+            Draw* draw = Base::Create<Draw>(
+                device, render, GetRoot(), mesh->textures.size(), shaders,
+                JSON_CONFIG(String, "ZPrePassShaderPath"),
+                JSON_CONFIG(String, "ShadowMapShaderPath"));
+            int createFallbackIndex = draw->GetShaderFallbackIndex();
+
+            if (findFallbackIndex != -1 &&
+                findFallbackIndex < createFallbackIndex) {
+              draws[shaders[findFallbackIndex]]->LoadDrawResource(device,
+                                                                  render, mesh);
+              draw->DestroyDrawResource(device.GetLogical(), render);
+              draw->Destroy();
+            } else if (createFallbackIndex != -1) {
+              draw->LoadDrawResource(device, render, mesh);
+              draws[shaders[createFallbackIndex]] = draw;
+            } else {
+              throw std::runtime_error("could not fallback to a valid shader!");
+            }
           }
         }
-
-        Draw* draw = Base::Create<Draw>(
-            device, render, GetRoot(), mesh->textures.size(), shaders,
-            JSON_CONFIG(String, "ZPrePassShaderPath"),
-            JSON_CONFIG(String, "ShadowMapShaderPath"));
-        int createFallbackIndex = draw->GetShaderFallbackIndex();
-
-        if (findFallbackIndex != -1 &&
-            findFallbackIndex < createFallbackIndex) {
-          draws[shaders[findFallbackIndex]]->LoadDrawResource(device, render,
-                                                              mesh);
-          draw->DestroyDrawResource(device.GetLogical(), render);
-          draw->Destroy();
-        } else if (createFallbackIndex != -1) {
-          draw->LoadDrawResource(device, render, mesh);
-          draws[shaders[createFallbackIndex]] = draw;
-        } else {
-          throw std::runtime_error("could not fallback to a valid shader!");
-        }
       }
+      meshDataQueue.pop();
     }
+    updateMeshDataMutex.unlock();
   }
+}
+
+void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>&& meshDatas) {
+  updateMeshDataMutex.lock();
+  needToUpdateMeshDatas = true;
+  meshDataQueue.emplace(meshDatas);
+  updateMeshDataMutex.unlock();
 }
 
 float Vulkan::GetViewportAspect() { return render.GetViewportAspect(); }

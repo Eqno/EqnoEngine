@@ -3,6 +3,8 @@
 #include <Engine/Model/include/BaseTransform.h>
 #include <Engine/System/include/BaseObject.h>
 
+#include <mutex>
+
 class BaseScene;
 
 class SceneObject : public BaseObject {
@@ -13,6 +15,7 @@ class SceneObject : public BaseObject {
   std::string name;
   std::list<std::shared_ptr<SceneObject>> sons;
 
+  std::mutex updateTransformLock;
   BaseTransform transform;
   void AddToSons(std::shared_ptr<SceneObject> son) { sons.push_back(son); }
 

@@ -187,7 +187,7 @@ void BaseModel::OnStart() {
         mesh->uniform.lightChannel = GetLightChannel();
         mesh->uniform.modelMatrix = &GetAbsoluteTransform();
       }
-      graphicsPtr->ParseMeshDatas(meshDatas);
+      graphicsPtr->ParseMeshDatas(std::move(meshDatas));
     }
   }
 }

@@ -55,8 +55,11 @@ void BaseCamera::OnUpdate() {
   PerformRotation();
   PerformTraslation();
 
-  UpdateViewMatrix();
-  UpdateProjMatrix();
+  if (updateMatrixMutex.try_lock()) {
+    UpdateViewMatrix();
+    UpdateProjMatrix();
+    updateMatrixMutex.unlock();
+  }
 }
 
 void BaseCamera::OnDestroy() {
@@ -119,8 +122,8 @@ void BaseCamera::PerformRotation() {
   mouseLastPosY = Input::Mouse::posY;
 
   if (Input::Mouse::left || Input::Mouse::right) {
-    rotateY += sensitivityY * mouseDeltaY * DeltaTime;
-    rotateX -= sensitivityX * mouseDeltaX * DeltaTime;
+    rotateY += sensitivityY * mouseDeltaY;
+    rotateX -= sensitivityX * mouseDeltaX;
     SetRelativeRotation(glm::vec3(rotateY, rotateX, 0));
   }
 }

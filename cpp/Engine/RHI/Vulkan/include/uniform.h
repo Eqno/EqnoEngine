@@ -3,6 +3,8 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include <mutex>
+
 #include "Engine/Utility/include/TypeUtils.h"
 #include "base.h"
 #include "buffer.h"

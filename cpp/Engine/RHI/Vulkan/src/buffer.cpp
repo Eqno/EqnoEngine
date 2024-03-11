@@ -205,8 +205,10 @@ void LightChannelBuffer::UpdateUniformBuffer(LightChannel* lightChannel,
     buffer->object[lightCount].pos = lightPtr->GetAbsolutePosition();
     buffer->object[lightCount].normal = lightPtr->GetAbsoluteForward();
 
+    lightPtr->GetMatrixLock().lock();
     buffer->object[lightCount].viewMatrix = lightPtr->GetViewMatrix();
     buffer->object[lightCount].projMatrix = lightPtr->GetProjMatrix();
+    lightPtr->GetMatrixLock().unlock();
 
     lightCount++;
   }

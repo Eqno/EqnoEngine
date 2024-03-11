@@ -10,8 +10,8 @@
     "MaxFov": 80,
     "MinFov": 5,
 
-    "SensitivityX": 60,
-    "SensitivityY": 60,
+    "SensitivityX": 0.1,
+    "SensitivityY": 0.1,
     "SensitivityZ": 3,
     
     "MoveSpeed": 20,

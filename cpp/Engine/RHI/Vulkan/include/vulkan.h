@@ -2,6 +2,10 @@
 
 #include <Engine/System/include/GraphicsInterface.h>
 
+#include <atomic>
+#include <mutex>
+#include <queue>
+
 #include "depth.h"
 #include "device.h"
 #include "draw.h"
@@ -22,6 +26,10 @@ class Vulkan final : public GraphicsInterface, public Base {
   Application* appPointer = nullptr;
   std::unordered_map<std::string, Draw*> draws;
 
+  std::mutex updateMeshDataMutex;
+  std::atomic<bool> needToUpdateMeshDatas = false;
+  std::queue<std::vector<std::weak_ptr<MeshData>>> meshDataQueue;
+
  public:
   template <typename... Args>
   explicit Vulkan(const Args&... args) : GraphicsInterface(args...) {}
@@ -31,15 +39,19 @@ class Vulkan final : public GraphicsInterface, public Base {
   void InitGraphics() override;
   void TriggerOnUpdate(
       std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById);
-  void RendererLoop() override;
   void CleanupGraphics() override;
+
+  void GameLoop() override;
+  void RenderLoop() override;
 
   void GetAppPointer();
   void UpdateDeltaTime();
   void ReleaseBufferLocks();
 
   BufferManager& GetBufferManager() { return bufferManager; }
-  void ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>& meshDatas) override;
+  void ParseMeshDatas() override;
+  void ParseMeshDatas(
+      std::vector<std::weak_ptr<MeshData>>&& meshDatas) override;
   float GetViewportAspect() override;
 
   virtual void OnCreate() override {

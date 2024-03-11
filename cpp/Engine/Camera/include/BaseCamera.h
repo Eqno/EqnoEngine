@@ -2,11 +2,15 @@
 
 #include <Engine/Scene/include/SceneObject.h>
 
+#include <mutex>
+
 class GraphicsInterface;
 
 class BaseCamera : public SceneObject {
  protected:
   std::weak_ptr<GraphicsInterface> graphics;
+
+  std::mutex updateMatrixMutex;
   glm::mat4 viewMatrix = Mat4x4One;
   glm::mat4 projMatrix = Mat4x4One;
 
@@ -52,12 +56,13 @@ class BaseCamera : public SceneObject {
   virtual void OnUpdate() override;
   virtual void OnDestroy() override;
 
-  void PerformRotation();
-  void PerformTraslation();
+  virtual void PerformRotation();
+  virtual void PerformTraslation();
 
-  void UpdateViewMatrix();
-  void UpdateProjMatrix();
+  virtual void UpdateViewMatrix();
+  virtual void UpdateProjMatrix();
 
+  virtual std::mutex& GetMatrixLock() { return updateMatrixMutex; }
   glm::mat4& GetViewMatrix() { return viewMatrix; }
   glm::mat4& GetProjMatrix() { return projMatrix; }
 };

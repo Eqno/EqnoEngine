@@ -32,7 +32,7 @@ void Application::CreateWindow() const {
 
 void Application::LaunchScene() {
   CreateLauncherScene();
-  graphics->RendererLoop();
+  graphics->RenderLoop();
 }
 
 void Application::TerminateScene() const {

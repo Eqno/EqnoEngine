@@ -17,7 +17,6 @@ class BaseModel final : public SceneObject {
 
   std::string _lightChannelName = "Unset";
   std::weak_ptr<LightChannel> _lightChannel;
-
   virtual void LoadFbxDatas(const unsigned int parserFlags);
 
  public:

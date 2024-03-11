@@ -321,10 +321,14 @@ void TransformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
     if (auto camera = bridgePtr->uniform.camera.lock()) {
       TransformData* buffer =
           reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
+
       glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
       buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
+
+      camera->GetMatrixLock().lock();
       buffer->viewMatrix = camera->GetViewMatrix();
       buffer->projMatrix = camera->GetProjMatrix();
+      camera->GetMatrixLock().unlock();
     }
   }
 }
@@ -334,10 +338,14 @@ void ShadowMapBuffer::UpdateUniformBuffer(const uint32_t currentImage,
   if (auto bridgePtr = GetBridgeData().lock()) {
     TransformData* buffer =
         reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
+
     glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
     buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
+
+    shadowMapLight->GetMatrixLock().lock();
     buffer->viewMatrix = shadowMapLight->GetViewMatrix();
     buffer->projMatrix = shadowMapLight->GetProjMatrix();
+    shadowMapLight->GetMatrixLock().unlock();
   }
 }
 
