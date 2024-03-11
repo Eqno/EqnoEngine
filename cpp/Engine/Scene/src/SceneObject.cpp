@@ -15,7 +15,6 @@
   transform.absolute##member = transform.relative##member;
 
 void SceneObject::UpdateAbsoluteTransform() {
-  updateTransformLock.lock();
   if (auto parentPtr = parent.lock()) {
     VecInSubSpace(Left, Vec3Zero);
     VecInSubSpace(Up, Vec3Zero);
@@ -30,7 +29,6 @@ void SceneObject::UpdateAbsoluteTransform() {
   for (std::shared_ptr<SceneObject> son : GetSons()) {
     son->UpdateAbsoluteTransform();
   }
-  updateTransformLock.unlock();
 }
 
 void SceneObject::SetRelativePosition(const glm::vec3& pos) {

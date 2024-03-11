@@ -15,7 +15,6 @@ class SceneObject : public BaseObject {
   std::string name;
   std::list<std::shared_ptr<SceneObject>> sons;
 
-  std::mutex updateTransformLock;
   BaseTransform transform;
   void AddToSons(std::shared_ptr<SceneObject> son) { sons.push_back(son); }
 
