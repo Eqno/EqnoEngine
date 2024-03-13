@@ -3,7 +3,7 @@
 - [x] RHI 与引擎层分离，分别由 Game / Render 线程驱动。
 - [x] 借助可变参数模板，通过封装实例的创建和销毁，实现 class member / owner 的递归注册。
 - [x] 引擎层使用 shared_ptr 持有 Object 实例，RHI 层使用 weak_ptr 持有引擎数据。
-  - [ ] RHI 层借此实现 mesh 的生命周期管理，保证线程安全。
+  - [x] RHI 层借此实现 mesh 的生命周期管理，保证线程安全。
   - [x] 当引擎层销毁 Object 时，其包含的 mesh 将在下一帧开始时销毁。
 
 ### RHI 层
