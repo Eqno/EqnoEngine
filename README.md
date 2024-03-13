@@ -20,8 +20,8 @@
   - [ ] 使用同一 LightChannel 的 mesh Storage Buffer 合并。
   - [x] 使用同一 Camera 或 Material 的 mesh Uniform Buffer 合并。
 - [x] 支持 LightChannel，指定多光源作用于 SceneObject。
-  - [ ] 多光源着色，光照通道信息使用 Storage Buffer，以动态大小传递给 Fragment Shader，避免 GPU 内存的浪费。
-  - [x] 多光源阴影，生成 Shadow Map 时，利用动态 DST 传递光源 VP Matrix，只需在记录 Command Buffer 时换绑。
+  - [ ] 多光源着色，光照通道信息使用 Storage Buffer，以动态大小传递给 Fragment Shader，避免 GPU 内存浪费。
+  - [x] 多光源阴影，生成 Shadow Map 时利用动态 DST 传递光源 VP Matrix，只需在记录 Command Buffer 时换绑。
 
 ### 引擎层
 
