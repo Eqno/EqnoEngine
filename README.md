@@ -20,13 +20,14 @@
   - [ ] 使用同一 LightChannel 的 mesh Storage Buffer 合并。
   - [x] 使用同一 Camera 或 Material 的 mesh Uniform Buffer 合并。
 - [x] 支持 LightChannel，指定多光源作用于 SceneObject。
-  - [ ] 多光源着色，光照通道信息使用 Storage Buffer，以动态大小传递给 Fragment Shader，避免 GPU 内存浪费。
-  - [x] 多光源阴影，生成 Shadow Map 时利用动态 DST 传递光源 VP Matrix，只需在记录 Command Buffer 时换绑。
+  - [ ] 多光源着色，光照通道信息使用 Storage Buffer，以动态大小传递给 Fragment Shader，避免 GPU 内存的浪费。
+  - [x] 多光源阴影，生成 Shadow Map 时，利用动态 DST 传递光源 VP Matrix，只需在记录 Command Buffer 时换绑。
 
 ### 引擎层
 
 - [ ] 重载 operator new 实现 Object 内存池，优化内存分配和销毁的性能消耗。
 - [x] 借助 RapidJson 实现简易文件系统，支持 Config 和 Object 模板的序列化和反序列化。
+- [x] 使用匿名函数和闭包，返回元素随时可能失效的序列迭代器，动态维护当前场景内的有效灯光。
 - [x] 实现基于基向量、与 Unity 类似的 Relative / Absolute Transform 系统。
   - [x] 设置某一 SceneObject 的 Transform 属性时，其他属性也会进行同步。
   - [x] SceneObject 进行 Transform 变换时，子 SceneObject 同时进行递归变换。
