@@ -11,7 +11,6 @@ class LightChannel : public BaseObject {
   std::weak_ptr<BaseScene> scene;
   std::string name = "Unset";
   std::list<std::weak_ptr<BaseLight>> lights;
-  std::list<std::weak_ptr<BaseLight>>::iterator lightsIter;
 
  public:
   template <typename... Args>
@@ -27,8 +26,8 @@ class LightChannel : public BaseObject {
 
   const std::string& GetName() { return name; }
   std::function<BaseLight*()> GetLights() {
-    lightsIter = lights.begin();
-    return [&]() -> BaseLight* {
+    auto lightsIter = lights.begin();
+    return [&, lightsIter]() mutable -> BaseLight* {
       while (lightsIter != lights.end()) {
         if (auto lightPtr = lightsIter->lock()) {
           auto ret = lightPtr.get();
