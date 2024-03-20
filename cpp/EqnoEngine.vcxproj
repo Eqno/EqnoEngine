@@ -124,6 +124,7 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\instance.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\draw.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\mesh.h" />
+    <ClInclude Include="Engine\RHI\Vulkan\include\resource.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\pipeline.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\render.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="Engine\RHI\Vulkan\src\instance.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\draw.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\mesh.cpp" />
+    <ClCompile Include="Engine\RHI\Vulkan\src\resource.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\vulkan.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\render.cpp" />

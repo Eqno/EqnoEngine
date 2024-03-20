@@ -1,6 +1,9 @@
 #pragma once
 
-#include "BaseObject.h"
+#include <Engine/System/include/BaseObject.h>
+
+#include <atomic>
+#include <mutex>
 
 struct MeshData;
 
@@ -12,6 +15,8 @@ class GraphicsInterface : public BaseObject {
   explicit GraphicsInterface(Args&&... args)
       : BaseObject(std::forward<Args>(args)...) {}
   ~GraphicsInterface() override = default;
+
+  std::mutex updateMeshDataMutex;
 
   virtual void CreateWindow(const std::string& title) = 0;
   virtual void InitGraphics() = 0;

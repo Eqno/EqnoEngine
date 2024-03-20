@@ -16,6 +16,8 @@
 #include <stb_image.h>
 
 #include <assimp/Importer.hpp>
+#include <mutex>
+#include <thread>
 
 std ::vector<BaseLight*> LightsEmpty;
 
@@ -168,15 +170,7 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
                 JSON_CONFIG(Float, "ImportSize"));
 }
 
-void BaseModel::OnCreate() {
-  SceneObject::OnCreate();
-  LoadFbxDatas(aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-               aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-}
-
-void BaseModel::OnStart() {
-  SceneObject::OnStart();
-
+void BaseModel::ParseMeshDatas() {
   if (auto scenePtr = scene.lock()) {
     if (auto graphicsPtr = scenePtr->GetGraphics().lock()) {
       std::vector<std::weak_ptr<MeshData>> meshDatas;
@@ -192,8 +186,24 @@ void BaseModel::OnStart() {
   }
 }
 
-void BaseModel::OnUpdate() { SceneObject::OnUpdate(); }
+void BaseModel::OnCreate() {
+  SceneObject::OnCreate();
+  if (auto scenePtr = scene.lock()) {
+    scenePtr->AddModelToResourceWaitQueue(std::function<void()>(
+        std::bind(&BaseModel::LoadFbxDatas, this,
+                  aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+                      aiProcess_FlipUVs | aiProcess_CalcTangentSpace)));
+  }
+}
 
+void BaseModel::OnStart() {
+  SceneObject::OnStart();
+  if (auto scenePtr = scene.lock()) {
+    scenePtr->AddModelToResourceWaitQueue(
+        std::function<void()>(std::bind(&BaseModel::ParseMeshDatas, this)));
+  }
+}
+void BaseModel::OnUpdate() { SceneObject::OnUpdate(); }
 void BaseModel::OnStop() { SceneObject::OnStop(); }
 
 void BaseModel::OnDestroy() {

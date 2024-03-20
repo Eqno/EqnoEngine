@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Engine/RHI/Vulkan/include/resource.h>
 #include <Engine/System/include/BaseObject.h>
 
 class BaseLight;
+class BaseModel;
 class BaseCamera;
 class SceneObject;
 class LightChannel;
@@ -12,6 +14,8 @@ class GraphicsInterface;
 struct aiMaterial;
 
 class BaseScene final : public BaseObject {
+  Resource modelResourceManager;
+
   std::shared_ptr<SceneObject> rootObject;
   std::weak_ptr<GraphicsInterface> graphics;
   std::unordered_map<int, std::weak_ptr<BaseLight>> lightsById;
@@ -53,6 +57,7 @@ class BaseScene final : public BaseObject {
   [[nodiscard]] std::weak_ptr<GraphicsInterface> GetGraphics() const {
     return graphics;
   }
+  void AddModelToResourceWaitQueue(std::function<void()> func);
 
   virtual void OnCreate() override;
   virtual void OnStart() override;

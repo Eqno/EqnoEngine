@@ -537,6 +537,9 @@
     <ClInclude Include="Engine\RHI\Vulkan\deps\gtest\include\gtest\gtest.h">
       <Filter>Engine\RHI\Vulkan\deps\gtest\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\RHI\Vulkan\include\resource.h">
+      <Filter>Engine\RHI\Vulkan\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -655,6 +658,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Light\src\SunLight.cpp">
       <Filter>Engine\Light\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\RHI\Vulkan\src\resource.cpp">
+      <Filter>Engine\RHI\Vulkan\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

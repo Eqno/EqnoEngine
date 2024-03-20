@@ -11,6 +11,8 @@
 
 void BaseScene::OnCreate() {
   BaseObject::OnCreate();
+  modelResourceManager.SetGraphicsInterface(graphics);
+
   rootObject =
       Create<SceneObject>(rootObject, "RootObject", GetRoot(), GetFile());
   JsonUtils::ParseSceneObjectTree(graphics, rootObject, GetRoot(), GetFile(),
@@ -96,4 +98,8 @@ void BaseScene::UnregisterCamera(const std::string& name) {
 void BaseScene::UnregisterLight(const std::string& name) { lights.erase(name); }
 void BaseScene::UnregisterLightChannel(const std::string& name) {
   lightChannels.erase(name);
+}
+
+void BaseScene::AddModelToResourceWaitQueue(std::function<void()> func) {
+  modelResourceManager.AddToWaitQueue(func);
 }
