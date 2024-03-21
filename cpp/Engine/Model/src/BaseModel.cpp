@@ -186,19 +186,14 @@ void BaseModel::ParseMeshDatas() {
   }
 }
 
-void BaseModel::OnCreate() {
-  SceneObject::OnCreate();
+void BaseModel::OnCreate() { SceneObject::OnCreate(); }
+void BaseModel::OnStart() {
+  SceneObject::OnStart();
   if (auto scenePtr = scene.lock()) {
     scenePtr->AddModelToResourceWaitQueue(std::function<void()>(
         std::bind(&BaseModel::LoadFbxDatas, this,
                   aiProcess_Triangulate | aiProcess_GenSmoothNormals |
                       aiProcess_FlipUVs | aiProcess_CalcTangentSpace)));
-  }
-}
-
-void BaseModel::OnStart() {
-  SceneObject::OnStart();
-  if (auto scenePtr = scene.lock()) {
     scenePtr->AddModelToResourceWaitQueue(
         std::function<void()>(std::bind(&BaseModel::ParseMeshDatas, this)));
   }

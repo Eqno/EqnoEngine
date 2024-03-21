@@ -197,8 +197,10 @@ void Vulkan::ParseMeshDatas() {
 }
 
 void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>&& meshDatas) {
+  updateMeshDataMutex.lock();
   needToUpdateMeshDatas = true;
   meshDataQueue.emplace(meshDatas);
+  updateMeshDataMutex.unlock();
 }
 
 float Vulkan::GetViewportAspect() { return render.GetViewportAspect(); }
