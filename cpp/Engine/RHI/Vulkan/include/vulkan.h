@@ -26,6 +26,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   Application* appPointer = nullptr;
   std::unordered_map<std::string, Draw*> draws;
 
+  std::mutex updateMeshDataMutex;
   std::atomic<bool> needToUpdateMeshDatas = false;
   std::queue<std::vector<std::weak_ptr<MeshData>>> meshDataQueue;
 

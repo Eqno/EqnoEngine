@@ -2,25 +2,21 @@
 #include <Engine/System/include/GraphicsInterface.h>
 
 void Resource::ParseWaitQueue() {
-  if (auto graphicsPtr = graphics.lock()) {
-    while (waitQueue.empty() == false) {
-      if (graphicsPtr->updateMeshDataMutex.try_lock()) {
-        waitQueue.front()();
-        waitQueue.pop();
-        graphicsPtr->updateMeshDataMutex.unlock();
-      }
+  while (waitQueue.empty() == false) {
+    if (updateWaitQueueMutex.try_lock()) {
+      waitQueue.front()();
+      waitQueue.pop();
+      updateWaitQueueMutex.unlock();
     }
   }
 }
 
 void Resource::AddToWaitQueue(std::function<void()> func) {
-  if (auto graphicsPtr = graphics.lock()) {
-    graphicsPtr->updateMeshDataMutex.lock();
-    bool requireThread = waitQueue.empty();
-    waitQueue.push(func);
-    graphicsPtr->updateMeshDataMutex.unlock();
-    if (requireThread) {
-      std::thread(&Resource::ParseWaitQueue, this).detach();
-    }
+  updateWaitQueueMutex.lock();
+  bool requireThread = waitQueue.empty();
+  waitQueue.push(func);
+  updateWaitQueueMutex.unlock();
+  if (requireThread) {
+    std::thread(&Resource::ParseWaitQueue, this).detach();
   }
 }

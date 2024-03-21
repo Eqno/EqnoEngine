@@ -16,8 +16,6 @@ class GraphicsInterface : public BaseObject {
       : BaseObject(std::forward<Args>(args)...) {}
   ~GraphicsInterface() override = default;
 
-  std::mutex updateMeshDataMutex;
-
   virtual void CreateWindow(const std::string& title) = 0;
   virtual void InitGraphics() = 0;
   virtual void CleanupGraphics() = 0;
