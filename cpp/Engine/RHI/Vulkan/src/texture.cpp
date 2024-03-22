@@ -100,7 +100,7 @@ VkSampler Texture::CreateSampler(const Device& device, const uint32_t mipLevels,
       .compareEnable = compareEnable,
       .compareOp = compareOp,
       .minLod = 0,
-      .maxLod = mipLevels,
+      .maxLod = static_cast<float>(mipLevels),
       .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
       .unnormalizedCoordinates = VK_FALSE,
   };
