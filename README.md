@@ -2,6 +2,7 @@
 
 - [x] RHI 与引擎层分离，分别由 Game / Render 线程驱动。
 - [x] 借助可变参数模板，通过封装实例的创建和销毁，实现 class member / owner 的递归注册。
+- [x] 实现异步加载队列，只需将函数 bind 后 push 入队列，便可在单独的 resource 线程执行。
 - [x] 引擎层使用 shared_ptr 持有 Object 实例，RHI 层使用 weak_ptr 持有引擎数据。
   - [x] RHI 层借此实现 mesh 的生命周期管理，保证线程安全。
   - [x] 当引擎层销毁 Object 时，其包含的 mesh 将在下一帧开始时销毁。
@@ -12,6 +13,8 @@
 - [x] 提供了多套 Lit/Unlit 内置 Shader，其中包括 Blinn-Phong 和基于 Cook-Torrance 的 PBR。
 - [x] 使用 Fence、Barrier 和 Semaphore 进行设备、内存、管线、命令和 Render Pass 的同步。
 - [x] 支持 Multiple Frames In Flight，可以为交换链指定 Frame 数量，减少 CPU 和 GPU 同步带来的性能浪费。
+- [ ] 支持 Mipmap 的生成和采样。
+- [ ] 支持 MSAA 反走样。
 - [x] 使用 Shaderc 自动编译 Shader 文件并创建 Shader Stage。
   - [x] 支持 Shader 外定义宏，Shader 内直接使用。
   - [x] 支持 Shader Fallback 功能，在 Material 文件中填写多个 Shader 路径以使用。
@@ -32,6 +35,6 @@
   - [x] 设置某一 SceneObject 的 Transform 属性时，其他属性也会进行同步。
   - [x] SceneObject 进行 Transform 变换时，子 SceneObject 同时进行递归变换。
 - [ ] 使用协程为 RHI 层 ParseMesh 并创建管线，减少面数较多的模型加载时的卡顿。 
-- [x] 使用单独的线程异步加载 Model，场景中 Model、Light 和 Camera 等任何 SceneObject 均可在运行时动态添加或删除。
+- [x] 场景中 Model、Light 和 Camera 等任何 SceneObject 均可在运行时动态添加或删除。
 - [x] 实现 InputSystem 输入监听系统，无论在一帧内的何时按下按键，一定在下一帧开始时触发，实现一帧内的监听结果统一。
 - [x] 实现 Object 的生命周期管理和事件调用，其中 OnStart 的调用位于下一帧的开始，保证晚于同一帧内的所有 OnCreate。
