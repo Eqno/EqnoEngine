@@ -109,7 +109,7 @@ void SwapChain::CreateColorImageViews(const VkDevice& device) {
   colorImageViews.resize(colorImages.size());
   for (size_t i = 0; i < colorImages.size(); i++) {
     colorImageViews[i] = Texture::CreateImageView(
-        device, colorImages[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+        device, colorImages[i], 1, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
   }
 }
 

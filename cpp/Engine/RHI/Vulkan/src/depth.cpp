@@ -13,15 +13,16 @@ void Depth::CreateDepthResources(const Device& device,
                                  const VkImageUsageFlags usage) {
   depthFormat = FindDepthFormat(device.GetPhysical());
   auto [image, imageMemory] = Texture::CreateImage(
-      device, imageWidth, imageHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+      device, imageWidth, imageHeight, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL,
       usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
   depthImage = image;
   depthImageMemory = imageMemory;
-  depthImageView = Texture::CreateImageView(
-      device.GetLogical(), depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+  depthImageView =
+      Texture::CreateImageView(device.GetLogical(), depthImage, 1, depthFormat,
+                               VK_IMAGE_ASPECT_DEPTH_BIT);
   if (usage == (usage | VK_IMAGE_USAGE_SAMPLED_BIT)) {
-    depthSampler =
-        Texture::CreateSampler(device, VK_FALSE, VK_TRUE, VK_COMPARE_OP_LESS);
+    depthSampler = Texture::CreateSampler(device, 1, VK_FALSE, VK_TRUE,
+                                          VK_COMPARE_OP_LESS);
   }
 }
 void Depth::TransitionDepthImageLayout(const Device& device,
@@ -29,7 +30,7 @@ void Depth::TransitionDepthImageLayout(const Device& device,
                                        VkImageLayout oldLayout,
                                        VkImageLayout newLayout,
                                        VkCommandBuffer commandBuffer) {
-  Texture::TransitionImageLayout(device, render, depthImage, depthFormat,
+  Texture::TransitionImageLayout(device, render, depthImage, 1, depthFormat,
                                  oldLayout, newLayout,
                                  VK_IMAGE_ASPECT_DEPTH_BIT, commandBuffer);
 }
