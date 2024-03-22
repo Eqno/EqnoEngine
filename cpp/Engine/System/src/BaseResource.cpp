@@ -1,7 +1,7 @@
-#include <Engine/RHI/Vulkan/include/resource.h>
+#include <Engine/System/include/BaseResource.h>
 #include <Engine/System/include/GraphicsInterface.h>
 
-void Resource::ParseWaitQueue() {
+void BaseResource::ParseWaitQueue() {
   while (waitQueue.empty() == false) {
     if (updateWaitQueueMutex.try_lock()) {
       waitQueue.front()();
@@ -11,12 +11,12 @@ void Resource::ParseWaitQueue() {
   }
 }
 
-void Resource::AddToWaitQueue(std::function<void()> func) {
+void BaseResource::AddToWaitQueue(std::function<void()> func) {
   updateWaitQueueMutex.lock();
   bool requireThread = waitQueue.empty();
   waitQueue.push(func);
   updateWaitQueueMutex.unlock();
   if (requireThread) {
-    std::thread(&Resource::ParseWaitQueue, this).detach();
+    std::thread(&BaseResource::ParseWaitQueue, this).detach();
   }
 }

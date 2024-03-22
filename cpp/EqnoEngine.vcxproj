@@ -124,7 +124,6 @@
     <ClInclude Include="Engine\RHI\Vulkan\include\instance.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\draw.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\mesh.h" />
-    <ClInclude Include="Engine\RHI\Vulkan\include\resource.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\vulkan.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\pipeline.h" />
     <ClInclude Include="Engine\RHI\Vulkan\include\render.h" />
@@ -142,6 +141,7 @@
     <ClInclude Include="Engine\System\include\Application.h" />
     <ClInclude Include="Engine\System\include\BaseInput.h" />
     <ClInclude Include="Engine\System\include\BaseObject.h" />
+    <ClInclude Include="Engine\System\include\BaseResource.h" />
     <ClInclude Include="Engine\System\include\GraphicsInterface.h" />
     <ClInclude Include="Engine\Utility\include\FileUtils.h" />
     <ClInclude Include="Engine\Utility\include\JsonUtils.h" />
@@ -166,7 +166,6 @@
     <ClCompile Include="Engine\RHI\Vulkan\src\instance.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\draw.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\mesh.cpp" />
-    <ClCompile Include="Engine\RHI\Vulkan\src\resource.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\vulkan.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp" />
     <ClCompile Include="Engine\RHI\Vulkan\src\render.cpp" />
@@ -183,6 +182,7 @@
     <ClCompile Include="Engine\System\src\Application.cpp" />
     <ClCompile Include="Engine\System\src\BaseInput.cpp" />
     <ClCompile Include="Engine\System\src\BaseObject.cpp" />
+    <ClCompile Include="Engine\System\src\BaseResource.cpp" />
     <ClCompile Include="Engine\System\src\GraphicsInterface.cpp" />
     <ClCompile Include="Engine\Utility\src\FileUtils.cpp" />
     <ClCompile Include="Engine\Utility\src\JsonUtils.cpp" />

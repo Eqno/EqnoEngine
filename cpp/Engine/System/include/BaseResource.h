@@ -5,7 +5,7 @@
 #include <queue>
 #include <thread>
 
-class Resource {
+class BaseResource {
   std::mutex updateWaitQueueMutex;
   std::queue<std::function<void()>> waitQueue;
   void ParseWaitQueue();

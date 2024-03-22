@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Engine/RHI/Vulkan/include/resource.h>
 #include <Engine/System/include/BaseObject.h>
+#include <Engine/System/include/BaseResource.h>
 
 class BaseLight;
 class BaseModel;
@@ -14,7 +14,7 @@ class GraphicsInterface;
 struct aiMaterial;
 
 class BaseScene final : public BaseObject {
-  Resource modelResourceManager;
+  BaseResource modelResourceManager;
 
   std::shared_ptr<SceneObject> rootObject;
   std::weak_ptr<GraphicsInterface> graphics;
