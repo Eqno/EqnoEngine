@@ -31,6 +31,7 @@
 - [x] 实现基于基向量、与 Unity 类似的 Relative / Absolute Transform 系统。
   - [x] 设置某一 SceneObject 的 Transform 属性时，其他属性也会进行同步。
   - [x] SceneObject 进行 Transform 变换时，子 SceneObject 同时进行递归变换。
-- [ ] 使用单独的线程异步加载 Model，场景中 Model、Light 和 Camera 等任何 SceneObject 均可在运行时动态添加或删除。
+- [ ] 使用协程为 RHI 层 ParseMesh 并创建管线，减少面数较多的模型加载时的卡顿。 
+- [x] 使用单独的线程异步加载 Model，场景中 Model、Light 和 Camera 等任何 SceneObject 均可在运行时动态添加或删除。
 - [x] 实现 InputSystem 输入监听系统，无论在一帧内的何时按下按键，一定在下一帧开始时触发，实现一帧内的监听结果统一。
 - [x] 实现 Object 的生命周期管理和事件调用，其中 OnStart 的调用位于下一帧的开始，保证晚于同一帧内的所有 OnCreate。
