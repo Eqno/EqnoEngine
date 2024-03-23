@@ -12,23 +12,15 @@ void BaseObject::OnDestroy() {}
 void BaseObject::OnActive() {}
 void BaseObject::OnDeactive() {}
 
-template <typename T, typename... Args,
-          typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type>
-static std::shared_ptr<T> BaseObject::CreateImmediately(Args&&... args) {
-  std::shared_ptr<T> ret = std::make_shared<T>(std::forward<Args>(args)...);
-  if (ret->_active == true) {
-    if (auto appPtr = ret->_app.lock()) {
-      appPtr->passiveObjects.emplace_back(ret);
+void BaseObject::AddObjectToPassiveObjects(std::shared_ptr<BaseObject> inst) {
+  if (inst->_active == true) {
+    if (auto appPtr = dynamic_pointer_cast<Application>(inst)) {
+      appPtr->_app = appPtr;
+    }
+    if (auto appPtr = inst->_app.lock()) {
+      appPtr->passiveObjects.emplace_back(inst);
     }
   }
-  ret->OnCreate();
-  return ret;
-}
-
-template <typename T, typename... Args,
-          typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type>
-std::shared_ptr<T> BaseObject::Create(Args&&... args) {
-  return CreateImmediately<T>(std::forward<Args>(args)..., shared_from_this());
 }
 
 void BaseObject::Active() {

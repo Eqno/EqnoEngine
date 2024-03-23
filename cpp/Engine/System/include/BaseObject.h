@@ -37,7 +37,6 @@ class BaseObject : public std::enable_shared_from_this<BaseObject> {
       this->_app = ownerPtr->_app;
     }
   }
-
   BaseObject(bool active, std::string root, std::string file,
              std::weak_ptr<BaseObject> owner)
       : _alive(true),
@@ -47,7 +46,12 @@ class BaseObject : public std::enable_shared_from_this<BaseObject> {
 
         _root(std::move(root)),
         _file(std::move(file)),
-        _name(JSON_CONFIG(String, "Name")) {}
+        _name(JSON_CONFIG(String, "Name")) {
+    if (auto ownerPtr = _owner.lock()) {
+      this->_app = ownerPtr->_app;
+    }
+  }
+  static void AddObjectToPassiveObjects(std::shared_ptr<BaseObject> inst);
 
  public:
   BaseObject() = delete;
@@ -56,12 +60,20 @@ class BaseObject : public std::enable_shared_from_this<BaseObject> {
   template <
       typename T, typename... Args,
       typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type = 0>
-  static std::shared_ptr<T> CreateImmediately(Args&&... args);
+  static std::shared_ptr<T> CreateImmediately(Args&&... args) {
+    std::shared_ptr<T> ret = std::make_shared<T>(std::forward<Args>(args)...);
+    AddObjectToPassiveObjects(ret);
+    ret->OnCreate();
+    return ret;
+  }
 
   template <
       typename T, typename... Args,
       typename std::enable_if<std::is_base_of<BaseObject, T>{}, int>::type = 0>
-  std::shared_ptr<T> Create(Args&&... args);
+  std::shared_ptr<T> Create(Args&&... args) {
+    return CreateImmediately<T>(std::forward<Args>(args)...,
+                                shared_from_this());
+  }
 
   void Active();
   void Deactive();

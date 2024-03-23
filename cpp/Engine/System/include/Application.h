@@ -28,9 +28,7 @@ class Application final : public BaseObject {
   template <typename... Args>
   explicit Application(Args&&... args)
       : BaseObject(std::forward<Args>(args)...,
-                   std::shared_ptr<BaseObject>(nullptr)) {
-    this->_app = static_pointer_cast<Application>(shared_from_this());
-  }
+                   std::shared_ptr<BaseObject>(nullptr)) {}
   ~Application() override = default;
   std::unordered_map<int, std::weak_ptr<BaseLight>>& GetLightsById();
 
