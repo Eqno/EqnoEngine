@@ -22,9 +22,6 @@ inline VkFormat ParseImageFormat(const std::string& imageFormat) {
   if (imageFormat == "RGBA_UNORM") {
     return VK_FORMAT_R8G8B8A8_UNORM;
   }
-  if (imageFormat == "A_UNORM") {
-    return VK_FORMAT_A8_UNORM_KHR;
-  }
   return VK_FORMAT_R8G8B8A8_UNORM;
 }
 
