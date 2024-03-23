@@ -1,8 +1,21 @@
-[package]
-name = "glfwtest_vulkan"
-version = "0.1.0"
+[workspace]
+members = ["engine", "games/demo"]
+resolver = "2"
+
+[workspace.package]
+authors = ["Eqnoxx <Eqnoxx@163.com>"]
 edition = "2021"
+repository = "https://github.com/Eqno/EqnoEngine"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[workspace.dependencies]
+# anyhow = "1"
+cgmath = "0.18"
+lazy_static = "1"
+png = "0.17"
+serde_json = "1"
+thiserror = "1"
+tobj = { version = "4", features = ["log"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+vulkanalia = { version = "0.22", features = ["libloading", "provisional", "window"] }
+winit = "0.29"

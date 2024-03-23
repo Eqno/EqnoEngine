@@ -1,0 +1,12 @@
+[package]
+name = "engine"
+version = "0.1.0"
+description = """
+An engine demo with Vulkan RHI
+"""
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[dependencies]
+vulkanalia.workspace = true

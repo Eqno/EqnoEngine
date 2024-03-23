@@ -9,6 +9,11 @@ class BaseScene;
 class GraphicsInterface;
 
 class Application final : public BaseObject {
+  friend class BaseObject;
+
+  std::list<std::shared_ptr<BaseObject>> passiveObjects;
+  std::list<std::shared_ptr<BaseObject>> activeObjects;
+
   std::shared_ptr<BaseScene> scene;
   std::shared_ptr<GraphicsInterface> graphics;
 
@@ -23,7 +28,9 @@ class Application final : public BaseObject {
   template <typename... Args>
   explicit Application(Args&&... args)
       : BaseObject(std::forward<Args>(args)...,
-                   std::shared_ptr<BaseObject>(nullptr)) {}
+                   std::shared_ptr<BaseObject>(nullptr)) {
+    this->_app = static_pointer_cast<Application>(shared_from_this());
+  }
   ~Application() override = default;
   std::unordered_map<int, std::weak_ptr<BaseLight>>& GetLightsById();
 

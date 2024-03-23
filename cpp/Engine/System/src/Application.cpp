@@ -47,28 +47,28 @@ void Application::RunApplication() {
 }
 
 void Application::TriggerOnUpdate() {
-  for (std::shared_ptr<BaseObject> obj : BaseObject::PassiveObjects) {
+  for (std::shared_ptr<BaseObject> obj : passiveObjects) {
     if (obj->_alive == false) {
       obj->OnDestroy();
     } else if (obj->_active) {
       obj->OnStart();
-      BaseObject::ActiveObjects.emplace_back(obj);
+      activeObjects.emplace_back(obj);
     } else {
       obj->OnDeactive();
       obj->_locked = false;
     }
   }
-  BaseObject::PassiveObjects.clear();
+  passiveObjects.clear();
 
-  auto iter = BaseObject::ActiveObjects.begin();
-  while (iter != BaseObject::ActiveObjects.end()) {
+  auto iter = activeObjects.begin();
+  while (iter != activeObjects.end()) {
     if ((*iter)->_alive && (*iter)->_active) {
       (*iter)->OnUpdate();
       iter++;
     } else {
       (*iter)->OnStop();
-      BaseObject::PassiveObjects.emplace_back(*iter);
-      iter = BaseObject::ActiveObjects.erase(iter);
+      passiveObjects.emplace_back(*iter);
+      iter = activeObjects.erase(iter);
     }
   }
 }

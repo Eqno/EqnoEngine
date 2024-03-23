@@ -5,6 +5,7 @@
 #include <Engine/Light/include/LightChannel.h>
 #include <Engine/Model/include/BaseMaterial.h>
 #include <Engine/Scene/include/SceneObject.h>
+#include <Engine/System/include/BaseObject.h>
 #include <assimp/types.h>
 
 #include <ranges>
