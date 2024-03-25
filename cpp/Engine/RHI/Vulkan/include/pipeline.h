@@ -38,11 +38,11 @@ class Pipeline : public Base {
   VkPipelineLayout shadowMapPipelineLayout;
   VkPipeline shadowMapGraphicsPipeline;
 
-  void CreateColorGraphicsPipeline(const VkDevice& device, const Shader& shader,
+  void CreateColorGraphicsPipeline(const Device& device, const Shader& shader,
                                    const std::string& rootPath,
                                    const std::vector<std::string>& shaderPaths,
                                    const VkRenderPass& renderPass);
-  void CreateZPrePassGraphicsPipeline(const VkDevice& device,
+  void CreateZPrePassGraphicsPipeline(const Device& device,
                                       const Shader& shader,
                                       const std::string& rootPath,
                                       const std::string& depthShaderPath,

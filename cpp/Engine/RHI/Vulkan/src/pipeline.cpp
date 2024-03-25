@@ -19,13 +19,12 @@
     .depthBiasEnable = _depthBiasEnable, .depthBiasConstantFactor = 0,   \
     .depthBiasClamp = 0, .depthBiasSlopeFactor = 0, .lineWidth = 1.0f,   \
   }
-#define MULTISAMPLE_CREATE_INFO()                                      \
-  constexpr VkPipelineMultisampleStateCreateInfo multiSampling {       \
-    .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO, \
-    .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,                     \
-    .sampleShadingEnable = VK_FALSE, .minSampleShading = 1.0f,         \
-    .pSampleMask = nullptr, .alphaToCoverageEnable = VK_FALSE,         \
-    .alphaToOneEnable = VK_FALSE,                                      \
+#define MULTISAMPLE_CREATE_INFO(_msaaSamples)                              \
+  const VkPipelineMultisampleStateCreateInfo multiSampling {               \
+    .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,     \
+    .rasterizationSamples = _msaaSamples, .sampleShadingEnable = VK_FALSE, \
+    .minSampleShading = 1.0f, .pSampleMask = nullptr,                      \
+    .alphaToCoverageEnable = VK_FALSE, .alphaToOneEnable = VK_FALSE,       \
   }
 
 #define COLOR_BLEND_ATTACHMENT_STATE()                                      \
@@ -57,7 +56,7 @@
   }
 
 void Pipeline::CreateColorGraphicsPipeline(
-    const VkDevice& device, const Shader& shader, const std::string& rootPath,
+    const Device& device, const Shader& shader, const std::string& rootPath,
     const std::vector<std::string>& shaderPaths,
     const VkRenderPass& renderPass) {
   auto bindingDescription = Vertex::GetBindingDescription();
@@ -81,7 +80,7 @@ void Pipeline::CreateColorGraphicsPipeline(
       .scissorCount = 1,
   };
   RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE);
-  MULTISAMPLE_CREATE_INFO();
+  MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_FALSE,
                                   VK_COMPARE_OP_LESS_OR_EQUAL);
   COLOR_BLEND_ATTACHMENT_STATE();
@@ -99,13 +98,13 @@ void Pipeline::CreateColorGraphicsPipeline(
       .setLayoutCount = 1,
       .pSetLayouts = &colorDescriptorSetLayout,
   };
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
+  if (vkCreatePipelineLayout(device.GetLogical(), &pipelineLayoutInfo, nullptr,
                              &colorPipelineLayout) != VK_SUCCESS) {
     throw std::runtime_error("failed to create pipeline layout!");
   }
 
   auto shaderStagesSet(
-      shader.AutoCreateStagesSet(device, rootPath, shaderPaths));
+      shader.AutoCreateStagesSet(device.GetLogical(), rootPath, shaderPaths));
   for (int i = 0; i < shaderStagesSet.size(); ++i) {
     ShaderStages& shaderStages = shaderStagesSet[i];
     const VkGraphicsPipelineCreateInfo pipelineInfo{
@@ -125,11 +124,11 @@ void Pipeline::CreateColorGraphicsPipeline(
         .subpass = 0,
         .basePipelineHandle = VK_NULL_HANDLE,
     };
-    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo,
-                                  nullptr,
+    if (vkCreateGraphicsPipelines(device.GetLogical(), VK_NULL_HANDLE, 1,
+                                  &pipelineInfo, nullptr,
                                   &colorGraphicsPipeline) == VK_SUCCESS) {
       shaderFallbackIndex = i;
-      shader.DestroyModules(device);
+      shader.DestroyModules(device.GetLogical());
       return;
     }
   }
@@ -137,7 +136,7 @@ void Pipeline::CreateColorGraphicsPipeline(
 }
 
 void Pipeline::CreateZPrePassGraphicsPipeline(
-    const VkDevice& device, const Shader& shader, const std::string& rootPath,
+    const Device& device, const Shader& shader, const std::string& rootPath,
     const std::string& depthShaderPath, const VkRenderPass& renderPass) {
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -160,7 +159,7 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
       .scissorCount = 1,
   };
   RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE);
-  MULTISAMPLE_CREATE_INFO();
+  MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
   COLOR_BLEND_STATE_CREATE_INFO(0, nullptr);
@@ -177,13 +176,13 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
       .setLayoutCount = 1,
       .pSetLayouts = &zPrePassDescriptorSetLayout,
   };
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
+  if (vkCreatePipelineLayout(device.GetLogical(), &pipelineLayoutInfo, nullptr,
                              &zPrePassPipelineLayout) != VK_SUCCESS) {
     throw std::runtime_error("failed to create pipeline layout!");
   }
 
   ShaderStages shaderStages(
-      shader.AutoCreateStages(device, rootPath, depthShaderPath));
+      shader.AutoCreateStages(device.GetLogical(), rootPath, depthShaderPath));
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
       .stageCount = static_cast<uint32_t>(shaderStages.size()),
@@ -201,10 +200,10 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
       .subpass = 0,
       .basePipelineHandle = VK_NULL_HANDLE,
   };
-  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo,
-                                nullptr,
+  if (vkCreateGraphicsPipelines(device.GetLogical(), VK_NULL_HANDLE, 1,
+                                &pipelineInfo, nullptr,
                                 &zPrePassGraphicsPipeline) == VK_SUCCESS) {
-    shader.DestroyModules(device);
+    shader.DestroyModules(device.GetLogical());
     return;
   }
   throw std::runtime_error("failed to create depth graphics pipeline!");
@@ -234,7 +233,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
       .scissorCount = 1,
   };
   RASTERIZER_CREATE_INFO(VK_CULL_MODE_NONE, VK_TRUE);
-  MULTISAMPLE_CREATE_INFO();
+  MULTISAMPLE_CREATE_INFO(VK_SAMPLE_COUNT_1_BIT);
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
   COLOR_BLEND_STATE_CREATE_INFO(0, nullptr);
@@ -373,10 +372,9 @@ void Pipeline::CreatePipeline(const Device& device, Render& render,
   CreateZPrePassDescriptorSetLayout(device.GetLogical());
   CreateShadowMapDescriptorSetLayout(device.GetLogical());
 
-  CreateColorGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                              shaderPaths, render.GetColorRenderPass());
-  CreateZPrePassGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                                 zPrePassShaderPath,
+  CreateColorGraphicsPipeline(device, shader, rootPath, shaderPaths,
+                              render.GetColorRenderPass());
+  CreateZPrePassGraphicsPipeline(device, shader, rootPath, zPrePassShaderPath,
                                  render.GetZPrePassRenderPass());
   CreateShadowMapGraphicsPipeline(device.GetLogical(), shader, rootPath,
                                   shadowMapShaderPath,

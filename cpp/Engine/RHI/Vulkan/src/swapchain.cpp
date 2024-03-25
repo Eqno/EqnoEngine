@@ -137,8 +137,8 @@ void SwapChain::CreateColorFrameBuffers(const VkDevice& device,
                                         const VkRenderPass& colorRenderPass) {
   colorFrameBuffers.resize(swapChainImageViews.size());
   for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-    std::array attachments{swapChainImageViews[i],
-                           zPrePassDepth.GetDepthImageView()};
+    std::array attachments{colorImageView, zPrePassDepth.GetDepthImageView(),
+                           swapChainImageViews[i]};
 
     VkFramebufferCreateInfo frameBufferInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,

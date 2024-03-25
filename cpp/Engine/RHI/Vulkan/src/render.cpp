@@ -15,13 +15,13 @@
 void Render::CreateColorRenderPass(const Device& device) {
   const VkAttachmentDescription colorAttachment{
       .format = swapChain.GetImageFormat(),
-      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .samples = device.GetMSAASamples(),
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
       .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
       .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
   constexpr VkAttachmentReference colorAttachmentRef{
       .attachment = 0,
@@ -29,7 +29,7 @@ void Render::CreateColorRenderPass(const Device& device) {
   };
   const VkAttachmentDescription depthAttachment{
       .format = swapChain.GetZPrePassDepthFormat(),
-      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .samples = device.GetMSAASamples(),
       .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
       .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
       .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -41,10 +41,25 @@ void Render::CreateColorRenderPass(const Device& device) {
       .attachment = 1,
       .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
   };
+  VkAttachmentDescription colorAttachmentResolve{
+      .format = swapChain.GetImageFormat(),
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+  };
+  VkAttachmentReference colorAttachmentResolveRef{
+      .attachment = 2,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
   VkSubpassDescription subPass{
       .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
       .colorAttachmentCount = 1,
       .pColorAttachments = &colorAttachmentRef,
+      .pResolveAttachments = &colorAttachmentResolveRef,
       .pDepthStencilAttachment = &depthAttachmentRef,
   };
   constexpr VkSubpassDependency depBegToDepthBuffer{
@@ -89,7 +104,8 @@ void Render::CreateColorRenderPass(const Device& device) {
                        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
       .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
   };
-  std::array attachments = {colorAttachment, depthAttachment};
+  std::array attachments = {colorAttachment, depthAttachment,
+                            colorAttachmentResolve};
   std::array dependencies = {depBegToDepthBuffer, depEndFromDepthBuffer,
                              depBegToColorBuffer, depEndFromColorBuffer};
   const VkRenderPassCreateInfo renderPassInfo{
@@ -110,7 +126,7 @@ void Render::CreateColorRenderPass(const Device& device) {
 void Render::CreateZPrePassRenderPass(const Device& device) {
   const VkAttachmentDescription depthAttachment{
       .format = swapChain.GetZPrePassDepthFormat(),
-      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .samples = device.GetMSAASamples(),
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
       .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
