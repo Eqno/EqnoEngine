@@ -10,11 +10,12 @@
 void Depth::CreateDepthResources(const Device& device,
                                  const uint32_t imageWidth,
                                  const uint32_t imageHeight,
+                                 VkSampleCountFlagBits numSamples,
                                  const VkImageUsageFlags usage) {
   depthFormat = FindDepthFormat(device.GetPhysical());
   auto [image, imageMemory] = Texture::CreateImage(
-      device, imageWidth, imageHeight, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL,
-      usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+      device, imageWidth, imageHeight, 1, numSamples, depthFormat,
+      VK_IMAGE_TILING_OPTIMAL, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
   depthImage = image;
   depthImageMemory = imageMemory;
   depthImageView =

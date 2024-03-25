@@ -33,6 +33,9 @@ class Device : public Base {
 
   VkQueue graphicsQueue;
   VkQueue presentQueue;
+  VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+
+  VkSampleCountFlagBits GetMaxUsableSampleCount();
 
  public:
   /** Behaviors And Logic **/
@@ -62,6 +65,7 @@ class Device : public Base {
   /**
    * 拾取物理设备的实例
    */
+  VkSampleCountFlagBits GetMSAASamples() const { return msaaSamples; }
   void PickPhysicalDevice(const VkInstance& instance,
                           const VkSurfaceKHR& surface);
   void DestroyLogicalDevice() const;

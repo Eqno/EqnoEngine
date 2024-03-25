@@ -29,6 +29,7 @@ class Depth : public Base {
 
   void CreateDepthResources(const Device& device, const uint32_t imageWidth,
                             const uint32_t imageHeight,
+                            VkSampleCountFlagBits numSamples,
                             const VkImageUsageFlags usage);
   void TransitionDepthImageLayout(
       const Device& device, const Render& render, VkImageLayout oldLayout,

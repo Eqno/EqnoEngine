@@ -97,6 +97,7 @@ class Render : public Base {
 
     swapChain.CreateRenderTarget(imageFormat, colorSpace, device, window);
     swapChain.SetShadowMapSize(shadowMapWidth, shadowMapHeight);
+    swapChain.CreateColorResource(device);
     swapChain.CreateDepthResources(device);
 
     CreateRenderPasses(device);
@@ -131,6 +132,7 @@ class Render : public Base {
                  Window& window);
 
   void DestroyRenderResources(const VkDevice& device) {
+    swapChain.DestroyColorResource(device);
     swapChain.DestroyDepthResource(device);
     swapChain.CleanupRenderTarget(device);
     DestroyRenderPasses(device);

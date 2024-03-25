@@ -52,8 +52,9 @@ class Texture {
 
   static std::pair<VkImage, VkDeviceMemory> CreateImage(
       const Device& device, uint32_t width, uint32_t height,
-      const uint32_t mipLevels, VkFormat format, VkImageTiling tiling,
-      VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+      const uint32_t mipLevels, VkSampleCountFlagBits numSamples,
+      VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+      VkMemoryPropertyFlags properties);
   static VkImageView CreateImageView(const VkDevice& device, VkImage image,
                                      const uint32_t mipLevels, VkFormat format,
                                      VkImageAspectFlags aspectFlags);

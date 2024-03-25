@@ -33,8 +33,12 @@ class SwapChain : public Base {
   int shadowMapWidth = 0;
   int shadowMapHeight = 0;
 
-  std::vector<VkImage> colorImages;
-  std::vector<VkImageView> colorImageViews;
+  VkImage colorImage;
+  VkDeviceMemory colorImageMemory;
+  VkImageView colorImageView;
+
+  std::vector<VkImage> swapChainImages;
+  std::vector<VkImageView> swapChainImageViews;
 
   VkFramebuffer zPrePassFrameBuffer;
   std::vector<VkFramebuffer> colorFrameBuffers;
@@ -51,6 +55,7 @@ class SwapChain : public Base {
     shadowMapWidth = width;
     shadowMapHeight = Height;
   }
+  void CreateColorResource(const Device& device);
   void CreateDepthResources(const Device& device);
   void TransitionDepthImageLayout(const Device& device);
   void CreateFrameBuffers(const VkDevice& device,
@@ -122,7 +127,7 @@ class SwapChain : public Base {
   }
 
   void CreateSwapChain(const Device& device, const Window& window);
-  void CreateColorImageViews(const VkDevice& device);
+  void CreateImageViews(const VkDevice& device);
   void CreateColorFrameBuffers(const VkDevice& device,
                                const VkRenderPass& colorRenderPass);
   void CreateZPrePassFrameBuffer(const VkDevice& device,
@@ -142,6 +147,7 @@ class SwapChain : public Base {
   void CreateRenderTarget(const std::string& format, const std::string& space,
                           const Device& device, const Window& window);
   void CleanupRenderTarget(const VkDevice& device) const;
+  void DestroyColorResource(const VkDevice& device) const;
   void DestroyDepthResource(const VkDevice& device) {
     zPrePassDepth.DestroyDepthResource(device);
     for (Depth& depth : shadowMapDepths) {

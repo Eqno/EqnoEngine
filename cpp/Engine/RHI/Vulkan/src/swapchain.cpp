@@ -97,20 +97,26 @@ void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
   }
 
   vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, nullptr);
-  colorImages.resize(imageCount);
+  swapChainImages.resize(imageCount);
   vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount,
-                          colorImages.data());
+                          swapChainImages.data());
 
   imageFormat = format;
   extent = newExtent;
 }
 
-void SwapChain::CreateColorImageViews(const VkDevice& device) {
-  colorImageViews.resize(colorImages.size());
-  for (size_t i = 0; i < colorImages.size(); i++) {
-    colorImageViews[i] = Texture::CreateImageView(
-        device, colorImages[i], 1, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+void SwapChain::CreateImageViews(const VkDevice& device) {
+  swapChainImageViews.resize(swapChainImages.size());
+  for (size_t i = 0; i < swapChainImages.size(); i++) {
+    swapChainImageViews[i] = Texture::CreateImageView(
+        device, swapChainImages[i], 1, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
   }
+}
+
+void SwapChain::DestroyColorResource(const VkDevice& device) const {
+  vkDestroyImageView(device, colorImageView, nullptr);
+  vkDestroyImage(device, colorImage, nullptr);
+  vkFreeMemory(device, colorImageMemory, nullptr);
 }
 
 void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
@@ -121,7 +127,7 @@ void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
   for (const auto& frameBuffer : shadowMapFrameBuffers) {
     vkDestroyFramebuffer(device, frameBuffer, nullptr);
   }
-  for (const auto& imageView : colorImageViews) {
+  for (const auto& imageView : swapChainImageViews) {
     vkDestroyImageView(device, imageView, nullptr);
   }
   vkDestroySwapchainKHR(device, chain, nullptr);
@@ -129,9 +135,9 @@ void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
 
 void SwapChain::CreateColorFrameBuffers(const VkDevice& device,
                                         const VkRenderPass& colorRenderPass) {
-  colorFrameBuffers.resize(colorImageViews.size());
-  for (size_t i = 0; i < colorImageViews.size(); i++) {
-    std::array attachments{colorImageViews[i],
+  colorFrameBuffers.resize(swapChainImageViews.size());
+  for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+    std::array attachments{swapChainImageViews[i],
                            zPrePassDepth.GetDepthImageView()};
 
     VkFramebufferCreateInfo frameBufferInfo{
@@ -194,10 +200,12 @@ void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
   window.OnRecreateSwapChain();
   device.WaitIdle();
 
+  DestroyColorResource(device.GetLogical());
   DestroyDepthResource(device.GetLogical());
   CleanupRenderTarget(device.GetLogical());
 
   CreateRenderTarget(device, window);
+  CreateColorResource(device);
   CreateDepthResources(device);
   TransitionDepthImageLayout(device);
 
@@ -213,7 +221,7 @@ void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
 
 void SwapChain::CreateRenderTarget(const Device& device, const Window& window) {
   CreateSwapChain(device, window);
-  CreateColorImageViews(device.GetLogical());
+  CreateImageViews(device.GetLogical());
 }
 
 void SwapChain::CreateRenderTarget(const std::string& format,
@@ -222,17 +230,31 @@ void SwapChain::CreateRenderTarget(const std::string& format,
   surfaceFormat = VulkanUtils::ParseImageFormat(format);
   surfaceColorSpace = VulkanUtils::ParseColorSpace(space);
   CreateSwapChain(device, window);
-  CreateColorImageViews(device.GetLogical());
+  CreateImageViews(device.GetLogical());
+}
+
+void SwapChain::CreateColorResource(const Device& device) {
+  auto [image, memory] = Texture::CreateImage(
+      device, extent.width, extent.height, 1, device.GetMSAASamples(),
+      imageFormat, VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
+          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  colorImage = image;
+  colorImageMemory = memory;
+  colorImageView =
+      Texture::CreateImageView(device.GetLogical(), colorImage, 1, imageFormat,
+                               VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void SwapChain::CreateDepthResources(const Device& device) {
   zPrePassDepth.CreateDepthResources(
-      device, extent.width, extent.height,
+      device, extent.width, extent.height, device.GetMSAASamples(),
       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
   for (Depth& depth : shadowMapDepths) {
     depth.CreateDepthResources(device, GetShadowMapWidth(),
-                               GetShadowMapHeight(),
+                               GetShadowMapHeight(), VK_SAMPLE_COUNT_1_BIT,
                                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
                                    VK_IMAGE_USAGE_SAMPLED_BIT);
   }

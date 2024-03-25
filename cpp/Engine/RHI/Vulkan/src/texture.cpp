@@ -8,7 +8,8 @@
 
 std::pair<VkImage, VkDeviceMemory> Texture::CreateImage(
     const Device& device, const uint32_t width, const uint32_t height,
-    const uint32_t mipLevels, const VkFormat format, const VkImageTiling tiling,
+    const uint32_t mipLevels, VkSampleCountFlagBits numSamples,
+    const VkFormat format, const VkImageTiling tiling,
     const VkImageUsageFlags usage, const VkMemoryPropertyFlags properties) {
   const VkImageCreateInfo imageInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -22,7 +23,7 @@ std::pair<VkImage, VkDeviceMemory> Texture::CreateImage(
           },
       .mipLevels = mipLevels,
       .arrayLayers = 1,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .samples = numSamples,
       .tiling = tiling,
       .usage = usage,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
@@ -234,8 +235,8 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
 
   stbi_image_free(pixels);
   auto [image, imageMemory] = CreateImage(
-      device, texWidth, texHeight, mipLevels, imageFormat,
-      VK_IMAGE_TILING_OPTIMAL,
+      device, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT,
+      imageFormat, VK_IMAGE_TILING_OPTIMAL,
       VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
           VK_IMAGE_USAGE_SAMPLED_BIT,
       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
