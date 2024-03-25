@@ -118,36 +118,37 @@ QueueFamilyIndices Device::FindQueueFamilies(
   return DeviceCheck::FindQueueFamilies(physicalDevice, surface);
 }
 
-VkSampleCountFlagBits Device::GetMaxUsableSampleCount() {
+VkSampleCountFlagBits Device::GetMaxUsableSampleCount(int msaaMaxSamples) {
   VkPhysicalDeviceProperties physicalDeviceProperties;
   vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
 
   VkSampleCountFlags counts =
       physicalDeviceProperties.limits.framebufferColorSampleCounts &
       physicalDeviceProperties.limits.framebufferDepthSampleCounts;
-  if (counts & VK_SAMPLE_COUNT_64_BIT) {
+  if (msaaMaxSamples >= 64 && (counts & VK_SAMPLE_COUNT_64_BIT)) {
     return VK_SAMPLE_COUNT_64_BIT;
   }
-  if (counts & VK_SAMPLE_COUNT_32_BIT) {
+  if (msaaMaxSamples >= 32 && (counts & VK_SAMPLE_COUNT_32_BIT)) {
     return VK_SAMPLE_COUNT_32_BIT;
   }
-  if (counts & VK_SAMPLE_COUNT_16_BIT) {
+  if (msaaMaxSamples >= 16 && (counts & VK_SAMPLE_COUNT_16_BIT)) {
     return VK_SAMPLE_COUNT_16_BIT;
   }
-  if (counts & VK_SAMPLE_COUNT_8_BIT) {
+  if (msaaMaxSamples >= 8 && (counts & VK_SAMPLE_COUNT_8_BIT)) {
     return VK_SAMPLE_COUNT_8_BIT;
   }
-  if (counts & VK_SAMPLE_COUNT_4_BIT) {
+  if (msaaMaxSamples >= 4 && (counts & VK_SAMPLE_COUNT_4_BIT)) {
     return VK_SAMPLE_COUNT_4_BIT;
   }
-  if (counts & VK_SAMPLE_COUNT_2_BIT) {
+  if (msaaMaxSamples >= 2 && (counts & VK_SAMPLE_COUNT_2_BIT)) {
     return VK_SAMPLE_COUNT_2_BIT;
   }
   return VK_SAMPLE_COUNT_1_BIT;
 }
 
 void Device::PickPhysicalDevice(const VkInstance& instance,
-                                const VkSurfaceKHR& surface) {
+                                const VkSurfaceKHR& surface,
+                                int msaaMaxSamples) {
   uint32_t deviceCount = 0;
   if (vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr) !=
           VK_SUCCESS ||
@@ -160,7 +161,7 @@ void Device::PickPhysicalDevice(const VkInstance& instance,
   for (const auto& device : devices) {
     if (DeviceCheck::DoesRequiresSuit(device, surface)) {
       physicalDevice = device;
-      msaaSamples = GetMaxUsableSampleCount();
+      msaaSamples = GetMaxUsableSampleCount(msaaMaxSamples);
       break;
     }
   }

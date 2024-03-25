@@ -23,7 +23,8 @@ void Vulkan::InitGraphics() {
   validation.SetupMessenger(instance.GetVkInstance());
   window.CreateSurface(instance.GetVkInstance());
 
-  device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
+  device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface(),
+                            JSON_CONFIG(Int, "MSAAMaxSamples"));
   device.CreateLogicalDevice(window.GetSurface(), validation);
 
   render.CreateRenderResources(

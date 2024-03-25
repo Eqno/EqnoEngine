@@ -12,5 +12,6 @@
     "ShadowMapShaderPath": "Assets/Shaders/DepthOnly",
     "DepthBiasConstantFactor": 2,
     "DepthBiasClamp": 0,
-    "DepthBiasSlopeFactor": 3
+    "DepthBiasSlopeFactor": 3,
+    "MSAAMaxSamples": 4
 }

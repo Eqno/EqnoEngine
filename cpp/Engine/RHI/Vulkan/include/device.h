@@ -35,7 +35,7 @@ class Device : public Base {
   VkQueue presentQueue;
   VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
-  VkSampleCountFlagBits GetMaxUsableSampleCount();
+  VkSampleCountFlagBits GetMaxUsableSampleCount(int msaaMaxSamples);
 
  public:
   /** Behaviors And Logic **/
@@ -67,7 +67,7 @@ class Device : public Base {
    */
   VkSampleCountFlagBits GetMSAASamples() const { return msaaSamples; }
   void PickPhysicalDevice(const VkInstance& instance,
-                          const VkSurfaceKHR& surface);
+                          const VkSurfaceKHR& surface, int msaaMaxSamples);
   void DestroyLogicalDevice() const;
 
   /** Getters And Setters **/
