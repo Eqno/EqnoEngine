@@ -13,8 +13,8 @@
 - [x] 提供了多套 Lit/Unlit 内置 Shader，其中包括 Blinn-Phong 和基于 Cook-Torrance 的 PBR。
 - [x] 使用 Fence、Barrier 和 Semaphore 进行设备、内存、管线、命令和 Render Pass 的同步。
 - [x] 支持 Multiple Frames In Flight，可以为交换链指定 Frame 数量，减少 CPU 和 GPU 同步带来的性能浪费。
-- [ ] 支持 Mipmap 的生成和采样。
-- [ ] 支持 MSAA 反走样。
+- [x] 支持 Texture 的 Mipmap 生成，使用线性插值对相邻的 Mipmap 进行采样，防止渲染远处的物体时出现摩尔纹。
+- [x] 支持 MSAA 反走样，在 Configs/Graphics 中配置最大采样倍数，自动查询并使用设备支持的、最接近配置的倍数。
 - [x] 使用 Shaderc 自动编译 Shader 文件并创建 Shader Stage。
   - [x] 支持 Shader 外定义宏，Shader 内直接使用。
   - [x] 支持 Shader Fallback 功能，在 Material 文件中填写多个 Shader 路径以使用。
