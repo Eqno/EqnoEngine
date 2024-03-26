@@ -56,8 +56,8 @@
   }
 
 void Pipeline::CreateColorGraphicsPipeline(
-    const Device& device, const Shader& shader, const std::string& rootPath,
-    const std::vector<std::string>& shaderPaths,
+    const Device& device, Render& render, const Shader& shader,
+    const std::string& rootPath, const std::vector<std::string>& shaderPaths,
     const VkRenderPass& renderPass) {
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -81,8 +81,11 @@ void Pipeline::CreateColorGraphicsPipeline(
   };
   RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE);
   MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
-  DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_FALSE,
-                                  VK_COMPARE_OP_LESS_OR_EQUAL);
+  DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
+  if (render.GetEnableZPrePass()) {
+    depthStencil.depthWriteEnable = VK_FALSE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+  }
   COLOR_BLEND_ATTACHMENT_STATE();
   COLOR_BLEND_STATE_CREATE_INFO(1, &colorBlendAttachment);
 
@@ -369,29 +372,40 @@ void Pipeline::CreatePipeline(const Device& device, Render& render,
                               const std::string& zPrePassShaderPath,
                               const std::string& shadowMapShaderPath) {
   CreateColorDescriptorSetLayout(device.GetLogical(), render, texCount);
-  CreateZPrePassDescriptorSetLayout(device.GetLogical());
+  if (render.GetEnableZPrePass()) {
+    CreateZPrePassDescriptorSetLayout(device.GetLogical());
+  }
   CreateShadowMapDescriptorSetLayout(device.GetLogical());
 
-  CreateColorGraphicsPipeline(device, shader, rootPath, shaderPaths,
+  CreateColorGraphicsPipeline(device, render, shader, rootPath, shaderPaths,
                               render.GetColorRenderPass());
-  CreateZPrePassGraphicsPipeline(device, shader, rootPath, zPrePassShaderPath,
-                                 render.GetZPrePassRenderPass());
+  if (render.GetEnableZPrePass()) {
+    CreateZPrePassGraphicsPipeline(device, shader, rootPath, zPrePassShaderPath,
+                                   render.GetZPrePassRenderPass());
+  }
   CreateShadowMapGraphicsPipeline(device.GetLogical(), shader, rootPath,
                                   shadowMapShaderPath,
                                   render.GetShadowMapRenderPass());
 }
 
-void Pipeline::DestroyPipeline(const VkDevice& device) const {
+void Pipeline::DestroyPipeline(const VkDevice& device,
+                               const Render& render) const {
   vkDestroyPipeline(device, colorGraphicsPipeline, nullptr);
-  vkDestroyPipeline(device, zPrePassGraphicsPipeline, nullptr);
+  if (render.GetEnableZPrePass()) {
+    vkDestroyPipeline(device, zPrePassGraphicsPipeline, nullptr);
+  }
   vkDestroyPipeline(device, shadowMapGraphicsPipeline, nullptr);
 
   vkDestroyDescriptorSetLayout(device, colorDescriptorSetLayout, nullptr);
-  vkDestroyDescriptorSetLayout(device, zPrePassDescriptorSetLayout, nullptr);
+  if (render.GetEnableZPrePass()) {
+    vkDestroyDescriptorSetLayout(device, zPrePassDescriptorSetLayout, nullptr);
+  }
   vkDestroyDescriptorSetLayout(device, shadowMapDescriptorSetLayout, nullptr);
 
   vkDestroyPipelineLayout(device, colorPipelineLayout, nullptr);
-  vkDestroyPipelineLayout(device, zPrePassPipelineLayout, nullptr);
+  if (render.GetEnableZPrePass()) {
+    vkDestroyPipelineLayout(device, zPrePassPipelineLayout, nullptr);
+  }
   vkDestroyPipelineLayout(device, shadowMapPipelineLayout, nullptr);
 }
 

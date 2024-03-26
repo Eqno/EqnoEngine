@@ -1,10 +1,9 @@
-#include "../include/texture.h"
+#include <Engine/RHI/Vulkan/include/buffer.h>
+#include <Engine/RHI/Vulkan/include/device.h>
+#include <Engine/RHI/Vulkan/include/render.h>
+#include <Engine/RHI/Vulkan/include/texture.h>
 
 #include <stdexcept>
-
-#include "../include/buffer.h"
-#include "../include/device.h"
-#include "../include/render.h"
 
 std::pair<VkImage, VkDeviceMemory> Texture::CreateImage(
     const Device& device, const uint32_t width, const uint32_t height,

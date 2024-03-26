@@ -41,6 +41,15 @@ class SwapChain : public Base {
   std::vector<VkFramebuffer> colorFrameBuffers;
   std::vector<VkFramebuffer> shadowMapFrameBuffers;
 
+  bool GetEnableZPrePass() const;
+
+  uint32_t GetShadowMapWidth() const;
+  uint32_t GetShadowMapHeight() const;
+
+  const VkRenderPass& GetColorRenderPass() const;
+  const VkRenderPass& GetZPrePassRenderPass() const;
+  const VkRenderPass& GetShadowMapRenderPass() const;
+
  public:
   virtual void TriggerRegisterMember() override {
     RegisterMember(zPrePassDepth);
@@ -51,10 +60,7 @@ class SwapChain : public Base {
   void CreateColorResource(const Device& device);
   void CreateDepthResources(const Device& device);
   void TransitionDepthImageLayout(const Device& device);
-  void CreateFrameBuffers(const Device& device,
-                          const VkRenderPass& colorRenderPass,
-                          const VkRenderPass& zPrePassRenderPass,
-                          const VkRenderPass& shadowMapRenderPass);
+  void CreateFrameBuffers(const Device& device);
 
   VkSurfaceFormatKHR ChooseSurfaceFormat(
       const SurfaceFormats& availableFormats) const;
@@ -78,9 +84,6 @@ class SwapChain : public Base {
 
   uint32_t GetExtentWidth() const { return extent.width; }
   uint32_t GetExtentHeight() const { return extent.height; }
-
-  uint32_t GetShadowMapWidth() const;
-  uint32_t GetShadowMapHeight() const;
 
   VkFramebuffer GetColorFrameBufferByIndex(uint32_t index) const {
     return colorFrameBuffers[index];
@@ -106,20 +109,12 @@ class SwapChain : public Base {
 
   void CreateSwapChain(const Device& device, const Window& window);
   void CreateImageViews(const VkDevice& device);
-  void CreateColorFrameBuffers(const Device& device,
-                               const VkRenderPass& colorRenderPass);
-  void CreateZPrePassFrameBuffer(const VkDevice& device,
-                                 const VkRenderPass& zPrePassRenderPass);
-  void CreateShadowMapFrameBuffers(const VkDevice& device,
-                                   const VkRenderPass& shadowMapRenderPass,
-                                   const uint32_t shadowMapWidth,
-                                   const uint32_t shadowMapHeight);
+  void CreateColorFrameBuffers(const Device& device);
+  void CreateZPrePassFrameBuffer(const VkDevice& device);
+  void CreateShadowMapFrameBuffers(const VkDevice& device);
 
   void RecreateSwapChain(const Device& device, const Window& window,
-                         std::unordered_map<std::string, Draw*>& draws,
-                         const VkRenderPass& colorRenderPass,
-                         const VkRenderPass& zPrePassRenderPass,
-                         const VkRenderPass& shadowMapRenderPass);
+                         std::unordered_map<std::string, Draw*>& draws);
 
   void CreateRenderTarget(const Device& device, const Window& window);
   void CreateRenderTarget(const std::string& format, const std::string& space,

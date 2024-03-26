@@ -14,7 +14,8 @@ class BaseObject : public std::enable_shared_from_this<BaseObject> {
   friend class Application;
 
  protected:
-  static float DeltaTime;
+  static float GameDeltaTime;
+  static float RenderDeltaTime;
   bool _alive, _active, _locked;
   std::weak_ptr<BaseObject> _owner;
   std::weak_ptr<Application> _app;

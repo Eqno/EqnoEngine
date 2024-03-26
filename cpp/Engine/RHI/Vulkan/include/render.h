@@ -65,6 +65,11 @@ class Render : public Base {
   void DestroyCommandPool(const VkDevice& device) const;
   void DestroySyncObjects(const VkDevice& device);
 
+  void ConvertShaderSourceToShadowMapDepth(
+      const Device& device, VkCommandBuffer commandBuffer = VK_NULL_HANDLE);
+  void ConvertShadowMapDepthToShaderSource(
+      const Device& device, VkCommandBuffer commandBuffer = VK_NULL_HANDLE);
+
   void RecordZPrePassCommandBuffer(
       const Device& device, std::unordered_map<std::string, Draw*>& draws);
   void RecordShadowMapCommandBuffer(
@@ -93,12 +98,16 @@ class Render : public Base {
     CreateCommandPool(device, window.GetSurface());
 
     swapChain.TransitionDepthImageLayout(device);
-    swapChain.CreateFrameBuffers(device, colorRenderPass, zPrePassRenderPass,
-                                 shadowMapRenderPass);
+    swapChain.CreateFrameBuffers(device);
 
     CreateCommandBuffersSet(device.GetLogical());
     CreateSyncObjects(device.GetLogical());
   }
+
+  bool GetEnableMipmap() const;
+  bool GetEnableZPrePass() const;
+  uint32_t GetShadowMapWidth() const;
+  uint32_t GetShadowMapHeight() const;
 
   void CopyCommandBuffer(const Device& device, const VkBuffer& srcBuffer,
                          const VkBuffer& dstBuffer,
@@ -154,9 +163,6 @@ class Render : public Base {
   [[nodiscard]] uint32_t GetSwapChainExtentHeight() const {
     return swapChain.GetExtentHeight();
   }
-  [[nodiscard]] bool GetEnableMipmap() const;
-  [[nodiscard]] uint32_t GetShadowMapWidth() const;
-  [[nodiscard]] uint32_t GetShadowMapHeight() const;
 
   DEFINE_GET_RENDER_PASS(color, Color)
   DEFINE_GET_RENDER_PASS(zPrePass, ZPrePass)

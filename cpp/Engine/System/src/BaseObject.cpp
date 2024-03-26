@@ -1,7 +1,8 @@
 #include <Engine/System/include/Application.h>
 #include <Engine/System/include/BaseObject.h>
 
-float BaseObject::DeltaTime;
+float BaseObject::GameDeltaTime;
+float BaseObject::RenderDeltaTime;
 
 void BaseObject::OnCreate() {}
 void BaseObject::OnStart() {}

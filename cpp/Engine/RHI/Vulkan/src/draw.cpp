@@ -30,7 +30,7 @@ void Draw::LoadDrawResource(const Device& device, Render& render,
 }
 
 void Draw::DestroyDrawResource(const VkDevice& device, const Render& render) {
-  pipeline.DestroyPipeline(device);
+  pipeline.DestroyPipeline(device, render);
   for (Mesh* mesh : meshes) {
     mesh->DestroyMesh(device, render);
     mesh->Destroy();

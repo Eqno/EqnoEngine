@@ -46,7 +46,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   void RenderLoop() override;
 
   void GetAppPointer();
-  void UpdateDeltaTime();
+  void UpdateDeltaTime(float& DeltaTime);
   void ReleaseBufferLocks();
 
   BufferManager& GetBufferManager() { return bufferManager; }

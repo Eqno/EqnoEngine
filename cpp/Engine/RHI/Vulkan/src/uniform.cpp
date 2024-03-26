@@ -418,12 +418,16 @@ void Descriptor::CreateDescriptor(
   CreateUniformBuffer(device, render);
 
   CreateColorDescriptorPool(device.GetLogical(), render, textures.size());
-  CreateZPrePassDescriptorPool(device.GetLogical(), render);
+  if (render.GetEnableZPrePass()) {
+    CreateZPrePassDescriptorPool(device.GetLogical(), render);
+  }
 
   CreateColorDescriptorSets(device.GetLogical(), render,
                             colorDescriptorSetLayout, textures);
-  CreateZPrePassDescriptorSets(device.GetLogical(), render,
-                               zPrePassDescriptorSetLayout);
+  if (render.GetEnableZPrePass()) {
+    CreateZPrePassDescriptorSets(device.GetLogical(), render,
+                                 zPrePassDescriptorSetLayout);
+  }
 
   this->shadowMapDescriptorSetLayout = shadowMapDescriptorSetLayout;
 }
@@ -431,7 +435,9 @@ void Descriptor::CreateDescriptor(
 void Descriptor::DestroyDesciptor(const VkDevice& device,
                                   const Render& render) {
   vkDestroyDescriptorPool(device, colorDescriptorPool, nullptr);
-  vkDestroyDescriptorPool(device, zPrePassDescriptorPool, nullptr);
+  if (render.GetEnableZPrePass()) {
+    vkDestroyDescriptorPool(device, zPrePassDescriptorPool, nullptr);
+  }
   for (const VkDescriptorPool& descriptorPool :
        shadowMapDescriptorPools | std::views::values) {
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);

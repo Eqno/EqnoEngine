@@ -65,10 +65,10 @@ class Device : public Base {
   /**
    * 拾取物理设备的实例
    */
-  VkSampleCountFlagBits GetMSAASamples() const { return msaaSamples; }
   void PickPhysicalDevice(const VkInstance& instance,
                           const VkSurfaceKHR& surface);
   void DestroyLogicalDevice() const;
+  VkSampleCountFlagBits GetMSAASamples() const { return msaaSamples; }
 
   /** Getters And Setters **/
   /**

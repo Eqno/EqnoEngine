@@ -1,6 +1,5 @@
-#include "../include/vulkan.h"
-
 #include <Engine/Model/include/BaseMaterial.h>
+#include <Engine/RHI/Vulkan/include/vulkan.h>
 #include <Engine/System/include/Application.h>
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/Utility/include/JsonUtils.h>
@@ -84,7 +83,7 @@ void Vulkan::GetAppPointer() {
   }
 }
 
-void Vulkan::UpdateDeltaTime() {
+void Vulkan::UpdateDeltaTime(float& DeltaTime) {
   static auto lastTime = std::chrono::steady_clock::now();
   auto nowTime = std::chrono::steady_clock::now();
 
@@ -107,7 +106,7 @@ void Vulkan::ReleaseBufferLocks() {
 
 void Vulkan::GameLoop() {
   while (GetRenderLoopEnd() == false) {
-    UpdateDeltaTime();
+    UpdateDeltaTime(GameDeltaTime);
 
     Input::RecordDownUpFlags();
     appPointer->TriggerOnUpdate();
@@ -123,6 +122,8 @@ void Vulkan::RenderLoop() {
   SetRenderLoopEnd(false);
   std::thread(&Vulkan::GameLoop, this).detach();
   while (!glfwWindowShouldClose(window.window)) {
+    UpdateDeltaTime(RenderDeltaTime);
+
     ParseMeshDatas();
     TriggerOnUpdate(appPointer->GetLightsById());
     ReleaseBufferLocks();

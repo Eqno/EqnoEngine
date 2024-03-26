@@ -1,11 +1,8 @@
 #pragma once
 
+#include <Engine/RHI/Vulkan/include/utils.h>
+#include <stb_image.h>
 #include <vulkan/vulkan_core.h>
-
-#include <string>
-
-#include "stb_image.h"
-#include "utils.h"
 
 class Device;
 class Render;

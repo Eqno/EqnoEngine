@@ -15,6 +15,9 @@
 bool Render::GetEnableMipmap() const {
   return static_cast<Vulkan*>(owner)->GetEnableMipmap();
 }
+bool Render::GetEnableZPrePass() const {
+  return static_cast<Vulkan*>(owner)->GetEnableZPrePass();
+}
 uint32_t Render::GetShadowMapWidth() const {
   return static_cast<Vulkan*>(owner)->GetShadowMapWidth();
 }
@@ -40,16 +43,19 @@ void Render::CreateColorRenderPass(const Device& device) {
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
-  const VkAttachmentDescription depthAttachment{
+  VkAttachmentDescription depthAttachment{
       .format = swapChain.GetZPrePassDepthFormat(),
       .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
       .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
       .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
       .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
       .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
   };
+  if (GetEnableZPrePass()) {
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+  }
   constexpr VkAttachmentReference depthAttachmentRef{
       .attachment = 1,
       .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
@@ -266,7 +272,9 @@ void Render::CreateShadowMapRenderPass(const Device& device) {
 
 void Render::CreateRenderPasses(const Device& device) {
   CreateColorRenderPass(device);
-  CreateZPrePassRenderPass(device);
+  if (GetEnableZPrePass()) {
+    CreateZPrePassRenderPass(device);
+  }
   CreateShadowMapRenderPass(device);
 }
 
@@ -308,8 +316,9 @@ void Render::CreateCommandBuffers(
 
 void Render::CreateCommandBuffersSet(const VkDevice& device) {
   CreateCommandBuffers(device, colorCommandBuffers);
-  CreateCommandBuffers(device, zPrePassCommandBuffers);
-
+  if (GetEnableZPrePass()) {
+    CreateCommandBuffers(device, zPrePassCommandBuffers);
+  }
   shadowMapCommandBuffers.resize(GetShadowMapDepthNum());
   for (int i = 0; i < GetShadowMapDepthNum(); i++) {
     CreateCommandBuffers(device, shadowMapCommandBuffers[i]);
@@ -358,6 +367,43 @@ void Render::EndSingleTimeCommands(const Device& device,
   vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
   vkQueueWaitIdle(graphicsQueue);
   vkFreeCommandBuffers(device.GetLogical(), commandPool, 1, commandBuffer);
+}
+
+void Render::ConvertShaderSourceToShadowMapDepth(
+    const Device& device, VkCommandBuffer commandBuffer) {
+  bool requireOneTimeCommandBuffer = false;
+  if (commandBuffer == VK_NULL_HANDLE) {
+    requireOneTimeCommandBuffer = true;
+
+    commandBuffer = {};
+    BeginSingleTimeCommands(device.GetLogical(), &commandBuffer);
+  }
+  for (uint32_t i = 0; i < GetShadowMapDepthNum(); i++) {
+    swapChain.GetShadowMapDepthByIndex(i).TransitionDepthImageLayout(
+        device, *this, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandBuffer);
+  }
+  if (requireOneTimeCommandBuffer == true) {
+    EndSingleTimeCommands(device, &commandBuffer);
+  }
+}
+void Render::ConvertShadowMapDepthToShaderSource(
+    const Device& device, VkCommandBuffer commandBuffer) {
+  bool requireOneTimeCommandBuffer = false;
+  if (commandBuffer == VK_NULL_HANDLE) {
+    requireOneTimeCommandBuffer = true;
+
+    commandBuffer = {};
+    BeginSingleTimeCommands(device.GetLogical(), &commandBuffer);
+  }
+  for (uint32_t i = 0; i < GetShadowMapDepthNum(); i++) {
+    swapChain.GetShadowMapDepthByIndex(i).TransitionDepthImageLayout(
+        device, *this, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBuffer);
+  }
+  if (requireOneTimeCommandBuffer == true) {
+    EndSingleTimeCommands(device, &commandBuffer);
+  }
 }
 
 void Render::RecordZPrePassCommandBuffer(
@@ -428,13 +474,7 @@ void Render::RecordZPrePassCommandBuffer(
     }
   }
   vkCmdEndRenderPass(commandBuffer);
-
-  // Convert shader source to shadow map depth
-  for (uint32_t i = 0; i < GetShadowMapDepthNum(); i++) {
-    swapChain.GetShadowMapDepthByIndex(i).TransitionDepthImageLayout(
-        device, *this, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandBuffer);
-  }
+  ConvertShaderSourceToShadowMapDepth(device, commandBuffer);
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
   }
@@ -535,13 +575,7 @@ void Render::RecordColorCommandBuffer(
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
     throw std::runtime_error("failed to begin recording command buffer!");
   }
-  // Convert shadow map depth to shader source
-  for (uint32_t i = 0; i < GetShadowMapDepthNum(); i++) {
-    swapChain.GetShadowMapDepthByIndex(i).TransitionDepthImageLayout(
-        device, *this, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBuffer);
-  }
-
+  ConvertShadowMapDepthToShaderSource(device, commandBuffer);
   constexpr std::array clearValues{
       VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 1.0f}}},
       VkClearValue{.depthStencil = {1.0f, 0}},
@@ -634,8 +668,10 @@ void Render::WaitFences(
     std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
   vkWaitForFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame],
                   VK_TRUE, UINT64_MAX);
-  vkWaitForFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame],
-                  VK_TRUE, UINT64_MAX);
+  if (GetEnableZPrePass()) {
+    vkWaitForFences(device.GetLogical(), 1,
+                    &zPrePassInFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+  }
 
   for (const auto& iter : lightsById) {
     if (auto lightPtr = iter.second.lock()) {
@@ -650,7 +686,10 @@ void Render::ResetFences(
     const Device& device,
     std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
   vkResetFences(device.GetLogical(), 1, &colorInFlightFences[currentFrame]);
-  vkResetFences(device.GetLogical(), 1, &zPrePassInFlightFences[currentFrame]);
+  if (GetEnableZPrePass()) {
+    vkResetFences(device.GetLogical(), 1,
+                  &zPrePassInFlightFences[currentFrame]);
+  }
 
   for (const auto& iter : lightsById) {
     if (auto lightPtr = iter.second.lock()) {
@@ -671,8 +710,7 @@ void Render::DrawFrame(
       imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    swapChain.RecreateSwapChain(device, window, draws, colorRenderPass,
-                                zPrePassRenderPass, shadowMapRenderPass);
+    swapChain.RecreateSwapChain(device, window, draws);
     return;
   }
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -680,16 +718,23 @@ void Render::DrawFrame(
   }
   ResetFences(device, lightsById);
 
-  vkResetCommandBuffer(zPrePassCommandBuffers[currentFrame],
-                       /*VkCommandBufferResetFlagBits*/
-                       0);
-  RecordZPrePassCommandBuffer(device, draws);
-  SubmitCommandBuffer(device, imageAvailableSemaphores[currentFrame],
-                      zPrePassCommandBuffers[currentFrame],
-                      zPrePassFinishedSemaphores[currentFrame],
-                      zPrePassInFlightFences[currentFrame]);
+  if (GetEnableZPrePass()) {
+    vkResetCommandBuffer(zPrePassCommandBuffers[currentFrame],
+                         /*VkCommandBufferResetFlagBits*/
+                         0);
+    RecordZPrePassCommandBuffer(device, draws);
+    SubmitCommandBuffer(device, imageAvailableSemaphores[currentFrame],
+                        zPrePassCommandBuffers[currentFrame],
+                        zPrePassFinishedSemaphores[currentFrame],
+                        zPrePassInFlightFences[currentFrame]);
+  } else {
+    ConvertShaderSourceToShadowMapDepth(device);
+  }
 
-  VkSemaphore lastSemaphore = zPrePassFinishedSemaphores[currentFrame];
+  VkSemaphore lastSemaphore = imageAvailableSemaphores[currentFrame];
+  if (GetEnableZPrePass()) {
+    lastSemaphore = zPrePassFinishedSemaphores[currentFrame];
+  }
   for (const auto& iter : lightsById) {
     if (auto lightPtr = iter.second.lock()) {
       vkResetCommandBuffer(
@@ -729,8 +774,7 @@ void Render::DrawFrame(
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
       window.GetFrameBufferResized()) {
     window.SetFrameBufferResized(false);
-    swapChain.RecreateSwapChain(device, window, draws, colorRenderPass,
-                                zPrePassRenderPass, shadowMapRenderPass);
+    swapChain.RecreateSwapChain(device, window, draws);
   } else if (result != VK_SUCCESS) {
     throw std::runtime_error("failed to present swap chain image!");
   }
@@ -742,7 +786,9 @@ void Render::CreateSyncObjects(const VkDevice& device) {
   shadowMapInFlightFences.resize(GetShadowMapDepthNum());
 
   imageAvailableSemaphores.resize(maxFramesInFlight);
-  zPrePassFinishedSemaphores.resize(maxFramesInFlight);
+  if (GetEnableZPrePass()) {
+    zPrePassFinishedSemaphores.resize(maxFramesInFlight);
+  }
   renderFinishedSemaphores.resize(maxFramesInFlight);
 
   colorInFlightFences.resize(maxFramesInFlight);
@@ -765,14 +811,16 @@ void Render::CreateSyncObjects(const VkDevice& device) {
   for (int i = 0; i < maxFramesInFlight; i++) {
     if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
                           &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-        vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-                          &zPrePassFinishedSemaphores[i]) != VK_SUCCESS ||
+        (GetEnableZPrePass() &&
+         vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+                           &zPrePassFinishedSemaphores[i]) != VK_SUCCESS) ||
         vkCreateSemaphore(device, &semaphoreInfo, nullptr,
                           &renderFinishedSemaphores[i]) != VK_SUCCESS ||
         vkCreateFence(device, &fenceInfo, nullptr, &colorInFlightFences[i]) !=
             VK_SUCCESS ||
-        vkCreateFence(device, &fenceInfo, nullptr,
-                      &zPrePassInFlightFences[i]) != VK_SUCCESS) {
+        (GetEnableZPrePass() &&
+         vkCreateFence(device, &fenceInfo, nullptr,
+                       &zPrePassInFlightFences[i]) != VK_SUCCESS)) {
       throw std::runtime_error("failed to create render semaphores or fences!");
     }
     for (int j = 0; j < GetShadowMapDepthNum(); j++) {
@@ -789,7 +837,9 @@ void Render::CreateSyncObjects(const VkDevice& device) {
 
 void Render::DestroyRenderPasses(const VkDevice& device) const {
   vkDestroyRenderPass(device, colorRenderPass, nullptr);
-  vkDestroyRenderPass(device, zPrePassRenderPass, nullptr);
+  if (GetEnableZPrePass()) {
+    vkDestroyRenderPass(device, zPrePassRenderPass, nullptr);
+  }
   vkDestroyRenderPass(device, shadowMapRenderPass, nullptr);
 }
 
@@ -800,7 +850,9 @@ void Render::DestroyCommandPool(const VkDevice& device) const {
 void Render::DestroySyncObjects(const VkDevice& device) {
   for (int i = 0; i < maxFramesInFlight; i++) {
     vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-    vkDestroySemaphore(device, zPrePassFinishedSemaphores[i], nullptr);
+    if (GetEnableZPrePass()) {
+      vkDestroySemaphore(device, zPrePassFinishedSemaphores[i], nullptr);
+    }
     vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 
     for (int j = 0; j < GetShadowMapDepthNum(); j++) {
@@ -809,6 +861,8 @@ void Render::DestroySyncObjects(const VkDevice& device) {
     }
 
     vkDestroyFence(device, colorInFlightFences[i], nullptr);
-    vkDestroyFence(device, zPrePassInFlightFences[i], nullptr);
+    if (GetEnableZPrePass()) {
+      vkDestroyFence(device, zPrePassInFlightFences[i], nullptr);
+    }
   }
 }

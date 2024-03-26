@@ -73,27 +73,27 @@ void BaseCamera::OnDestroy() {
 void BaseCamera::PerformTraslation() {
   if (Input::Key::w) {
     SetRelativePosition(transform.relativePosition +
-                        transform.relativeForward * moveSpeed * DeltaTime);
+                        transform.relativeForward * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::a) {
     SetRelativePosition(transform.relativePosition +
-                        transform.relativeLeft * moveSpeed * DeltaTime);
+                        transform.relativeLeft * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::s) {
     SetRelativePosition(transform.relativePosition -
-                        transform.relativeForward * moveSpeed * DeltaTime);
+                        transform.relativeForward * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::d) {
     SetRelativePosition(transform.relativePosition -
-                        transform.relativeLeft * moveSpeed * DeltaTime);
+                        transform.relativeLeft * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::q) {
     SetRelativePosition(transform.relativePosition -
-                        transform.relativeUp * moveSpeed * DeltaTime);
+                        transform.relativeUp * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::e) {
     SetRelativePosition(transform.relativePosition +
-                        transform.relativeUp * moveSpeed * DeltaTime);
+                        transform.relativeUp * moveSpeed * GameDeltaTime);
   }
   if (Input::Mouse::scrollY > 0) {
     if (Input::Key::leftShift) {

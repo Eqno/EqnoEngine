@@ -12,11 +12,25 @@
 #include "../include/texture.h"
 #include "../include/window.h"
 
+bool SwapChain::GetEnableZPrePass() const {
+  return static_cast<Render*>(owner)->GetEnableZPrePass();
+}
+
 uint32_t SwapChain::GetShadowMapWidth() const {
   return static_cast<Render*>(owner)->GetShadowMapWidth();
 }
 uint32_t SwapChain::GetShadowMapHeight() const {
   return static_cast<Render*>(owner)->GetShadowMapHeight();
+}
+
+const VkRenderPass& SwapChain::GetColorRenderPass() const {
+  return static_cast<Render*>(owner)->GetColorRenderPass();
+}
+const VkRenderPass& SwapChain::GetZPrePassRenderPass() const {
+  return static_cast<Render*>(owner)->GetZPrePassRenderPass();
+}
+const VkRenderPass& SwapChain::GetShadowMapRenderPass() const {
+  return static_cast<Render*>(owner)->GetShadowMapRenderPass();
 }
 
 VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
@@ -133,7 +147,9 @@ void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
   for (const auto& frameBuffer : colorFrameBuffers) {
     vkDestroyFramebuffer(device, frameBuffer, nullptr);
   }
-  vkDestroyFramebuffer(device, zPrePassFrameBuffer, nullptr);
+  if (GetEnableZPrePass()) {
+    vkDestroyFramebuffer(device, zPrePassFrameBuffer, nullptr);
+  }
   for (const auto& frameBuffer : shadowMapFrameBuffers) {
     vkDestroyFramebuffer(device, frameBuffer, nullptr);
   }
@@ -143,8 +159,7 @@ void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
   vkDestroySwapchainKHR(device, chain, nullptr);
 }
 
-void SwapChain::CreateColorFrameBuffers(const Device& device,
-                                        const VkRenderPass& colorRenderPass) {
+void SwapChain::CreateColorFrameBuffers(const Device& device) {
   colorFrameBuffers.resize(swapChainImageViews.size());
   for (size_t i = 0; i < swapChainImageViews.size(); i++) {
     std::vector attachments = {swapChainImageViews[i],
@@ -155,7 +170,7 @@ void SwapChain::CreateColorFrameBuffers(const Device& device,
     }
     VkFramebufferCreateInfo frameBufferInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-        .renderPass = colorRenderPass,
+        .renderPass = GetColorRenderPass(),
         .attachmentCount = static_cast<uint32_t>(attachments.size()),
         .pAttachments = attachments.data(),
         .width = extent.width,
@@ -168,11 +183,10 @@ void SwapChain::CreateColorFrameBuffers(const Device& device,
     }
   }
 }
-void SwapChain::CreateZPrePassFrameBuffer(
-    const VkDevice& device, const VkRenderPass& zPrePassRenderPass) {
+void SwapChain::CreateZPrePassFrameBuffer(const VkDevice& device) {
   VkFramebufferCreateInfo frameBufferInfo{
       .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      .renderPass = zPrePassRenderPass,
+      .renderPass = GetZPrePassRenderPass(),
       .attachmentCount = 1,
       .pAttachments = &zPrePassDepth.GetDepthImageView(),
       .width = extent.width,
@@ -184,18 +198,16 @@ void SwapChain::CreateZPrePassFrameBuffer(
     throw std::runtime_error("failed to create frame buffer!");
   }
 }
-void SwapChain::CreateShadowMapFrameBuffers(
-    const VkDevice& device, const VkRenderPass& shadowMapRenderPass,
-    const uint32_t shadowMapWidth, const uint32_t shadowMapHeight) {
+void SwapChain::CreateShadowMapFrameBuffers(const VkDevice& device) {
   shadowMapFrameBuffers.resize(shadowMapDepths.size());
   for (size_t i = 0; i < shadowMapDepths.size(); i++) {
     VkFramebufferCreateInfo frameBufferInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-        .renderPass = shadowMapRenderPass,
+        .renderPass = GetShadowMapRenderPass(),
         .attachmentCount = 1,
         .pAttachments = &shadowMapDepths[i].GetDepthImageView(),
-        .width = shadowMapWidth,
-        .height = shadowMapHeight,
+        .width = GetShadowMapWidth(),
+        .height = GetShadowMapHeight(),
         .layers = 1,
     };
     if (vkCreateFramebuffer(device, &frameBufferInfo, nullptr,
@@ -205,11 +217,9 @@ void SwapChain::CreateShadowMapFrameBuffers(
   }
 }
 
-void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
-                                  std::unordered_map<std::string, Draw*>& draws,
-                                  const VkRenderPass& colorRenderPass,
-                                  const VkRenderPass& zPrePassRenderPass,
-                                  const VkRenderPass& shadowMapRenderPass) {
+void SwapChain::RecreateSwapChain(
+    const Device& device, const Window& window,
+    std::unordered_map<std::string, Draw*>& draws) {
   window.OnRecreateSwapChain();
   device.WaitIdle();
 
@@ -228,8 +238,7 @@ void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
                                       *static_cast<Render*>(owner));
     }
   }
-  CreateFrameBuffers(device, colorRenderPass, zPrePassRenderPass,
-                     shadowMapRenderPass);
+  CreateFrameBuffers(device);
 }
 
 void SwapChain::CreateRenderTarget(const Device& device, const Window& window) {
@@ -288,12 +297,10 @@ void SwapChain::TransitionDepthImageLayout(const Device& device) {
   }
 }
 
-void SwapChain::CreateFrameBuffers(const Device& device,
-                                   const VkRenderPass& colorRenderPass,
-                                   const VkRenderPass& zPrePassRenderPass,
-                                   const VkRenderPass& shadowMapRenderPass) {
-  CreateColorFrameBuffers(device, colorRenderPass);
-  CreateZPrePassFrameBuffer(device.GetLogical(), zPrePassRenderPass);
-  CreateShadowMapFrameBuffers(device.GetLogical(), shadowMapRenderPass,
-                              GetShadowMapWidth(), GetShadowMapHeight());
+void SwapChain::CreateFrameBuffers(const Device& device) {
+  CreateColorFrameBuffers(device);
+  if (GetEnableZPrePass()) {
+    CreateZPrePassFrameBuffer(device.GetLogical());
+  }
+  CreateShadowMapFrameBuffers(device.GetLogical());
 }

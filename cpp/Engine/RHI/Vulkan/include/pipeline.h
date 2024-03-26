@@ -38,7 +38,8 @@ class Pipeline : public Base {
   VkPipelineLayout shadowMapPipelineLayout;
   VkPipeline shadowMapGraphicsPipeline;
 
-  void CreateColorGraphicsPipeline(const Device& device, const Shader& shader,
+  void CreateColorGraphicsPipeline(const Device& device, Render& render,
+                                   const Shader& shader,
                                    const std::string& rootPath,
                                    const std::vector<std::string>& shaderPaths,
                                    const VkRenderPass& renderPass);
@@ -71,7 +72,7 @@ class Pipeline : public Base {
                       const std::vector<std::string>& shaderPaths,
                       const std::string& zPrePassShaderPath,
                       const std::string& shadowMapShaderPath);
-  void DestroyPipeline(const VkDevice& device) const;
+  void DestroyPipeline(const VkDevice& device, const Render& render) const;
 };
 
 #undef DEFINE_GET_PIPELINE_AND_DSL
