@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <vulkan/vulkan_core.h>
 
@@ -92,8 +93,8 @@ class Render : public Base {
     CreateCommandPool(device, window.GetSurface());
 
     swapChain.TransitionDepthImageLayout(device);
-    swapChain.CreateFrameBuffers(device.GetLogical(), colorRenderPass,
-                                 zPrePassRenderPass, shadowMapRenderPass);
+    swapChain.CreateFrameBuffers(device, colorRenderPass, zPrePassRenderPass,
+                                 shadowMapRenderPass);
 
     CreateCommandBuffersSet(device.GetLogical());
     CreateSyncObjects(device.GetLogical());
@@ -119,13 +120,13 @@ class Render : public Base {
                  std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
                  Window& window);
 
-  void DestroyRenderResources(const VkDevice& device) {
+  void DestroyRenderResources(const Device& device) {
     swapChain.DestroyColorResource(device);
-    swapChain.DestroyDepthResource(device);
-    swapChain.CleanupRenderTarget(device);
-    DestroyRenderPasses(device);
-    DestroySyncObjects(device);
-    DestroyCommandPool(device);
+    swapChain.DestroyDepthResource(device.GetLogical());
+    swapChain.CleanupRenderTarget(device.GetLogical());
+    DestroyRenderPasses(device.GetLogical());
+    DestroySyncObjects(device.GetLogical());
+    DestroyCommandPool(device.GetLogical());
   }
 
   [[nodiscard]] const VkFormat& GetSwapChainImageFormat() const {

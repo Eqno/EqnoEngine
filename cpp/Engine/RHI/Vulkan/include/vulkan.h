@@ -73,6 +73,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   int shadowMapWidth = 0;
   int shadowMapHeight = 0;
 
+  int msaaSamples = 4;
   float depthBiasClamp = 0;
   float depthBiasSlopeFactor = 2.5f;
   float depthBiasConstantFactor = 1.5f;
@@ -92,6 +93,7 @@ class Vulkan final : public GraphicsInterface, public Base {
     return shadowMapHeight >= 0 ? shadowMapHeight
                                 : render.GetSwapChainExtentHeight();
   }
+  int GetMSAASamples() const { return msaaSamples; }
   float GetDepthBiasClamp() const { return depthBiasClamp; }
   float GetDepthBiasSlopeFactor() const { return depthBiasSlopeFactor; }
   float GetDepthBiasConstantFactor() const { return depthBiasConstantFactor; }

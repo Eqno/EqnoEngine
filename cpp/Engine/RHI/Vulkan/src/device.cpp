@@ -1,10 +1,10 @@
-#include "../include/device.h"
+#include <Engine/RHI/Vulkan/include/config.h>
+#include <Engine/RHI/Vulkan/include/device.h>
+#include <Engine/RHI/Vulkan/include/validation.h>
+#include <Engine/RHI/Vulkan/include/vulkan.h>
+#include <Engine/Utility/include/TypeUtils.h>
 
 #include <stdexcept>
-
-#include "../include/config.h"
-#include "../include/validation.h"
-#include "Engine/Utility/include/TypeUtils.h"
 
 /**
  * 设备检查相关函数
@@ -147,8 +147,7 @@ VkSampleCountFlagBits Device::GetMaxUsableSampleCount(int msaaMaxSamples) {
 }
 
 void Device::PickPhysicalDevice(const VkInstance& instance,
-                                const VkSurfaceKHR& surface,
-                                int msaaMaxSamples) {
+                                const VkSurfaceKHR& surface) {
   uint32_t deviceCount = 0;
   if (vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr) !=
           VK_SUCCESS ||
@@ -161,7 +160,8 @@ void Device::PickPhysicalDevice(const VkInstance& instance,
   for (const auto& device : devices) {
     if (DeviceCheck::DoesRequiresSuit(device, surface)) {
       physicalDevice = device;
-      msaaSamples = GetMaxUsableSampleCount(msaaMaxSamples);
+      msaaSamples = GetMaxUsableSampleCount(
+          static_cast<Vulkan*>(owner)->GetMSAASamples());
       break;
     }
   }

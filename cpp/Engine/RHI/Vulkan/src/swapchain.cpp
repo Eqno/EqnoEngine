@@ -120,10 +120,13 @@ void SwapChain::CreateImageViews(const VkDevice& device) {
   }
 }
 
-void SwapChain::DestroyColorResource(const VkDevice& device) const {
-  vkDestroyImageView(device, colorImageView, nullptr);
-  vkDestroyImage(device, colorImage, nullptr);
-  vkFreeMemory(device, colorImageMemory, nullptr);
+void SwapChain::DestroyColorResource(const Device& device) const {
+  if (device.GetMSAASamples() == VK_SAMPLE_COUNT_1_BIT) {
+    return;
+  }
+  vkDestroyImageView(device.GetLogical(), colorImageView, nullptr);
+  vkDestroyImage(device.GetLogical(), colorImage, nullptr);
+  vkFreeMemory(device.GetLogical(), colorImageMemory, nullptr);
 }
 
 void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
@@ -140,13 +143,16 @@ void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
   vkDestroySwapchainKHR(device, chain, nullptr);
 }
 
-void SwapChain::CreateColorFrameBuffers(const VkDevice& device,
+void SwapChain::CreateColorFrameBuffers(const Device& device,
                                         const VkRenderPass& colorRenderPass) {
   colorFrameBuffers.resize(swapChainImageViews.size());
   for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-    std::array attachments{colorImageView, zPrePassDepth.GetDepthImageView(),
-                           swapChainImageViews[i]};
-
+    std::vector attachments = {swapChainImageViews[i],
+                               zPrePassDepth.GetDepthImageView()};
+    if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+      attachments = {colorImageView, zPrePassDepth.GetDepthImageView(),
+                     swapChainImageViews[i]};
+    }
     VkFramebufferCreateInfo frameBufferInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
         .renderPass = colorRenderPass,
@@ -156,7 +162,7 @@ void SwapChain::CreateColorFrameBuffers(const VkDevice& device,
         .height = extent.height,
         .layers = 1,
     };
-    if (vkCreateFramebuffer(device, &frameBufferInfo, nullptr,
+    if (vkCreateFramebuffer(device.GetLogical(), &frameBufferInfo, nullptr,
                             &colorFrameBuffers[i]) != VK_SUCCESS) {
       throw std::runtime_error("failed to create frame buffer!");
     }
@@ -207,7 +213,7 @@ void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
   window.OnRecreateSwapChain();
   device.WaitIdle();
 
-  DestroyColorResource(device.GetLogical());
+  DestroyColorResource(device);
   DestroyDepthResource(device.GetLogical());
   CleanupRenderTarget(device.GetLogical());
 
@@ -222,7 +228,7 @@ void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
                                       *static_cast<Render*>(owner));
     }
   }
-  CreateFrameBuffers(device.GetLogical(), colorRenderPass, zPrePassRenderPass,
+  CreateFrameBuffers(device, colorRenderPass, zPrePassRenderPass,
                      shadowMapRenderPass);
 }
 
@@ -241,6 +247,9 @@ void SwapChain::CreateRenderTarget(const std::string& format,
 }
 
 void SwapChain::CreateColorResource(const Device& device) {
+  if (device.GetMSAASamples() == VK_SAMPLE_COUNT_1_BIT) {
+    return;
+  }
   auto [image, memory] = Texture::CreateImage(
       device, extent.width, extent.height, 1, device.GetMSAASamples(),
       imageFormat, VK_IMAGE_TILING_OPTIMAL,
@@ -279,12 +288,12 @@ void SwapChain::TransitionDepthImageLayout(const Device& device) {
   }
 }
 
-void SwapChain::CreateFrameBuffers(const VkDevice& device,
+void SwapChain::CreateFrameBuffers(const Device& device,
                                    const VkRenderPass& colorRenderPass,
                                    const VkRenderPass& zPrePassRenderPass,
                                    const VkRenderPass& shadowMapRenderPass) {
   CreateColorFrameBuffers(device, colorRenderPass);
-  CreateZPrePassFrameBuffer(device, zPrePassRenderPass);
-  CreateShadowMapFrameBuffers(device, shadowMapRenderPass, GetShadowMapWidth(),
-                              GetShadowMapHeight());
+  CreateZPrePassFrameBuffer(device.GetLogical(), zPrePassRenderPass);
+  CreateShadowMapFrameBuffers(device.GetLogical(), shadowMapRenderPass,
+                              GetShadowMapWidth(), GetShadowMapHeight());
 }

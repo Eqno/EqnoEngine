@@ -26,6 +26,7 @@ void Vulkan::InitConfig() {
   shadowMapWidth = JSON_CONFIG(Int, "ShadowMapWidth");
   shadowMapHeight = JSON_CONFIG(Int, "ShadowMapHeight");
 
+  msaaSamples = JSON_CONFIG(Int, "MSAAMaxSamples");
   depthBiasClamp = JSON_CONFIG(Float, "DepthBiasClamp");
   depthBiasSlopeFactor = JSON_CONFIG(Float, "DepthBiasSlopeFactor");
   depthBiasConstantFactor = JSON_CONFIG(Float, "DepthBiasConstantFactor");
@@ -37,8 +38,7 @@ void Vulkan::InitGraphics() {
   validation.SetupMessenger(instance.GetVkInstance());
   window.CreateSurface(instance.GetVkInstance());
 
-  device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface(),
-                            JSON_CONFIG(Int, "MSAAMaxSamples"));
+  device.PickPhysicalDevice(instance.GetVkInstance(), window.GetSurface());
   device.CreateLogicalDevice(window.GetSurface(), validation);
 
   render.CreateRenderResources(
@@ -139,7 +139,7 @@ void Vulkan::CleanupGraphics() {
     val->Destroy();
   }
 
-  render.DestroyRenderResources(device.GetLogical());
+  render.DestroyRenderResources(device);
   device.DestroyLogicalDevice();
   validation.DestroyMessenger(instance.GetVkInstance());
 

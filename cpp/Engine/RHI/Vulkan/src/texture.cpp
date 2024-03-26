@@ -249,10 +249,8 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
   CopyBufferToImage(device, render, stagingBuffer, textureImage,
                     static_cast<uint32_t>(texWidth),
                     static_cast<uint32_t>(texHeight));
-
   vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
   vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
-
   GenerateMipmaps(device, render, image, texWidth, texHeight, mipLevels,
                   imageFormat);
 }

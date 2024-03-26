@@ -67,7 +67,7 @@ class Device : public Base {
    */
   VkSampleCountFlagBits GetMSAASamples() const { return msaaSamples; }
   void PickPhysicalDevice(const VkInstance& instance,
-                          const VkSurfaceKHR& surface, int msaaMaxSamples);
+                          const VkSurfaceKHR& surface);
   void DestroyLogicalDevice() const;
 
   /** Getters And Setters **/

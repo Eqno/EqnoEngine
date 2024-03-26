@@ -20,7 +20,7 @@ uint32_t Render::GetShadowMapHeight() const {
 }
 
 void Render::CreateColorRenderPass(const Device& device) {
-  const VkAttachmentDescription colorAttachment{
+  VkAttachmentDescription colorAttachment{
       .format = swapChain.GetImageFormat(),
       .samples = device.GetMSAASamples(),
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -28,8 +28,11 @@ void Render::CreateColorRenderPass(const Device& device) {
       .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
       .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+      .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
   };
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  }
   constexpr VkAttachmentReference colorAttachmentRef{
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -62,11 +65,15 @@ void Render::CreateColorRenderPass(const Device& device) {
       .attachment = 2,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
+  VkAttachmentReference* pColorAttachmentResolveRef = nullptr;
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    pColorAttachmentResolveRef = &colorAttachmentResolveRef;
+  }
   VkSubpassDescription subPass{
       .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
       .colorAttachmentCount = 1,
       .pColorAttachments = &colorAttachmentRef,
-      .pResolveAttachments = &colorAttachmentResolveRef,
+      .pResolveAttachments = pColorAttachmentResolveRef,
       .pDepthStencilAttachment = &depthAttachmentRef,
   };
   constexpr VkSubpassDependency depBegToDepthBuffer{
@@ -111,8 +118,10 @@ void Render::CreateColorRenderPass(const Device& device) {
                        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
       .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
   };
-  std::array attachments = {colorAttachment, depthAttachment,
-                            colorAttachmentResolve};
+  std::vector attachments = {colorAttachment, depthAttachment};
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    attachments.emplace_back(colorAttachmentResolve);
+  }
   std::array dependencies = {depBegToDepthBuffer, depEndFromDepthBuffer,
                              depBegToColorBuffer, depEndFromColorBuffer};
   const VkRenderPassCreateInfo renderPassInfo{

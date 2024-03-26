@@ -51,7 +51,7 @@ class SwapChain : public Base {
   void CreateColorResource(const Device& device);
   void CreateDepthResources(const Device& device);
   void TransitionDepthImageLayout(const Device& device);
-  void CreateFrameBuffers(const VkDevice& device,
+  void CreateFrameBuffers(const Device& device,
                           const VkRenderPass& colorRenderPass,
                           const VkRenderPass& zPrePassRenderPass,
                           const VkRenderPass& shadowMapRenderPass);
@@ -106,7 +106,7 @@ class SwapChain : public Base {
 
   void CreateSwapChain(const Device& device, const Window& window);
   void CreateImageViews(const VkDevice& device);
-  void CreateColorFrameBuffers(const VkDevice& device,
+  void CreateColorFrameBuffers(const Device& device,
                                const VkRenderPass& colorRenderPass);
   void CreateZPrePassFrameBuffer(const VkDevice& device,
                                  const VkRenderPass& zPrePassRenderPass);
@@ -125,7 +125,7 @@ class SwapChain : public Base {
   void CreateRenderTarget(const std::string& format, const std::string& space,
                           const Device& device, const Window& window);
   void CleanupRenderTarget(const VkDevice& device) const;
-  void DestroyColorResource(const VkDevice& device) const;
+  void DestroyColorResource(const Device& device) const;
   void DestroyDepthResource(const VkDevice& device) {
     zPrePassDepth.DestroyDepthResource(device);
     for (Depth& depth : shadowMapDepths) {
