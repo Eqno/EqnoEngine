@@ -11,8 +11,8 @@
 ### RHI 层
 
 - [ ] 使用延迟管线进行 Deferred Shading，解决多光照环境下的性能问题。
+- [x] 使用 Z-PrePass 进行深度测试优化，减少 Fragment Shader 的执行次数，提高渲染性能。
 - [ ] 支持 Z-PrePass、Shadow Map 和 Deferred Shading 的开启和关闭。
-- [ ] 使用 Z-PrePass 进行深度测试优化，减少 Fragment Shader 的执行次数，提高渲染性能。
 - [x] 提供了多套 Lit/Unlit 内置 Shader，其中包括 Blinn-Phong 和基于 Cook-Torrance 的 PBR。
 - [x] 使用 Fence、Barrier 和 Semaphore 进行设备、内存、管线、命令和 Render Pass 的同步。
 - [x] 支持 Multiple Frames In Flight，可以为交换链指定 Frame 数量，减少 CPU 和 GPU 同步带来的性能浪费。
