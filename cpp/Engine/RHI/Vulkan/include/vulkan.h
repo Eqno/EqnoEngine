@@ -46,8 +46,13 @@ class Vulkan final : public GraphicsInterface, public Base {
   void RenderLoop() override;
 
   void GetAppPointer();
-  void UpdateDeltaTime(float& DeltaTime);
   void ReleaseBufferLocks();
+
+  void UpdateGameDeltaTime();
+  void UpdateRenderDeltaTime();
+
+  void ShowGameFrameCount();
+  void ShowRenderFrameCount();
 
   BufferManager& GetBufferManager() { return bufferManager; }
   void ParseMeshDatas() override;
@@ -65,7 +70,12 @@ class Vulkan final : public GraphicsInterface, public Base {
   virtual void OnDestroy() override { GraphicsInterface::OnDestroy(); }
 
  private:
+  const float oneSecondTime = 1;
+
   // Config
+  bool showRenderFrameCount = false;
+  bool showGameFrameCount = false;
+
   bool enableMipmap = false;
   bool enableZPrePass = false;
   bool enableShadowMap = false;

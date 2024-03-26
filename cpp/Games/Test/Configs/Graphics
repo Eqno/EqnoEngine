@@ -19,6 +19,9 @@
     "DepthBiasClamp": 0,
     "DepthBiasSlopeFactor": 3,
 
+    "ShowRenderFrameCount": true,
+    "ShowGameFrameCount": true,
+
     "MSAAMaxSamples": 4,
     "EnableMipmap": true,
     "EnableZPrePass": true,

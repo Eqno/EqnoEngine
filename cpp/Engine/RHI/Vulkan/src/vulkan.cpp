@@ -18,6 +18,9 @@ void Vulkan::CreateWindow(const std::string& title) {
 }
 
 void Vulkan::InitConfig() {
+  showRenderFrameCount = JSON_CONFIG(Bool, "ShowRenderFrameCount");
+  showGameFrameCount = JSON_CONFIG(Bool, "ShowGameFrameCount");
+
   enableMipmap = JSON_CONFIG(Bool, "EnableMipmap");
   enableZPrePass = JSON_CONFIG(Bool, "EnableZPrePass");
   enableShadowMap = JSON_CONFIG(Bool, "EnableShadowMap");
@@ -83,15 +86,6 @@ void Vulkan::GetAppPointer() {
   }
 }
 
-void Vulkan::UpdateDeltaTime(float& DeltaTime) {
-  static auto lastTime = std::chrono::steady_clock::now();
-  auto nowTime = std::chrono::steady_clock::now();
-
-  seconds duration = nowTime - lastTime;
-  DeltaTime = duration.count();
-  lastTime = nowTime;
-}
-
 void Vulkan::ReleaseBufferLocks() {
   for (auto& buffer : bufferManager.cameraBuffers) {
     buffer.second.second.updateLock = false;
@@ -104,9 +98,58 @@ void Vulkan::ReleaseBufferLocks() {
   }
 }
 
+void Vulkan::UpdateGameDeltaTime() {
+  static auto lastTime = std::chrono::steady_clock::now();
+  auto nowTime = std::chrono::steady_clock::now();
+
+  seconds duration = nowTime - lastTime;
+  GameDeltaTime = duration.count();
+  lastTime = nowTime;
+}
+
+void Vulkan::UpdateRenderDeltaTime() {
+  static auto lastTime = std::chrono::steady_clock::now();
+  auto nowTime = std::chrono::steady_clock::now();
+
+  seconds duration = nowTime - lastTime;
+  RenderDeltaTime = duration.count();
+  lastTime = nowTime;
+}
+
+void Vulkan::ShowGameFrameCount() {
+  static uint32_t frameCounter = 0;
+  static float accumulateTime = 0;
+
+  frameCounter += 1;
+  accumulateTime += GameDeltaTime;
+
+  if (accumulateTime >= oneSecondTime) {
+    std::cout << "Current game frame count: " << frameCounter << std::endl;
+    accumulateTime -= oneSecondTime;
+    frameCounter = 0;
+  }
+}
+
+void Vulkan::ShowRenderFrameCount() {
+  static uint32_t frameCounter = 0;
+  static float accumulateTime = 0;
+
+  frameCounter += 1;
+  accumulateTime += RenderDeltaTime;
+
+  if (accumulateTime >= oneSecondTime) {
+    std::cout << "Current render frame count: " << frameCounter << std::endl;
+    accumulateTime -= oneSecondTime;
+    frameCounter = 0;
+  }
+}
+
 void Vulkan::GameLoop() {
   while (GetRenderLoopEnd() == false) {
-    UpdateDeltaTime(GameDeltaTime);
+    UpdateGameDeltaTime();
+    if (showGameFrameCount == true) {
+      ShowGameFrameCount();
+    }
 
     Input::RecordDownUpFlags();
     appPointer->TriggerOnUpdate();
@@ -122,8 +165,10 @@ void Vulkan::RenderLoop() {
   SetRenderLoopEnd(false);
   std::thread(&Vulkan::GameLoop, this).detach();
   while (!glfwWindowShouldClose(window.window)) {
-    UpdateDeltaTime(RenderDeltaTime);
-
+    if (showRenderFrameCount == true) {
+      UpdateRenderDeltaTime();
+      ShowRenderFrameCount();
+    }
     ParseMeshDatas();
     TriggerOnUpdate(appPointer->GetLightsById());
     ReleaseBufferLocks();
