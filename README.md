@@ -1,3 +1,4 @@
+## 架构
 ### 框架层
 
 - [x] RHI 与引擎层分离，分别由 Game / Render 线程驱动。
@@ -38,3 +39,8 @@
 - [x] 场景中 Model、Light 和 Camera 等任何 SceneObject 均可在运行时动态添加或删除。
 - [x] 实现 InputSystem 输入监听系统，无论在一帧内的何时按下按键，一定在下一帧开始时触发，实现一帧内的监听结果统一。
 - [x] 实现 Object 的生命周期管理和事件调用，其中 OnStart 的调用位于下一帧的开始，保证晚于同一帧内的所有 OnCreate。
+
+## Q & A
+### 框架层
+#### Q：为什么部分指针下转不使用 dynamic_cast？
+A：dynamic_cast 匹配虚表，性能堪忧，如果可以确定下转目标类型，使用 static_cast。
