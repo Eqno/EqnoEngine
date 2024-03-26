@@ -27,7 +27,7 @@ void BaseCamera::OnCreate() {
 
   if (auto scenePtr = scene.lock()) {
     scenePtr->RegisterCamera(
-        name, std::dynamic_pointer_cast<BaseCamera>(shared_from_this()));
+        name, std::static_pointer_cast<BaseCamera>(shared_from_this()));
   }
 
   aspect = ParseAspect(JSON_CONFIG(String, "Aspect"));

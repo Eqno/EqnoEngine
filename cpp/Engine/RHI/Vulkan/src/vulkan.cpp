@@ -18,7 +18,21 @@ void Vulkan::CreateWindow(const std::string& title) {
   window.CreateWindow(width, height, title);
 }
 
+void Vulkan::InitConfig() {
+  enableZPrePass = JSON_CONFIG(Bool, "EnableZPrePass");
+  enableShadowMap = JSON_CONFIG(Bool, "EnableShadowMap");
+  enableDeferred = JSON_CONFIG(Bool, "EnableDeferred");
+
+  shadowMapWidth = JSON_CONFIG(Int, "ShadowMapWidth");
+  shadowMapHeight = JSON_CONFIG(Int, "ShadowMapHeight");
+
+  depthBiasClamp = JSON_CONFIG(Float, "DepthBiasClamp");
+  depthBiasSlopeFactor = JSON_CONFIG(Float, "DepthBiasSlopeFactor");
+  depthBiasConstantFactor = JSON_CONFIG(Float, "DepthBiasConstantFactor");
+}
+
 void Vulkan::InitGraphics() {
+  InitConfig();
   instance.CreateInstance(validation);
   validation.SetupMessenger(instance.GetVkInstance());
   window.CreateSurface(instance.GetVkInstance());
@@ -29,11 +43,7 @@ void Vulkan::InitGraphics() {
 
   render.CreateRenderResources(
       device, window, JSON_CONFIG(String, "SwapChainSurfaceImageFormat"),
-      JSON_CONFIG(String, "SwapChainSurfaceColorSpace"),
-      JSON_CONFIG(Int, "ShadowMapWidth"), JSON_CONFIG(Int, "ShadowMapHeight"),
-      JSON_CONFIG(Float, "DepthBiasConstantFactor"),
-      JSON_CONFIG(Float, "DepthBiasClamp"),
-      JSON_CONFIG(Float, "DepthBiasSlopeFactor"));
+      JSON_CONFIG(String, "SwapChainSurfaceColorSpace"));
 }
 
 void Vulkan::TriggerOnUpdate(
@@ -69,9 +79,7 @@ void Vulkan::TriggerOnUpdate(
 
 void Vulkan::GetAppPointer() {
   if (auto ownerPtr = _owner.lock()) {
-    if (auto appPtr = dynamic_pointer_cast<Application>(ownerPtr)) {
-      appPointer = appPtr.get();
-    }
+    appPointer = static_pointer_cast<Application>(ownerPtr).get();
   }
 }
 

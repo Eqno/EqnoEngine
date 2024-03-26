@@ -16,6 +16,7 @@
 #include "window.h"
 
 class Vulkan final : public GraphicsInterface, public Base {
+  // Members
   Device device;
   Window window;
   Render render;
@@ -62,4 +63,36 @@ class Vulkan final : public GraphicsInterface, public Base {
   virtual void OnUpdate() override { GraphicsInterface::OnUpdate(); }
   virtual void OnStop() override { GraphicsInterface::OnStop(); }
   virtual void OnDestroy() override { GraphicsInterface::OnDestroy(); }
+
+ private:
+  // Config
+  bool enableZPrePass = false;
+  bool enableShadowMap = false;
+  bool enableDeferred = false;
+
+  int shadowMapWidth = 0;
+  int shadowMapHeight = 0;
+
+  float depthBiasClamp = 0;
+  float depthBiasSlopeFactor = 2.5f;
+  float depthBiasConstantFactor = 1.5f;
+
+  void InitConfig();
+
+ public:
+  bool GetEnableZPrePass() const { return enableZPrePass; }
+  bool GetEnableShadowMap() const { return enableShadowMap; }
+  bool GetEnableDeferred() const { return enableDeferred; }
+
+  uint32_t GetShadowMapWidth() const {
+    return shadowMapWidth >= 0 ? shadowMapWidth
+                               : render.GetSwapChainExtentWidth();
+  }
+  uint32_t GetShadowMapHeight() const {
+    return shadowMapHeight >= 0 ? shadowMapHeight
+                                : render.GetSwapChainExtentHeight();
+  }
+  float GetDepthBiasClamp() const { return depthBiasClamp; }
+  float GetDepthBiasSlopeFactor() const { return depthBiasSlopeFactor; }
+  float GetDepthBiasConstantFactor() const { return depthBiasConstantFactor; }
 };

@@ -12,6 +12,13 @@
 #include "../include/texture.h"
 #include "../include/window.h"
 
+uint32_t SwapChain::GetShadowMapWidth() const {
+  return static_cast<Render*>(owner)->GetShadowMapWidth();
+}
+uint32_t SwapChain::GetShadowMapHeight() const {
+  return static_cast<Render*>(owner)->GetShadowMapHeight();
+}
+
 VkSurfaceFormatKHR SwapChain::ChooseSurfaceFormat(
     const SurfaceFormats& availableFormats) const {
   for (const auto& format : availableFormats) {
@@ -212,7 +219,7 @@ void SwapChain::RecreateSwapChain(const Device& device, const Window& window,
   for (Draw* draw : draws | std::views::values) {
     for (const auto& mesh : draw->GetMeshes()) {
       mesh->UpdateColorDescriptorSets(device.GetLogical(),
-                                      *dynamic_cast<Render*>(owner));
+                                      *static_cast<Render*>(owner));
     }
   }
   CreateFrameBuffers(device.GetLogical(), colorRenderPass, zPrePassRenderPass,
@@ -262,12 +269,22 @@ void SwapChain::CreateDepthResources(const Device& device) {
 
 void SwapChain::TransitionDepthImageLayout(const Device& device) {
   zPrePassDepth.TransitionDepthImageLayout(
-      device, *dynamic_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
+      device, *static_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
   for (Depth& depth : shadowMapDepths) {
-    depth.TransitionDepthImageLayout(device, *dynamic_cast<Render*>(owner),
+    depth.TransitionDepthImageLayout(device, *static_cast<Render*>(owner),
                                      VK_IMAGE_LAYOUT_UNDEFINED,
                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
+}
+
+void SwapChain::CreateFrameBuffers(const VkDevice& device,
+                                   const VkRenderPass& colorRenderPass,
+                                   const VkRenderPass& zPrePassRenderPass,
+                                   const VkRenderPass& shadowMapRenderPass) {
+  CreateColorFrameBuffers(device, colorRenderPass);
+  CreateZPrePassFrameBuffer(device, zPrePassRenderPass);
+  CreateShadowMapFrameBuffers(device, shadowMapRenderPass, GetShadowMapWidth(),
+                              GetShadowMapHeight());
 }

@@ -6,7 +6,7 @@ void BaseLight::OnCreate() {
 
   if (auto scenePtr = scene.lock()) {
     id = scenePtr->RegisterLight(
-        name, std::dynamic_pointer_cast<BaseLight>(shared_from_this()));
+        name, std::static_pointer_cast<BaseLight>(shared_from_this()));
   }
 
   intensity = JSON_CONFIG(Float, "Intensity");

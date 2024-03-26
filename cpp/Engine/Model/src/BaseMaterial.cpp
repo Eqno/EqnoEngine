@@ -21,7 +21,7 @@ void BaseMaterial::OnDestroy() {
   BaseObject::OnDestroy();
 
   if (auto ownerPtr = GetOwner().lock()) {
-    scene = std::dynamic_pointer_cast<BaseScene>(ownerPtr);
+    scene = std::static_pointer_cast<BaseScene>(ownerPtr);
     if (auto scenePtr = scene.lock()) {
       scenePtr->UnregisterMaterial(name);
     }

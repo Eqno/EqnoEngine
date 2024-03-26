@@ -19,7 +19,7 @@ void BaseScene::OnCreate() {
                                   shared_from_this());
   JsonUtils::ParseSceneLightChannels(
       GetRoot(), GetFile(),
-      std::dynamic_pointer_cast<BaseScene>(shared_from_this()));
+      std::static_pointer_cast<BaseScene>(shared_from_this()));
 }
 
 void BaseScene::OnStart() {

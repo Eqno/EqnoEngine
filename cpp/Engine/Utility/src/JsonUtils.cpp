@@ -39,6 +39,15 @@ std::string JsonUtils::ReadStringFromFile(const std::string& filePath,
   return "Unset";
 }
 
+bool JsonUtils::ReadBoolFromFile(const std::string& filePath,
+                                 const std::string& key) {
+  if (Document* doc = GetJsonDocFromFile(filePath);
+      doc->HasMember(key.c_str())) {
+    return (*doc)[key.c_str()].GetBool();
+  }
+  return false;
+}
+
 float JsonUtils::ReadFloatFromFile(const std::string& filePath,
                                    const std::string& key) {
   if (Document* doc = GetJsonDocFromFile(filePath);
@@ -83,11 +92,11 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
           val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
           val["Path"].GetString(), owner);
       if (val.HasMember("Camera")) {
-        std::dynamic_pointer_cast<BaseModel>(object)->SetCamera(
+        std::static_pointer_cast<BaseModel>(object)->SetCamera(
             val["Camera"].GetString());
       }
       if (val.HasMember("LightChannel")) {
-        std::dynamic_pointer_cast<BaseModel>(object)->SetLightChannel(
+        std::static_pointer_cast<BaseModel>(object)->SetLightChannel(
             val["LightChannel"].GetString());
       }
     } else if (strcmp(val["Type"].GetString(), "BaseCamera") == 0) {
@@ -96,7 +105,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
           val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
           val["Path"].GetString(), owner);
       if (val.HasMember("Transform")) {
-        std::dynamic_pointer_cast<BaseCamera>(object)->InitRotation(
+        std::static_pointer_cast<BaseCamera>(object)->InitRotation(
             ParseGLMVec3(val["Transform"]["Rotation"].GetString()));
       }
     } else if (strcmp(val["Type"].GetString(), "SpotLight") == 0) {

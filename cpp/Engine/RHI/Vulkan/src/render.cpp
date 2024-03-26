@@ -1,16 +1,23 @@
-#include "../include/render.h"
-
 #include <Engine/Light/include/BaseLight.h>
+#include <Engine/RHI/Vulkan/include/depth.h>
+#include <Engine/RHI/Vulkan/include/device.h>
+#include <Engine/RHI/Vulkan/include/draw.h>
+#include <Engine/RHI/Vulkan/include/mesh.h>
+#include <Engine/RHI/Vulkan/include/render.h>
+#include <Engine/RHI/Vulkan/include/swapchain.h>
+#include <Engine/RHI/Vulkan/include/vertex.h>
+#include <Engine/RHI/Vulkan/include/vulkan.h>
 
+#include <cstdio>
 #include <ranges>
 #include <stdexcept>
 
-#include "../include/depth.h"
-#include "../include/device.h"
-#include "../include/draw.h"
-#include "../include/mesh.h"
-#include "../include/swapchain.h"
-#include "../include/vertex.h"
+uint32_t Render::GetShadowMapWidth() const {
+  return static_cast<Vulkan*>(owner)->GetShadowMapWidth();
+}
+uint32_t Render::GetShadowMapHeight() const {
+  return static_cast<Vulkan*>(owner)->GetShadowMapHeight();
+}
 
 void Render::CreateColorRenderPass(const Device& device) {
   const VkAttachmentDescription colorAttachment{
@@ -447,8 +454,8 @@ void Render::RecordShadowMapCommandBuffer(
       .pClearValues = clearValues.data(),
   };
   renderPassBeginInfo.renderArea.offset = {0, 0};
-  renderPassBeginInfo.renderArea.extent = {swapChain.GetShadowMapWidth(),
-                                           swapChain.GetShadowMapHeight()};
+  renderPassBeginInfo.renderArea.extent = {GetShadowMapWidth(),
+                                           GetShadowMapHeight()};
 
   vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo,
                        VK_SUBPASS_CONTENTS_INLINE);
@@ -456,8 +463,8 @@ void Render::RecordShadowMapCommandBuffer(
   const VkViewport viewport{
       .x = 0.0f,
       .y = 0.0f,
-      .width = static_cast<float>(swapChain.GetShadowMapWidth()),
-      .height = static_cast<float>(swapChain.GetShadowMapHeight()),
+      .width = static_cast<float>(GetShadowMapWidth()),
+      .height = static_cast<float>(GetShadowMapHeight()),
       .minDepth = 0.0f,
       .maxDepth = 1.0f,
   };
@@ -465,11 +472,13 @@ void Render::RecordShadowMapCommandBuffer(
 
   const VkRect2D scissor{
       .offset = {0, 0},
-      .extent = {swapChain.GetShadowMapWidth(), swapChain.GetShadowMapHeight()},
+      .extent = {GetShadowMapWidth(), GetShadowMapHeight()},
   };
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-  vkCmdSetDepthBias(commandBuffer, depthBiasConstantFactor, depthBiasClamp,
-                    depthBiasSlopeFactor);
+  vkCmdSetDepthBias(commandBuffer,
+                    static_cast<Vulkan*>(owner)->GetDepthBiasConstantFactor(),
+                    static_cast<Vulkan*>(owner)->GetDepthBiasClamp(),
+                    static_cast<Vulkan*>(owner)->GetDepthBiasSlopeFactor());
 
   for (Draw* draw : draws | std::views::values) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,

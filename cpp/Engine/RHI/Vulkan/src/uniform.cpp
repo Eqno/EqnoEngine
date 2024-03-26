@@ -440,15 +440,15 @@ void Descriptor::DestroyDesciptor(const VkDevice& device,
 }
 
 std::weak_ptr<MeshData> ShadowMapBuffer::GetBridgeData() {
-  return dynamic_cast<Descriptor*>(owner)->GetBridgeData();
+  return static_cast<Descriptor*>(owner)->GetBridgeData();
 }
 
 std::weak_ptr<MeshData> TransformBuffer::GetBridgeData() {
-  return dynamic_cast<Descriptor*>(owner)->GetBridgeData();
+  return static_cast<Descriptor*>(owner)->GetBridgeData();
 }
 
 std::weak_ptr<MeshData> Descriptor::GetBridgeData() {
-  return dynamic_cast<Mesh*>(owner)->GetBridgeData();
+  return static_cast<Mesh*>(owner)->GetBridgeData();
 }
 
 #undef AddColorDescriptorWrites

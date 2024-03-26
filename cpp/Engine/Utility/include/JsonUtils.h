@@ -44,6 +44,7 @@ std::string ReadStringFromFile(const std::string& filePath,
 std::vector<std::string> ReadStringsFromFile(const std::string& filePath,
                                              const std::string& key);
 
+bool ReadBoolFromFile(const std::string& filePath, const std::string& key);
 float ReadFloatFromFile(const std::string& filePath, const std::string& key);
 int ReadIntFromFile(const std::string& filePath, const std::string& key);
 

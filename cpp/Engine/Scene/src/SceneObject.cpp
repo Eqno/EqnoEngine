@@ -81,16 +81,16 @@ glm::vec3& SceneObject::GetAbsoluteForward() {
 void SceneObject::OnCreate() {
   BaseObject::OnCreate();
   if (auto parentPtr = parent.lock()) {
-    parentPtr->AddToSons(dynamic_pointer_cast<SceneObject>(shared_from_this()));
+    parentPtr->AddToSons(static_pointer_cast<SceneObject>(shared_from_this()));
   }
   if (auto ownerPtr = GetOwner().lock()) {
-    scene = std::dynamic_pointer_cast<BaseScene>(ownerPtr);
+    scene = std::static_pointer_cast<BaseScene>(ownerPtr);
     if (!scene.lock()) {
       throw std::runtime_error("please create camera through scene method!");
     }
   }
   transform.RegisterOwner(
-      std::dynamic_pointer_cast<SceneObject>(shared_from_this()));
+      std::static_pointer_cast<SceneObject>(shared_from_this()));
 }
 
 void SceneObject::OnDestroy() {

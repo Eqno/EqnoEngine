@@ -2,6 +2,7 @@
     "Name": "GraphicsAPI",
     
     "RenderHardwareInterface": "Vulkan",
+
     "DefaultWindowWidth": 1280,
     "DefaultWindowHeight": 720,
     "SwapChainSurfaceImageFormat": "RGBA_UNORM",
@@ -13,5 +14,8 @@
     "DepthBiasConstantFactor": 2,
     "DepthBiasClamp": 0,
     "DepthBiasSlopeFactor": 3,
-    "MSAAMaxSamples": 4
+    "MSAAMaxSamples": 4,
+    "EnableZPrePass": true,
+    "EnableShadowMap": true,
+    "EnableDeferred": true
 }

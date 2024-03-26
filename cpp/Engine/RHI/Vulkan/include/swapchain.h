@@ -30,9 +30,6 @@ class SwapChain : public Base {
   VkFormat surfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
   VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
-  int shadowMapWidth = 0;
-  int shadowMapHeight = 0;
-
   VkImage colorImage;
   VkDeviceMemory colorImageMemory;
   VkImageView colorImageView;
@@ -51,79 +48,60 @@ class SwapChain : public Base {
       RegisterMember(depth);
     }
   }
-  void SetShadowMapSize(const int width, const int Height) {
-    shadowMapWidth = width;
-    shadowMapHeight = Height;
-  }
   void CreateColorResource(const Device& device);
   void CreateDepthResources(const Device& device);
   void TransitionDepthImageLayout(const Device& device);
   void CreateFrameBuffers(const VkDevice& device,
                           const VkRenderPass& colorRenderPass,
                           const VkRenderPass& zPrePassRenderPass,
-                          const VkRenderPass& shadowMapRenderPass) {
-    CreateColorFrameBuffers(device, colorRenderPass);
-    CreateZPrePassFrameBuffer(device, zPrePassRenderPass);
-    CreateShadowMapFrameBuffers(device, shadowMapRenderPass,
-                                GetShadowMapWidth(), GetShadowMapHeight());
-  }
+                          const VkRenderPass& shadowMapRenderPass);
 
-  [[nodiscard]] VkSurfaceFormatKHR ChooseSurfaceFormat(
+  VkSurfaceFormatKHR ChooseSurfaceFormat(
       const SurfaceFormats& availableFormats) const;
 
   static VkPresentModeKHR ChoosePresentMode(
       const PresentModes& availablePresentModes);
 
-  [[nodiscard]] static VkExtent2D ChooseSwapExtent(
+  static VkExtent2D ChooseSwapExtent(
       const VkSurfaceCapabilitiesKHR& capabilities, const Window& window);
 
-  [[nodiscard]] const VkSwapchainKHR& Get() const { return chain; }
+  const VkSwapchainKHR& Get() const { return chain; }
+  const VkExtent2D& GetExtent() const { return extent; }
 
-  [[nodiscard]] const VkExtent2D& GetExtent() const { return extent; }
+  VkFormat GetImageFormat() const { return imageFormat; }
+  VkFormat GetZPrePassDepthFormat() const {
+    return zPrePassDepth.GetDepthFormat();
+  }
+  VkFormat GetShadowMapDepthFormat() const {
+    return shadowMapDepths[0].GetDepthFormat();
+  }
 
-  [[nodiscard]] const VkFormat& GetImageFormat() const { return imageFormat; }
+  uint32_t GetExtentWidth() const { return extent.width; }
+  uint32_t GetExtentHeight() const { return extent.height; }
 
-  [[nodiscard]] const VkFramebuffer& GetColorFrameBufferByIndex(
-      uint32_t index) const {
+  uint32_t GetShadowMapWidth() const;
+  uint32_t GetShadowMapHeight() const;
+
+  VkFramebuffer GetColorFrameBufferByIndex(uint32_t index) const {
     return colorFrameBuffers[index];
   }
-  [[nodiscard]] const VkFramebuffer& GetZPrePassFrameBuffer() const {
-    return zPrePassFrameBuffer;
-  }
-  [[nodiscard]] const VkFramebuffer& GetShadowMapFrameBufferByIndex(
-      uint32_t index) const {
+  VkFramebuffer GetZPrePassFrameBuffer() const { return zPrePassFrameBuffer; }
+  VkFramebuffer GetShadowMapFrameBufferByIndex(uint32_t index) const {
     return shadowMapFrameBuffers[index];
   }
 
-  [[nodiscard]] uint32_t GetShadowMapWidth() const {
-    return shadowMapWidth >= 0 ? shadowMapWidth : extent.width;
-  }
-  [[nodiscard]] uint32_t GetShadowMapHeight() const {
-    return shadowMapHeight >= 0 ? shadowMapHeight : extent.height;
-  }
-
-  [[nodiscard]] size_t GetShadowMapDepthNum() { return shadowMapDepths.size(); }
-  [[nodiscard]] Depth& GetShadowMapDepthByIndex(uint32_t index) {
+  size_t GetShadowMapDepthNum() { return shadowMapDepths.size(); }
+  Depth& GetShadowMapDepthByIndex(uint32_t index) {
     return shadowMapDepths[index];
   }
-
-  [[nodiscard]] const VkImage& GetShadowMapDepthImageByIndex(uint32_t index) {
+  VkImage GetShadowMapDepthImageByIndex(uint32_t index) {
     return shadowMapDepths[index].GetDepthImage();
   }
-  [[nodiscard]] const VkSampler& GetShadowMapDepthSamplerByIndex(
-      uint32_t index) {
+  VkSampler GetShadowMapDepthSamplerByIndex(uint32_t index) {
     return shadowMapDepths[index].GetDepthSampler();
   }
-  [[nodiscard]] const VkImageView& GetShadowMapDepthImageViewByIndex(
-      uint32_t index) {
+  VkImageView GetShadowMapDepthImageViewByIndex(uint32_t index) {
     return shadowMapDepths[index].GetDepthImageView();
-  }
-
-  [[nodiscard]] VkFormat GetZPrePassDepthFormat() const {
-    return zPrePassDepth.GetDepthFormat();
-  }
-  [[nodiscard]] VkFormat GetShadowMapDepthFormat() const {
-    return shadowMapDepths[0].GetDepthFormat();
   }
 
   void CreateSwapChain(const Device& device, const Window& window);

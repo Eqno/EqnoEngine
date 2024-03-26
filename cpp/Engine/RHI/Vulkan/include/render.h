@@ -24,15 +24,12 @@
 class Mesh;
 class Draw;
 class Depth;
+class Vulkan;
 
 class Render : public Base {
   SwapChain swapChain;
   uint32_t currentFrame = 0;
   int maxFramesInFlight = VulkanConfig::MAX_FRAMES_IN_FLIGHT;
-
-  float depthBiasConstantFactor = 1.5f;
-  float depthBiasClamp = 0;
-  float depthBiasSlopeFactor = 2.5f;
 
   std::vector<VkFence> colorInFlightFences;
   std::vector<VkFence> zPrePassInFlightFences;
@@ -86,17 +83,8 @@ class Render : public Base {
   virtual void TriggerRegisterMember() override { RegisterMember(swapChain); }
   void CreateRenderResources(const Device& device, const Window& window,
                              const std::string& imageFormat,
-                             const std::string& colorSpace,
-                             const int shadowMapWidth,
-                             const int shadowMapHeight,
-                             float depthBiasConstantFactor,
-                             float depthBiasClamp, float depthBiasSlopeFactor) {
-    this->depthBiasConstantFactor = depthBiasConstantFactor;
-    this->depthBiasClamp = depthBiasClamp;
-    this->depthBiasSlopeFactor = depthBiasSlopeFactor;
-
+                             const std::string& colorSpace) {
     swapChain.CreateRenderTarget(imageFormat, colorSpace, device, window);
-    swapChain.SetShadowMapSize(shadowMapWidth, shadowMapHeight);
     swapChain.CreateColorResource(device);
     swapChain.CreateDepthResources(device);
 
@@ -158,6 +146,15 @@ class Render : public Base {
   [[nodiscard]] VkImageView GetShadowMapDepthImageViewByIndex(uint32_t index) {
     return swapChain.GetShadowMapDepthImageViewByIndex(index);
   }
+
+  [[nodiscard]] uint32_t GetSwapChainExtentWidth() const {
+    return swapChain.GetExtentWidth();
+  }
+  [[nodiscard]] uint32_t GetSwapChainExtentHeight() const {
+    return swapChain.GetExtentHeight();
+  }
+  [[nodiscard]] uint32_t GetShadowMapWidth() const;
+  [[nodiscard]] uint32_t GetShadowMapHeight() const;
 
   DEFINE_GET_RENDER_PASS(color, Color)
   DEFINE_GET_RENDER_PASS(zPrePass, ZPrePass)
