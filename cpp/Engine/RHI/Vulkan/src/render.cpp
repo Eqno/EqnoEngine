@@ -12,6 +12,9 @@
 #include <ranges>
 #include <stdexcept>
 
+bool Render::GetEnableMipmap() const {
+  return static_cast<Vulkan*>(owner)->GetEnableMipmap();
+}
 uint32_t Render::GetShadowMapWidth() const {
   return static_cast<Vulkan*>(owner)->GetShadowMapWidth();
 }

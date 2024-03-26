@@ -66,12 +66,13 @@ class Vulkan final : public GraphicsInterface, public Base {
 
  private:
   // Config
+  bool enableMipmap = false;
   bool enableZPrePass = false;
   bool enableShadowMap = false;
   bool enableDeferred = false;
 
-  int shadowMapWidth = 0;
-  int shadowMapHeight = 0;
+  int shadowMapWidth = -1;
+  int shadowMapHeight = -1;
 
   int msaaSamples = 4;
   float depthBiasClamp = 0;
@@ -81,6 +82,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   void InitConfig();
 
  public:
+  bool GetEnableMipmap() const { return enableMipmap; }
   bool GetEnableZPrePass() const { return enableZPrePass; }
   bool GetEnableShadowMap() const { return enableShadowMap; }
   bool GetEnableDeferred() const { return enableDeferred; }

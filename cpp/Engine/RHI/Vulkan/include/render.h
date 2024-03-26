@@ -154,6 +154,7 @@ class Render : public Base {
   [[nodiscard]] uint32_t GetSwapChainExtentHeight() const {
     return swapChain.GetExtentHeight();
   }
+  [[nodiscard]] bool GetEnableMipmap() const;
   [[nodiscard]] uint32_t GetShadowMapWidth() const;
   [[nodiscard]] uint32_t GetShadowMapHeight() const;
 

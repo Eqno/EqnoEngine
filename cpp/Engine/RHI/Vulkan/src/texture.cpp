@@ -251,8 +251,15 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
                     static_cast<uint32_t>(texHeight));
   vkDestroyBuffer(device.GetLogical(), stagingBuffer, nullptr);
   vkFreeMemory(device.GetLogical(), stagingBufferMemory, nullptr);
-  GenerateMipmaps(device, render, image, texWidth, texHeight, mipLevels,
-                  imageFormat);
+
+  if (render.GetEnableMipmap()) {
+    GenerateMipmaps(device, render, image, texWidth, texHeight, mipLevels,
+                    imageFormat);
+  } else {
+    TransitionImageLayout(device, render, textureImage, mipLevels, imageFormat,
+                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
 }
 
 void Texture::CreateTextureImageView(const VkDevice& device) {
@@ -386,14 +393,13 @@ void Texture::CopyBufferToImage(const Device& device, const Render& render,
 
 void Texture::CreateTexture(const Device& device, const Render& render,
                             const int width, const int height,
-                            const int channels, stbi_uc* data,
-                            const int mipLevels) {
-  if (mipLevels == INVALID_MIPMAP_LEVELS) {
-    this->mipLevels =
+                            const int channels, stbi_uc* data) {
+  if (render.GetEnableMipmap()) {
+    mipLevels =
         static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) +
         1;
   } else {
-    this->mipLevels = mipLevels;
+    mipLevels = 1;
   }
   CreateTextureImage(device, render, width, height, channels, data);
   CreateTextureImageView(device.GetLogical());

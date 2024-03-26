@@ -19,6 +19,7 @@ void Vulkan::CreateWindow(const std::string& title) {
 }
 
 void Vulkan::InitConfig() {
+  enableMipmap = JSON_CONFIG(Bool, "EnableMipmap");
   enableZPrePass = JSON_CONFIG(Bool, "EnableZPrePass");
   enableShadowMap = JSON_CONFIG(Bool, "EnableShadowMap");
   enableDeferred = JSON_CONFIG(Bool, "EnableDeferred");

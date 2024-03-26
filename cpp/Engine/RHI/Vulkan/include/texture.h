@@ -11,7 +11,6 @@ class Device;
 class Render;
 
 class Texture {
-  static constexpr int INVALID_MIPMAP_LEVELS = -1;
   VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
   uint32_t mipLevels;
@@ -39,10 +38,9 @@ class Texture {
   }
 
   Texture(VkFormat imageFormat, const Device& device, const Render& render,
-          const int width, const int height, const int channels, stbi_uc* data,
-          const int mipLevels = INVALID_MIPMAP_LEVELS)
+          const int width, const int height, const int channels, stbi_uc* data)
       : imageFormat(imageFormat) {
-    CreateTexture(device, render, width, height, channels, data, mipLevels);
+    CreateTexture(device, render, width, height, channels, data);
   }
 
   [[nodiscard]] const VkImageView& GetTextureImageView() const {
@@ -73,7 +71,6 @@ class Texture {
       VkCommandBuffer commandBuffer = VK_NULL_HANDLE);
 
   void CreateTexture(const Device& device, const Render& render, int width,
-                     int height, int channels, stbi_uc* data,
-                     const int mipLevels = INVALID_MIPMAP_LEVELS);
+                     int height, int channels, stbi_uc* data);
   void DestroyTexture(const VkDevice& device) const;
 };
