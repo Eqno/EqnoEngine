@@ -12,6 +12,7 @@
 
 void BaseScene::OnCreate() {
   BaseObject::OnCreate();
+  modelResourceManager.SetGraphics(graphics);
 
   rootObject =
       Create<SceneObject>(rootObject, "RootObject", GetRoot(), GetFile());

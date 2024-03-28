@@ -3,6 +3,10 @@
 
 void BaseResource::ParseWaitQueue() {
   while (waitQueue.empty() == false) {
+    auto graphicsPtr = graphics.lock();
+    if (!graphicsPtr || graphicsPtr->GetRenderLoopEnd()) {
+      return;
+    }
     if (updateWaitQueueMutex.try_lock()) {
       waitQueue.front()();
       waitQueue.pop();

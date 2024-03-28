@@ -20,7 +20,7 @@
     "DepthBiasSlopeFactor": 3,
 
     "ShowRenderFrameCount": true,
-    "ShowGameFrameCount": true,
+    "ShowGameFrameCount": false,
 
     "MSAAMaxSamples": 4,
     "EnableMipmap": true,
