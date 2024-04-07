@@ -2,7 +2,7 @@
     "Name": "KuralaWorkshopMaterial",
     
     "Shaders": [
-        "Assets/Shaders/KuralaWorkshop"
+        "Assets/Shaders/KuralaWorkshop/KuralaWorkshop"
     ],
     "Params": {
         "Color": "1,1,1,1",

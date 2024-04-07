@@ -3,22 +3,19 @@
 
 void BaseResource::ParseWaitQueue() {
   while (waitQueue.empty() == false) {
-    auto graphicsPtr = graphics.lock();
-    if (!graphicsPtr || graphicsPtr->GetRenderLoopEnd()) {
-      return;
-    }
     if (updateWaitQueueMutex.try_lock()) {
-      waitQueue.front()();
+      waitQueue.front().first();
       waitQueue.pop();
       updateWaitQueueMutex.unlock();
     }
   }
 }
 
-void BaseResource::AddToWaitQueue(std::function<void()> func) {
+void BaseResource::AddToWaitQueue(std::function<void()> func,
+                                  std::shared_ptr<BaseObject> obj) {
   updateWaitQueueMutex.lock();
   bool requireThread = waitQueue.empty();
-  waitQueue.push(func);
+  waitQueue.push(make_pair(func, obj));
   updateWaitQueueMutex.unlock();
   if (requireThread) {
     std::thread(&BaseResource::ParseWaitQueue, this).detach();

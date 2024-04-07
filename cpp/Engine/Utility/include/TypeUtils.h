@@ -45,7 +45,9 @@ inline constexpr int MaxLightNum = 200;
 inline constexpr shaderc_optimization_level ShaderOptimizationLevel =
     shaderc_optimization_level_zero;
 inline const std::vector<std::string> ShaderSearchPaths = {
-    "Assets/Shaders/GLSLLibrary/"};
+    "Assets/Shaders/"
+    /*, "Assets/Shaders/GLSLLibrary/"*/
+};
 
 inline std::string StringUnset = "Unset";
 

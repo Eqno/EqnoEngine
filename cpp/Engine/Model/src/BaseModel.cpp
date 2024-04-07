@@ -21,6 +21,13 @@
 
 std ::vector<BaseLight*> LightsEmpty;
 
+#define EndProcessByRenderThread            \
+  if (auto graphicsPtr = graphics.lock()) { \
+    if (graphicsPtr->GetRenderLoopEnd()) {  \
+      return;                               \
+    }                                       \
+  }
+
 #define LoadPNGTexture(type, _path, textures)                           \
   {                                                                     \
     int width, height, channels;                                        \
@@ -152,6 +159,7 @@ void ParseFbxDatas(const std::string& modelType, const aiMatrix4x4& transform,
 }
 
 void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
+  EndProcessByRenderThread;
   Assimp::Importer importer;
 
   const std::string& dataPath = JSON_CONFIG(String, "File");
@@ -190,12 +198,15 @@ void BaseModel::OnCreate() { SceneObject::OnCreate(); }
 void BaseModel::OnStart() {
   SceneObject::OnStart();
   if (auto scenePtr = scene.lock()) {
-    scenePtr->AddModelToResourceWaitQueue(std::function<void()>(
-        std::bind(&BaseModel::LoadFbxDatas, this,
-                  aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-                      aiProcess_FlipUVs | aiProcess_CalcTangentSpace)));
     scenePtr->AddModelToResourceWaitQueue(
-        std::function<void()>(std::bind(&BaseModel::ParseMeshDatas, this)));
+        std::function<void()>(
+            std::bind(&BaseModel::LoadFbxDatas, this,
+                      aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+                          aiProcess_FlipUVs | aiProcess_CalcTangentSpace)),
+        shared_from_this());
+    scenePtr->AddModelToResourceWaitQueue(
+        std::function<void()>(std::bind(&BaseModel::ParseMeshDatas, this)),
+        shared_from_this());
   }
 }
 void BaseModel::OnUpdate() { SceneObject::OnUpdate(); }

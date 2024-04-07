@@ -12,7 +12,6 @@
 
 void BaseScene::OnCreate() {
   BaseObject::OnCreate();
-  modelResourceManager.SetGraphics(graphics);
 
   rootObject =
       Create<SceneObject>(rootObject, "RootObject", GetRoot(), GetFile());
@@ -101,6 +100,7 @@ void BaseScene::UnregisterLightChannel(const std::string& name) {
   lightChannels.erase(name);
 }
 
-void BaseScene::AddModelToResourceWaitQueue(std::function<void()> func) {
-  modelResourceManager.AddToWaitQueue(func);
+void BaseScene::AddModelToResourceWaitQueue(std::function<void()> func,
+                                            std::shared_ptr<BaseObject> obj) {
+  modelResourceManager.AddToWaitQueue(func, obj);
 }

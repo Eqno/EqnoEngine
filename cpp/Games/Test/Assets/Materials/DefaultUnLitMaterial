@@ -1,7 +1,0 @@
-{
-    "Name": "DefaultUnLitMaterial",
-    
-    "Shaders": [
-        "Assets/Shaders/DefaultUnlit/WithoutTexture"
-    ]
-}

@@ -2,7 +2,7 @@
     "Name": "SMWeaponMaterial",
     
     "Shaders": [
-        "Assets/Shaders/DefaultLit/PhysicallyBasedSDF/WithinTexture"
+        "Assets/Shaders/DefaultLit/PhysicallyBasedSDF"
     ],
     "Params": {
         "Color": "1,1,1,1",

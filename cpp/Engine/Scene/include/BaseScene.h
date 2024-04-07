@@ -57,7 +57,8 @@ class BaseScene final : public BaseObject {
   [[nodiscard]] std::weak_ptr<GraphicsInterface> GetGraphics() const {
     return graphics;
   }
-  void AddModelToResourceWaitQueue(std::function<void()> func);
+  void AddModelToResourceWaitQueue(std::function<void()> func,
+                                   std::shared_ptr<BaseObject> obj);
 
   virtual void OnCreate() override;
   virtual void OnStart() override;

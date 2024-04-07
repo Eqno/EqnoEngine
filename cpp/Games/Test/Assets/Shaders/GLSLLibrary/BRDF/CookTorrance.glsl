@@ -1,4 +1,4 @@
-#include <Utils/Math.glsl>
+#include <GLSLLibrary/Utils/Math.glsl>
 
 float DistributionGGX(const float dnh, const float r) {
     float a = r * r, _dnh = max(0., dnh), dnh_square = _dnh * _dnh;

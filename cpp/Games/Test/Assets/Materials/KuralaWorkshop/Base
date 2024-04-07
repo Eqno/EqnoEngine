@@ -2,7 +2,7 @@
     "Name": "KuralaWorkshopMaterial",
     
     "Shaders": [
-        "Assets/Shaders/DefaultLit/BlinnPhong/WithoutTexture"
+        "Assets/Shaders/KuralaWorkshop/Base"
     ],
     "Params": {
         "Color": "1,1,1,1",
