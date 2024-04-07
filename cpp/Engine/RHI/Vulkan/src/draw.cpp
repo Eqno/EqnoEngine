@@ -1,8 +1,8 @@
-#include "../include/draw.h"
+#include <Engine/RHI/Vulkan/include/config.h>
+#include <Engine/RHI/Vulkan/include/draw.h>
+#include <Engine/RHI/Vulkan/include/vulkan.h>
 
 #include <vector>
-
-#include "../include/config.h"
 
 void Draw::CreateDrawResource(const Device& device, Render& render,
                               const std::string& rootPath, const int texCount,
@@ -10,6 +10,13 @@ void Draw::CreateDrawResource(const Device& device, Render& render,
                               const std::string& zPrePassShaderPath,
                               const std::string& shadowMapShaderPath) {
   shader.AddDefinitions({{"MaxLightNum", std::to_string(MaxLightNum)}});
+  if (static_cast<Vulkan*>(owner)->GetEnableShadowMap()) {
+    shader.AddDefinitions({{"EnableShadowMap", std::to_string(1)}});
+  }
+  if (static_cast<Vulkan*>(owner)->GetEnableDeferred()) {
+    shader.AddDefinitions({{"EnableDeferred", std::to_string(1)}});
+  }
+
   std::vector<std::string> shaderSearchPaths;
   for (const std::string& searchPath : ShaderSearchPaths) {
     shaderSearchPaths.push_back(rootPath + searchPath);

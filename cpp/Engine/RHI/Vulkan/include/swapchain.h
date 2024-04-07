@@ -42,6 +42,7 @@ class SwapChain : public Base {
   std::vector<VkFramebuffer> shadowMapFrameBuffers;
 
   bool GetEnableZPrePass() const;
+  bool GetEnableShadowMap() const;
 
   uint32_t GetShadowMapWidth() const;
   uint32_t GetShadowMapHeight() const;
@@ -123,8 +124,10 @@ class SwapChain : public Base {
   void DestroyColorResource(const Device& device) const;
   void DestroyDepthResource(const VkDevice& device) {
     zPrePassDepth.DestroyDepthResource(device);
-    for (Depth& depth : shadowMapDepths) {
-      depth.DestroyDepthResource(device);
+    if (GetEnableShadowMap()) {
+      for (Depth& depth : shadowMapDepths) {
+        depth.DestroyDepthResource(device);
+      }
     }
   }
 

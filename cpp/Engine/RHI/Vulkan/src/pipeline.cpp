@@ -298,14 +298,18 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
         .pImmutableSamplers = nullptr,
     });
   }
-  bindings.push_back({
-      .binding = UniformBufferNum,
-      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-      .descriptorCount = static_cast<uint32_t>(render.GetShadowMapDepthNum()),
-      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .pImmutableSamplers = nullptr,
-  });
-  for (unsigned int i = 1; i < 1 + texCount; i++) {
+  unsigned int texBindingIndex = 0;
+  if (render.GetEnableShadowMap()) {
+    texBindingIndex = 1;
+    bindings.push_back({
+        .binding = UniformBufferNum,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .descriptorCount = static_cast<uint32_t>(render.GetShadowMapDepthNum()),
+        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .pImmutableSamplers = nullptr,
+    });
+  }
+  for (unsigned int i = texBindingIndex; i < texBindingIndex + texCount; i++) {
     bindings.push_back({
         .binding = i + UniformBufferNum,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -372,41 +376,38 @@ void Pipeline::CreatePipeline(const Device& device, Render& render,
                               const std::string& zPrePassShaderPath,
                               const std::string& shadowMapShaderPath) {
   CreateColorDescriptorSetLayout(device.GetLogical(), render, texCount);
-  if (render.GetEnableZPrePass()) {
-    CreateZPrePassDescriptorSetLayout(device.GetLogical());
-  }
-  CreateShadowMapDescriptorSetLayout(device.GetLogical());
-
   CreateColorGraphicsPipeline(device, render, shader, rootPath, shaderPaths,
                               render.GetColorRenderPass());
+
   if (render.GetEnableZPrePass()) {
+    CreateZPrePassDescriptorSetLayout(device.GetLogical());
     CreateZPrePassGraphicsPipeline(device, shader, rootPath, zPrePassShaderPath,
                                    render.GetZPrePassRenderPass());
   }
-  CreateShadowMapGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                                  shadowMapShaderPath,
-                                  render.GetShadowMapRenderPass());
+  if (render.GetEnableShadowMap()) {
+    CreateShadowMapDescriptorSetLayout(device.GetLogical());
+    CreateShadowMapGraphicsPipeline(device.GetLogical(), shader, rootPath,
+                                    shadowMapShaderPath,
+                                    render.GetShadowMapRenderPass());
+  }
 }
 
 void Pipeline::DestroyPipeline(const VkDevice& device,
                                const Render& render) const {
   vkDestroyPipeline(device, colorGraphicsPipeline, nullptr);
+  vkDestroyDescriptorSetLayout(device, colorDescriptorSetLayout, nullptr);
+  vkDestroyPipelineLayout(device, colorPipelineLayout, nullptr);
+
   if (render.GetEnableZPrePass()) {
     vkDestroyPipeline(device, zPrePassGraphicsPipeline, nullptr);
-  }
-  vkDestroyPipeline(device, shadowMapGraphicsPipeline, nullptr);
-
-  vkDestroyDescriptorSetLayout(device, colorDescriptorSetLayout, nullptr);
-  if (render.GetEnableZPrePass()) {
     vkDestroyDescriptorSetLayout(device, zPrePassDescriptorSetLayout, nullptr);
-  }
-  vkDestroyDescriptorSetLayout(device, shadowMapDescriptorSetLayout, nullptr);
-
-  vkDestroyPipelineLayout(device, colorPipelineLayout, nullptr);
-  if (render.GetEnableZPrePass()) {
     vkDestroyPipelineLayout(device, zPrePassPipelineLayout, nullptr);
   }
-  vkDestroyPipelineLayout(device, shadowMapPipelineLayout, nullptr);
+  if (render.GetEnableShadowMap()) {
+    vkDestroyPipeline(device, shadowMapGraphicsPipeline, nullptr);
+    vkDestroyDescriptorSetLayout(device, shadowMapDescriptorSetLayout, nullptr);
+    vkDestroyPipelineLayout(device, shadowMapPipelineLayout, nullptr);
+  }
 }
 
 #undef DEPTH_STENCIL_STATE_CREATE_INFO

@@ -18,6 +18,9 @@ bool Render::GetEnableMipmap() const {
 bool Render::GetEnableZPrePass() const {
   return static_cast<Vulkan*>(owner)->GetEnableZPrePass();
 }
+bool Render::GetEnableShadowMap() const {
+  return static_cast<Vulkan*>(owner)->GetEnableShadowMap();
+}
 uint32_t Render::GetShadowMapWidth() const {
   return static_cast<Vulkan*>(owner)->GetShadowMapWidth();
 }
@@ -275,7 +278,9 @@ void Render::CreateRenderPasses(const Device& device) {
   if (GetEnableZPrePass()) {
     CreateZPrePassRenderPass(device);
   }
-  CreateShadowMapRenderPass(device);
+  if (GetEnableShadowMap()) {
+    CreateShadowMapRenderPass(device);
+  }
 }
 
 void Render::CreateCommandPool(const Device& device,
@@ -319,9 +324,11 @@ void Render::CreateCommandBuffersSet(const VkDevice& device) {
   if (GetEnableZPrePass()) {
     CreateCommandBuffers(device, zPrePassCommandBuffers);
   }
-  shadowMapCommandBuffers.resize(GetShadowMapDepthNum());
-  for (int i = 0; i < GetShadowMapDepthNum(); i++) {
-    CreateCommandBuffers(device, shadowMapCommandBuffers[i]);
+  if (GetEnableShadowMap()) {
+    shadowMapCommandBuffers.resize(GetShadowMapDepthNum());
+    for (int i = 0; i < GetShadowMapDepthNum(); i++) {
+      CreateCommandBuffers(device, shadowMapCommandBuffers[i]);
+    }
   }
 }
 
@@ -474,7 +481,11 @@ void Render::RecordZPrePassCommandBuffer(
     }
   }
   vkCmdEndRenderPass(commandBuffer);
-  ConvertShaderSourceToShadowMapDepth(device, commandBuffer);
+
+  if (GetEnableShadowMap()) {
+    ConvertShaderSourceToShadowMapDepth(device, commandBuffer);
+  }
+
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
     throw std::runtime_error("failed to record command buffer!");
   }
@@ -575,7 +586,11 @@ void Render::RecordColorCommandBuffer(
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
     throw std::runtime_error("failed to begin recording command buffer!");
   }
-  ConvertShadowMapDepthToShaderSource(device, commandBuffer);
+
+  if (GetEnableShadowMap()) {
+    ConvertShadowMapDepthToShaderSource(device, commandBuffer);
+  }
+
   constexpr std::array clearValues{
       VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 1.0f}}},
       VkClearValue{.depthStencil = {1.0f, 0}},
@@ -673,11 +688,14 @@ void Render::WaitFences(
                     &zPrePassInFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
   }
 
-  for (const auto& iter : lightsById) {
-    if (auto lightPtr = iter.second.lock()) {
-      vkWaitForFences(device.GetLogical(), 1,
-                      &shadowMapInFlightFences[lightPtr->GetId()][currentFrame],
-                      VK_TRUE, UINT64_MAX);
+  if (GetEnableShadowMap()) {
+    for (const auto& iter : lightsById) {
+      if (auto lightPtr = iter.second.lock()) {
+        vkWaitForFences(
+            device.GetLogical(), 1,
+            &shadowMapInFlightFences[lightPtr->GetId()][currentFrame], VK_TRUE,
+            UINT64_MAX);
+      }
     }
   }
 }
@@ -691,10 +709,13 @@ void Render::ResetFences(
                   &zPrePassInFlightFences[currentFrame]);
   }
 
-  for (const auto& iter : lightsById) {
-    if (auto lightPtr = iter.second.lock()) {
-      vkResetFences(device.GetLogical(), 1,
-                    &shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
+  if (GetEnableShadowMap()) {
+    for (const auto& iter : lightsById) {
+      if (auto lightPtr = iter.second.lock()) {
+        vkResetFences(
+            device.GetLogical(), 1,
+            &shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
+      }
     }
   }
 }
@@ -727,7 +748,7 @@ void Render::DrawFrame(
                         zPrePassCommandBuffers[currentFrame],
                         zPrePassFinishedSemaphores[currentFrame],
                         zPrePassInFlightFences[currentFrame]);
-  } else {
+  } else if (GetEnableShadowMap()) {
     ConvertShaderSourceToShadowMapDepth(device);
   }
 
@@ -735,21 +756,24 @@ void Render::DrawFrame(
   if (GetEnableZPrePass()) {
     lastSemaphore = zPrePassFinishedSemaphores[currentFrame];
   }
-  for (const auto& iter : lightsById) {
-    if (auto lightPtr = iter.second.lock()) {
-      vkResetCommandBuffer(
-          shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
-          /*VkCommandBufferResetFlagBits*/
-          0);
-      RecordShadowMapCommandBuffer(device, draws, lightPtr.get());
-      VkSemaphore nextSemaphore =
-          shadowMapFinishedSemaphores[lightPtr->GetId()][currentFrame];
-      SubmitCommandBuffer(
-          device, lastSemaphore,
-          shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
-          nextSemaphore,
-          shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
-      lastSemaphore = nextSemaphore;
+
+  if (GetEnableShadowMap()) {
+    for (const auto& iter : lightsById) {
+      if (auto lightPtr = iter.second.lock()) {
+        vkResetCommandBuffer(
+            shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
+            /*VkCommandBufferResetFlagBits*/
+            0);
+        RecordShadowMapCommandBuffer(device, draws, lightPtr.get());
+        VkSemaphore nextSemaphore =
+            shadowMapFinishedSemaphores[lightPtr->GetId()][currentFrame];
+        SubmitCommandBuffer(
+            device, lastSemaphore,
+            shadowMapCommandBuffers[lightPtr->GetId()][currentFrame],
+            nextSemaphore,
+            shadowMapInFlightFences[lightPtr->GetId()][currentFrame]);
+        lastSemaphore = nextSemaphore;
+      }
     }
   }
 
@@ -782,21 +806,23 @@ void Render::DrawFrame(
 }
 
 void Render::CreateSyncObjects(const VkDevice& device) {
-  shadowMapFinishedSemaphores.resize(GetShadowMapDepthNum());
-  shadowMapInFlightFences.resize(GetShadowMapDepthNum());
-
   imageAvailableSemaphores.resize(maxFramesInFlight);
+  renderFinishedSemaphores.resize(maxFramesInFlight);
+  colorInFlightFences.resize(maxFramesInFlight);
+
   if (GetEnableZPrePass()) {
     zPrePassFinishedSemaphores.resize(maxFramesInFlight);
+    zPrePassInFlightFences.resize(maxFramesInFlight);
   }
-  renderFinishedSemaphores.resize(maxFramesInFlight);
 
-  colorInFlightFences.resize(maxFramesInFlight);
-  zPrePassInFlightFences.resize(maxFramesInFlight);
+  if (GetEnableShadowMap()) {
+    shadowMapFinishedSemaphores.resize(GetShadowMapDepthNum());
+    shadowMapInFlightFences.resize(GetShadowMapDepthNum());
 
-  for (int i = 0; i < GetShadowMapDepthNum(); i++) {
-    shadowMapFinishedSemaphores[i].resize(maxFramesInFlight);
-    shadowMapInFlightFences[i].resize(maxFramesInFlight);
+    for (int i = 0; i < GetShadowMapDepthNum(); i++) {
+      shadowMapFinishedSemaphores[i].resize(maxFramesInFlight);
+      shadowMapInFlightFences[i].resize(maxFramesInFlight);
+    }
   }
 
   constexpr VkSemaphoreCreateInfo semaphoreInfo{
@@ -823,13 +849,17 @@ void Render::CreateSyncObjects(const VkDevice& device) {
                        &zPrePassInFlightFences[i]) != VK_SUCCESS)) {
       throw std::runtime_error("failed to create render semaphores or fences!");
     }
-    for (int j = 0; j < GetShadowMapDepthNum(); j++) {
-      if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-                            &shadowMapFinishedSemaphores[j][i]) != VK_SUCCESS ||
-          vkCreateFence(device, &fenceInfo, nullptr,
-                        &shadowMapInFlightFences[j][i]) != VK_SUCCESS) {
-        throw std::runtime_error(
-            "failed to create render semaphores or fences!");
+
+    if (GetEnableShadowMap()) {
+      for (int j = 0; j < GetShadowMapDepthNum(); j++) {
+        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+                              &shadowMapFinishedSemaphores[j][i]) !=
+                VK_SUCCESS ||
+            vkCreateFence(device, &fenceInfo, nullptr,
+                          &shadowMapInFlightFences[j][i]) != VK_SUCCESS) {
+          throw std::runtime_error(
+              "failed to create shadow map semaphores or fences!");
+        }
       }
     }
   }
@@ -840,7 +870,9 @@ void Render::DestroyRenderPasses(const VkDevice& device) const {
   if (GetEnableZPrePass()) {
     vkDestroyRenderPass(device, zPrePassRenderPass, nullptr);
   }
-  vkDestroyRenderPass(device, shadowMapRenderPass, nullptr);
+  if (GetEnableShadowMap()) {
+    vkDestroyRenderPass(device, shadowMapRenderPass, nullptr);
+  }
 }
 
 void Render::DestroyCommandPool(const VkDevice& device) const {
@@ -850,19 +882,19 @@ void Render::DestroyCommandPool(const VkDevice& device) const {
 void Render::DestroySyncObjects(const VkDevice& device) {
   for (int i = 0; i < maxFramesInFlight; i++) {
     vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+    vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+    vkDestroyFence(device, colorInFlightFences[i], nullptr);
+
     if (GetEnableZPrePass()) {
       vkDestroySemaphore(device, zPrePassFinishedSemaphores[i], nullptr);
-    }
-    vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-
-    for (int j = 0; j < GetShadowMapDepthNum(); j++) {
-      vkDestroySemaphore(device, shadowMapFinishedSemaphores[j][i], nullptr);
-      vkDestroyFence(device, shadowMapInFlightFences[j][i], nullptr);
-    }
-
-    vkDestroyFence(device, colorInFlightFences[i], nullptr);
-    if (GetEnableZPrePass()) {
       vkDestroyFence(device, zPrePassInFlightFences[i], nullptr);
+    }
+
+    if (GetEnableShadowMap()) {
+      for (int j = 0; j < GetShadowMapDepthNum(); j++) {
+        vkDestroySemaphore(device, shadowMapFinishedSemaphores[j][i], nullptr);
+        vkDestroyFence(device, shadowMapInFlightFences[j][i], nullptr);
+      }
     }
   }
 }

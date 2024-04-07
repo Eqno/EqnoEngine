@@ -4,10 +4,16 @@
 #include <GLSLLibrary/Utils/TBN.glsl>
 #include <GLSLLibrary/Binding/Fragment/DataStructure.glsl>
 
+#ifdef EnableShadowMap
 layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
 layout(binding = 5) uniform sampler2D baseColorSampler;
 layout(binding = 6) uniform sampler2D normalSampler;
 layout(binding = 7) uniform sampler2D AOSampler;
+#else
+layout(binding = 4) uniform sampler2D baseColorSampler;
+layout(binding = 5) uniform sampler2D normalSampler;
+layout(binding = 6) uniform sampler2D AOSampler;
+#endif
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;

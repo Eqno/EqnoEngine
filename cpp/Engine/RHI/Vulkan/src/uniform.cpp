@@ -21,22 +21,33 @@
 void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
                                            Render& render,
                                            const size_t textureNum) {
-  std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum + 1 +
-                                              textureNum);
+  size_t texBindingIndex = 0;
+  if (render.GetEnableShadowMap()) {
+    texBindingIndex = 1;
+  }
+
+  std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum +
+                                              texBindingIndex + textureNum);
   for (int i = 0; i < UniformBufferNum; i++) {
     poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[i].descriptorCount =
         static_cast<uint32_t>(render.GetMaxFramesInFlight());
   }
-  poolSizes[UniformBufferNum].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  poolSizes[UniformBufferNum].descriptorCount = static_cast<uint32_t>(
-      render.GetMaxFramesInFlight() * render.GetShadowMapDepthNum());
-  for (size_t i = 1; i < 1 + textureNum; i++) {
+
+  if (render.GetEnableShadowMap()) {
+    poolSizes[UniformBufferNum].type =
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[UniformBufferNum].descriptorCount = static_cast<uint32_t>(
+        render.GetMaxFramesInFlight() * render.GetShadowMapDepthNum());
+  }
+
+  for (size_t i = texBindingIndex; i < texBindingIndex + textureNum; i++) {
     poolSizes[i + UniformBufferNum].type =
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[i + UniformBufferNum].descriptorCount =
         static_cast<uint32_t>(render.GetMaxFramesInFlight());
   }
+
   const VkDescriptorPoolCreateInfo poolInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       .maxSets = static_cast<uint32_t>(render.GetMaxFramesInFlight()),
@@ -136,29 +147,37 @@ void Descriptor::CreateColorDescriptorSets(
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    std::vector<VkWriteDescriptorSet> descriptorWrites(UniformBufferNum + 1 +
-                                                       textures.size());
+    uint32_t texBindingIndex = 0;
+    if (render.GetEnableShadowMap()) {
+      texBindingIndex = 1;
+    }
+
+    std::vector<VkWriteDescriptorSet> descriptorWrites(
+        UniformBufferNum + texBindingIndex + textures.size());
     AddColorDescriptorWrites();
 
+    // Put the codes outside if enable shadow map or it will be destructed
     uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
     std::vector<VkDescriptorImageInfo> shadowMapImageInfos(shadowMapDepthNum);
 
-    for (uint32_t j = 0; j < shadowMapDepthNum; j++) {
-      shadowMapImageInfos[j] = {
-          .sampler = render.GetShadowMapDepthSamplerByIndex(j),
-          .imageView = render.GetShadowMapDepthImageViewByIndex(j),
-          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    if (render.GetEnableShadowMap()) {
+      for (uint32_t j = 0; j < shadowMapDepthNum; j++) {
+        shadowMapImageInfos[j] = {
+            .sampler = render.GetShadowMapDepthSamplerByIndex(j),
+            .imageView = render.GetShadowMapDepthImageViewByIndex(j),
+            .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        };
+      }
+      descriptorWrites[UniformBufferNum] = {
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+          .dstSet = colorDescriptorSets[i],
+          .dstBinding = static_cast<uint32_t>(UniformBufferNum),
+          .dstArrayElement = 0,
+          .descriptorCount = shadowMapDepthNum,
+          .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          .pImageInfo = shadowMapImageInfos.data(),
       };
     }
-    descriptorWrites[UniformBufferNum] = {
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = colorDescriptorSets[i],
-        .dstBinding = static_cast<uint32_t>(UniformBufferNum),
-        .dstArrayElement = 0,
-        .descriptorCount = shadowMapDepthNum,
-        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        .pImageInfo = shadowMapImageInfos.data(),
-    };
 
     std::vector<VkDescriptorImageInfo> imageInfos(textures.size());
     for (size_t j = 0; j < textures.size(); j++) {
@@ -167,10 +186,11 @@ void Descriptor::CreateColorDescriptorSets(
           .imageView = textures[j].GetTextureImageView(),
           .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       };
-      descriptorWrites[UniformBufferNum + 1 + j] = {
+      descriptorWrites[UniformBufferNum + texBindingIndex + j] = {
           .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
           .dstSet = colorDescriptorSets[i],
-          .dstBinding = static_cast<uint32_t>(UniformBufferNum + 1 + j),
+          .dstBinding =
+              static_cast<uint32_t>(UniformBufferNum + texBindingIndex + j),
           .dstArrayElement = 0,
           .descriptorCount = 1,
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -395,9 +415,12 @@ void Descriptor::CreateUniformBuffer(const Device& device, Render& render) {
 void Descriptor::DestroyUniformBuffer(const VkDevice& device,
                                       const Render& render) {
   transformBuffer.DestroyUniformBuffer(device, render);
-  for (const ShadowMapBuffer& shadowMapBuffer :
-       shadowMapBuffers | std::views::values) {
-    shadowMapBuffer.DestroyUniformBuffer(device, render);
+
+  if (render.GetEnableShadowMap()) {
+    for (const ShadowMapBuffer& shadowMapBuffer :
+         shadowMapBuffers | std::views::values) {
+      shadowMapBuffer.DestroyUniformBuffer(device, render);
+    }
   }
 
   if (bufferManager == nullptr) {
@@ -416,20 +439,19 @@ void Descriptor::CreateDescriptor(
     const VkDescriptorSetLayout& zPrePassDescriptorSetLayout,
     const VkDescriptorSetLayout& shadowMapDescriptorSetLayout) {
   CreateUniformBuffer(device, render);
-
   CreateColorDescriptorPool(device.GetLogical(), render, textures.size());
-  if (render.GetEnableZPrePass()) {
-    CreateZPrePassDescriptorPool(device.GetLogical(), render);
-  }
-
   CreateColorDescriptorSets(device.GetLogical(), render,
                             colorDescriptorSetLayout, textures);
+
   if (render.GetEnableZPrePass()) {
+    CreateZPrePassDescriptorPool(device.GetLogical(), render);
     CreateZPrePassDescriptorSets(device.GetLogical(), render,
                                  zPrePassDescriptorSetLayout);
   }
 
-  this->shadowMapDescriptorSetLayout = shadowMapDescriptorSetLayout;
+  if (render.GetEnableShadowMap()) {
+    this->shadowMapDescriptorSetLayout = shadowMapDescriptorSetLayout;
+  }
 }
 
 void Descriptor::DestroyDesciptor(const VkDevice& device,
@@ -438,9 +460,11 @@ void Descriptor::DestroyDesciptor(const VkDevice& device,
   if (render.GetEnableZPrePass()) {
     vkDestroyDescriptorPool(device, zPrePassDescriptorPool, nullptr);
   }
-  for (const VkDescriptorPool& descriptorPool :
-       shadowMapDescriptorPools | std::views::values) {
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+  if (render.GetEnableShadowMap()) {
+    for (const VkDescriptorPool& descriptorPool :
+         shadowMapDescriptorPools | std::views::values) {
+      vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+    }
   }
   DestroyUniformBuffer(device, render);
 }

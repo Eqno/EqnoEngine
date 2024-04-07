@@ -15,6 +15,9 @@
 bool SwapChain::GetEnableZPrePass() const {
   return static_cast<Render*>(owner)->GetEnableZPrePass();
 }
+bool SwapChain::GetEnableShadowMap() const {
+  return static_cast<Render*>(owner)->GetEnableShadowMap();
+}
 
 uint32_t SwapChain::GetShadowMapWidth() const {
   return static_cast<Render*>(owner)->GetShadowMapWidth();
@@ -150,8 +153,10 @@ void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
   if (GetEnableZPrePass()) {
     vkDestroyFramebuffer(device, zPrePassFrameBuffer, nullptr);
   }
-  for (const auto& frameBuffer : shadowMapFrameBuffers) {
-    vkDestroyFramebuffer(device, frameBuffer, nullptr);
+  if (GetEnableShadowMap()) {
+    for (const auto& frameBuffer : shadowMapFrameBuffers) {
+      vkDestroyFramebuffer(device, frameBuffer, nullptr);
+    }
   }
   for (const auto& imageView : swapChainImageViews) {
     vkDestroyImageView(device, imageView, nullptr);
@@ -232,10 +237,12 @@ void SwapChain::RecreateSwapChain(
   CreateDepthResources(device);
   TransitionDepthImageLayout(device);
 
-  for (Draw* draw : draws | std::views::values) {
-    for (const auto& mesh : draw->GetMeshes()) {
-      mesh->UpdateColorDescriptorSets(device.GetLogical(),
-                                      *static_cast<Render*>(owner));
+  if (GetEnableShadowMap()) {
+    for (Draw* draw : draws | std::views::values) {
+      for (const auto& mesh : draw->GetMeshes()) {
+        mesh->UpdateColorDescriptorSets(device.GetLogical(),
+                                        *static_cast<Render*>(owner));
+      }
     }
   }
   CreateFrameBuffers(device);
@@ -277,11 +284,13 @@ void SwapChain::CreateDepthResources(const Device& device) {
       device, extent.width, extent.height, device.GetMSAASamples(),
       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-  for (Depth& depth : shadowMapDepths) {
-    depth.CreateDepthResources(device, GetShadowMapWidth(),
-                               GetShadowMapHeight(), VK_SAMPLE_COUNT_1_BIT,
-                               VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                   VK_IMAGE_USAGE_SAMPLED_BIT);
+  if (GetEnableShadowMap()) {
+    for (Depth& depth : shadowMapDepths) {
+      depth.CreateDepthResources(device, GetShadowMapWidth(),
+                                 GetShadowMapHeight(), VK_SAMPLE_COUNT_1_BIT,
+                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                     VK_IMAGE_USAGE_SAMPLED_BIT);
+    }
   }
 }
 
@@ -290,10 +299,12 @@ void SwapChain::TransitionDepthImageLayout(const Device& device) {
       device, *static_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-  for (Depth& depth : shadowMapDepths) {
-    depth.TransitionDepthImageLayout(device, *static_cast<Render*>(owner),
-                                     VK_IMAGE_LAYOUT_UNDEFINED,
-                                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  if (GetEnableShadowMap()) {
+    for (Depth& depth : shadowMapDepths) {
+      depth.TransitionDepthImageLayout(
+          device, *static_cast<Render*>(owner), VK_IMAGE_LAYOUT_UNDEFINED,
+          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
   }
 }
 
@@ -302,5 +313,7 @@ void SwapChain::CreateFrameBuffers(const Device& device) {
   if (GetEnableZPrePass()) {
     CreateZPrePassFrameBuffer(device.GetLogical());
   }
-  CreateShadowMapFrameBuffers(device.GetLogical());
+  if (GetEnableShadowMap()) {
+    CreateShadowMapFrameBuffers(device.GetLogical());
+  }
 }

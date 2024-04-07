@@ -16,6 +16,8 @@ void main() {
         vec4 light = lights.object[i].color * lights.object[i].intensity;
 
         ambient += light * ambientStrength;
+
+        #ifdef EnableShadowMap
         vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition, 1.);
         shadowMapPos /= shadowMapPos.w;
 
@@ -25,14 +27,19 @@ void main() {
 
             float shadowMapZ = texture(shadowMapSamplers[lights.object[i].id], shadowMapPos.xyz);
             if (shadowMapZ >= shadowMapPos.z) {
+        #endif
+
                 float diff = max(dot(normalize(fragNormal), lightDir), 0.);
                 diffuse += diff * light * diffuseStrength;
                 
                 vec3 halfwayDir = normalize(lightDir + viewDir);
                 float spec = pow(max(dot(normalize(fragNormal), halfwayDir), 0.), shininessStrength);
                 specular += spec * light * specularStrength;
+
+            #ifdef EnableShadowMap
             }
         }
+        #endif
     }
     vec4 texColor = texture(baseColorSampler, fragTexCoord);
     outColor = (ambient + diffuse + specular) * fragColor * texColor;

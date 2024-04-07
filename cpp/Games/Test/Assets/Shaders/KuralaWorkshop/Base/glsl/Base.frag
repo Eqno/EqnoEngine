@@ -2,7 +2,10 @@
 
 #include <GLSLLibrary/Binding/Fragment/DataStructure.glsl>
 
+
+#ifdef EnableShadowMap
 layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+#endif
 
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec4 fragColor;

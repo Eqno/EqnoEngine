@@ -64,8 +64,10 @@ void Vulkan::TriggerOnUpdate(
       } else {
         // Update uniform buffer if mesh alive
         (*meshIter)->UpdateUniformBuffer(render.GetCurrentFrame());
-        (*meshIter)->UpdateShadowMapUniformBuffers(
-            device, render, render.GetCurrentFrame(), lightsById);
+        if (GetEnableShadowMap()) {
+          (*meshIter)->UpdateShadowMapUniformBuffers(
+              device, render, render.GetCurrentFrame(), lightsById);
+        }
         meshIter++;
       }
     }
