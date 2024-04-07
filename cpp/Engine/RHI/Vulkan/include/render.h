@@ -107,6 +107,7 @@ class Render : public Base {
   bool GetEnableMipmap() const;
   bool GetEnableZPrePass() const;
   bool GetEnableShadowMap() const;
+  bool GetEnableDeferred() const;
   uint32_t GetShadowMapWidth() const;
   uint32_t GetShadowMapHeight() const;
 

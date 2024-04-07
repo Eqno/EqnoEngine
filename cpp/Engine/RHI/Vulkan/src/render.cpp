@@ -21,6 +21,9 @@ bool Render::GetEnableZPrePass() const {
 bool Render::GetEnableShadowMap() const {
   return static_cast<Vulkan*>(owner)->GetEnableShadowMap();
 }
+bool Render::GetEnableDeferred() const {
+  return static_cast<Vulkan*>(owner)->GetEnableDeferred();
+}
 uint32_t Render::GetShadowMapWidth() const {
   return static_cast<Vulkan*>(owner)->GetShadowMapWidth();
 }
@@ -29,6 +32,7 @@ uint32_t Render::GetShadowMapHeight() const {
 }
 
 void Render::CreateColorRenderPass(const Device& device) {
+  // Forward rendering attachments
   VkAttachmentDescription colorAttachment{
       .format = swapChain.GetImageFormat(),
       .samples = device.GetMSAASamples(),
@@ -46,6 +50,7 @@ void Render::CreateColorRenderPass(const Device& device) {
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
+
   VkAttachmentDescription depthAttachment{
       .format = swapChain.GetZPrePassDepthFormat(),
       .samples = device.GetMSAASamples(),
@@ -81,13 +86,143 @@ void Render::CreateColorRenderPass(const Device& device) {
   if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
     pColorAttachmentResolveRef = &colorAttachmentResolveRef;
   }
-  VkSubpassDescription subPass{
+
+  // Deferred rendering attachments
+  uint32_t gBufferAttachmentIndex = 0;
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    gBufferAttachmentIndex = 1;
+  }
+
+  VkAttachmentDescription fragPositionAttachment{
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .samples = device.GetMSAASamples(),
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentReference fragPositionAttachmentRef{
+      .attachment = gBufferAttachmentIndex + 2,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentDescription fragColorAttachment{
+      .format = swapChain.GetImageFormat(),
+      .samples = device.GetMSAASamples(),
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentReference fragColorAttachmentRef{
+      .attachment = gBufferAttachmentIndex + 3,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentDescription fragNormalAttachment{
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .samples = device.GetMSAASamples(),
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentReference fragNormalAttachmentRef{
+      .attachment = gBufferAttachmentIndex + 4,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentDescription fragTexCoordAttachment{
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .samples = device.GetMSAASamples(),
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentReference fragTexCoordAttachmentRef{
+      .attachment = gBufferAttachmentIndex + 5,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentDescription fragTangentAttachment{
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .samples = device.GetMSAASamples(),
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentReference fragTangentAttachmentRef{
+      .attachment = gBufferAttachmentIndex + 6,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentDescription fragMaterialAttachment{
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .samples = device.GetMSAASamples(),
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentReference fragMaterialAttachmentRef{
+      .attachment = gBufferAttachmentIndex + 7,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+
+  std::vector attachments{colorAttachment, depthAttachment};
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    attachments.emplace_back(colorAttachmentResolve);
+  }
+  if (GetEnableDeferred()) {
+    attachments.emplace_back(fragPositionAttachment);
+    attachments.emplace_back(fragColorAttachment);
+    attachments.emplace_back(fragNormalAttachment);
+    attachments.emplace_back(fragTexCoordAttachment);
+    attachments.emplace_back(fragTangentAttachment);
+    attachments.emplace_back(fragMaterialAttachment);
+  }
+
+  std::array<VkAttachmentReference, 6> gBufferAttachmentRefs{
+      fragPositionAttachmentRef, fragColorAttachmentRef,
+      fragNormalAttachmentRef,   fragTexCoordAttachmentRef,
+      fragTangentAttachmentRef,  fragMaterialAttachmentRef};
+
+  // Forward or deferred subpasses
+  std::vector<VkSubpassDescription> subPasses = {{
       .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
       .colorAttachmentCount = 1,
       .pColorAttachments = &colorAttachmentRef,
       .pResolveAttachments = pColorAttachmentResolveRef,
       .pDepthStencilAttachment = &depthAttachmentRef,
-  };
+  }};
+  if (GetEnableDeferred()) {
+    subPasses = {{
+                     .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+                     .colorAttachmentCount = 6,
+                     .pColorAttachments = gBufferAttachmentRefs.data(),
+                     .pDepthStencilAttachment = &depthAttachmentRef,
+                 },
+                 {
+                     .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+                     .inputAttachmentCount = 6,
+                     .pInputAttachments = gBufferAttachmentRefs.data(),
+                     .colorAttachmentCount = 1,
+                     .pColorAttachments = &colorAttachmentRef,
+                     .pResolveAttachments = pColorAttachmentResolveRef,
+                 }};
+  }
+
+  // Forward rendering dependencies
+  /*
   constexpr VkSubpassDependency depBegToDepthBuffer{
       .srcSubpass = VK_SUBPASS_EXTERNAL,
       .dstSubpass = 0,
@@ -130,18 +265,28 @@ void Render::CreateColorRenderPass(const Device& device) {
                        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
       .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
   };
-  std::vector attachments = {colorAttachment, depthAttachment};
-  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
-    attachments.emplace_back(colorAttachmentResolve);
-  }
   std::array dependencies = {depBegToDepthBuffer, depEndFromDepthBuffer,
                              depBegToColorBuffer, depEndFromColorBuffer};
+  */
+  std::vector<VkSubpassDependency> dependencies;
+  if (GetEnableDeferred()) {
+    dependencies.push_back({
+        .srcSubpass = 0,
+        .dstSubpass = 1,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
+    });
+  }
+
   const VkRenderPassCreateInfo renderPassInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
       .attachmentCount = static_cast<uint32_t>(attachments.size()),
       .pAttachments = attachments.data(),
-      .subpassCount = 1,
-      .pSubpasses = &subPass,
+      .subpassCount = static_cast<uint32_t>(subPasses.size()),
+      .pSubpasses = subPasses.data(),
       .dependencyCount = static_cast<uint32_t>(dependencies.size()),
       .pDependencies = dependencies.data(),
   };
@@ -173,6 +318,7 @@ void Render::CreateZPrePassRenderPass(const Device& device) {
       .pColorAttachments = nullptr,
       .pDepthStencilAttachment = &depthAttachmentRef,
   };
+  /*
   constexpr VkSubpassDependency depBegToDepthBuffer{
       .srcSubpass = VK_SUBPASS_EXTERNAL,
       .dstSubpass = 0,
@@ -198,6 +344,8 @@ void Render::CreateZPrePassRenderPass(const Device& device) {
       .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
   };
   std::array dependencies{depBegToDepthBuffer, depEndFromDepthBuffer};
+  */
+  std::vector<VkSubpassDependency> dependencies;
   const VkRenderPassCreateInfo renderPassInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
       .attachmentCount = 1,
@@ -235,6 +383,7 @@ void Render::CreateShadowMapRenderPass(const Device& device) {
       .pColorAttachments = nullptr,
       .pDepthStencilAttachment = &depthAttachmentRef,
   };
+  /*
   constexpr VkSubpassDependency depBegToDepthBuffer{
       .srcSubpass = VK_SUBPASS_EXTERNAL,
       .dstSubpass = 0,
@@ -258,6 +407,8 @@ void Render::CreateShadowMapRenderPass(const Device& device) {
       .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
   };
   std::array dependencies{depBegToDepthBuffer, depEndFromDepthBuffer};
+  */
+  std::vector<VkSubpassDependency> dependencies;
   const VkRenderPassCreateInfo renderPassInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
       .attachmentCount = 1,
