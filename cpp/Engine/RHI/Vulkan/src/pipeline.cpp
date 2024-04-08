@@ -27,21 +27,25 @@
     .alphaToCoverageEnable = VK_FALSE, .alphaToOneEnable = VK_FALSE,       \
   }
 
-#define COLOR_BLEND_ATTACHMENT_STATE()                                      \
-  constexpr VkPipelineColorBlendAttachmentState colorBlendAttachment {      \
-    .blendEnable = VK_FALSE, .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,    \
-    .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,                            \
-    .colorBlendOp = VK_BLEND_OP_ADD,                                        \
-    .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,                             \
-    .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,                            \
-    .alphaBlendOp = VK_BLEND_OP_ADD,                                        \
-    .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | \
-                      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,  \
-  }
-#define COLOR_BLEND_STATE_CREATE_INFO(_attachmentCount, _pAttachments)  \
+#define COLOR_BLEND_ATTACHMENT_STATE()                                        \
+  constexpr VkPipelineColorBlendAttachmentState colorBlendAttachment{         \
+      .blendEnable = VK_FALSE,                                                \
+      .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,                             \
+      .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,                            \
+      .colorBlendOp = VK_BLEND_OP_ADD,                                        \
+      .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,                             \
+      .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,                            \
+      .alphaBlendOp = VK_BLEND_OP_ADD,                                        \
+      .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | \
+                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,  \
+  };                                                                          \
+  std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments(     \
+      6, colorBlendAttachment)
+#define COLOR_BLEND_STATE_CREATE_INFO(_attachmentCount, _pAttachments,  \
+                                      _logicOp)                         \
   VkPipelineColorBlendStateCreateInfo colorBlending {                   \
     .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,  \
-    .logicOpEnable = VK_FALSE, .logicOp = VK_LOGIC_OP_COPY,             \
+    .logicOpEnable = VK_FALSE, .logicOp = _logicOp,                     \
     .attachmentCount = _attachmentCount, .pAttachments = _pAttachments, \
     .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f},                         \
   }
@@ -55,10 +59,25 @@
     .front = {}, .back = {}, .minDepthBounds = 0.0f, .maxDepthBounds = 1.0f,  \
   }
 
+void Pipeline::CreatePipelineLayout(const VkDevice& device,
+                                    const VkDescriptorSetLayout& dstLayout,
+                                    VkPipelineLayout& pipelineLayout) {
+  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &dstLayout,
+  };
+  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
+                             &pipelineLayout) != VK_SUCCESS) {
+    throw std::runtime_error("failed to create pipeline layout!");
+  }
+}
+
 void Pipeline::CreateColorGraphicsPipeline(
     const Device& device, Render& render, const Shader& shader,
     const std::string& rootPath, const std::vector<std::string>& shaderPaths,
     const VkRenderPass& renderPass) {
+  // Forward shading or deferred output pipeline
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
   const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
@@ -87,7 +106,17 @@ void Pipeline::CreateColorGraphicsPipeline(
     depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
   }
   COLOR_BLEND_ATTACHMENT_STATE();
-  COLOR_BLEND_STATE_CREATE_INFO(1, &colorBlendAttachment);
+  COLOR_BLEND_STATE_CREATE_INFO(1, &colorBlendAttachment, VK_LOGIC_OP_COPY);
+
+  if (render.GetEnableDeferred()) {
+    colorBlending = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+        .logicOpEnable = VK_FALSE,
+        .logicOp = VK_LOGIC_OP_NO_OP,
+        .attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size()),
+        .pAttachments = colorBlendAttachments.data(),
+    };
+  }
 
   const std::vector dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                      VK_DYNAMIC_STATE_SCISSOR};
@@ -96,24 +125,29 @@ void Pipeline::CreateColorGraphicsPipeline(
       .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
       .pDynamicStates = dynamicStates.data(),
   };
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &colorDescriptorSetLayout,
-  };
-  if (vkCreatePipelineLayout(device.GetLogical(), &pipelineLayoutInfo, nullptr,
-                             &colorPipelineLayout) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create pipeline layout!");
+
+  CreatePipelineLayout(device.GetLogical(), colorDescriptorSetLayout,
+                       colorPipelineLayout);
+  if (render.GetEnableDeferred()) {
+    CreatePipelineLayout(device.GetLogical(), deferredDescriptorSetLayout,
+                         deferredPipelineLayout);
   }
 
   auto shaderStagesSet(
       shader.AutoCreateStagesSet(device.GetLogical(), rootPath, shaderPaths));
+
   for (int i = 0; i < shaderStagesSet.size(); ++i) {
     ShaderStages& shaderStages = shaderStagesSet[i];
+
+    auto& stages = shaderStages[PipelineType::Forward];
+    if (render.GetEnableDeferred()) {
+      stages = shaderStages[PipelineType::DeferredOutputGBuffer];
+    }
+
     const VkGraphicsPipelineCreateInfo pipelineInfo{
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        .stageCount = static_cast<uint32_t>(shaderStages.size()),
-        .pStages = shaderStages.data(),
+        .stageCount = static_cast<uint32_t>(stages.size()),
+        .pStages = stages.data(),
         .pVertexInputState = &vertexInputInfo,
         .pInputAssemblyState = &inputAssembly,
         .pViewportState = &viewportState,
@@ -132,6 +166,48 @@ void Pipeline::CreateColorGraphicsPipeline(
                                   &colorGraphicsPipeline) == VK_SUCCESS) {
       shaderFallbackIndex = i;
       shader.DestroyModules(device.GetLogical());
+
+      if (render.GetEnableDeferred()) {
+        // Deferred process pipeline
+        constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly{
+            .sType =
+                VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+            .primitiveRestartEnable = VK_FALSE,
+        };
+        const VkPipelineVertexInputStateCreateInfo vertexInputInfo;
+
+        VkPipelineColorBlendStateCreateInfo colorBlending{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+            .logicOpEnable = VK_FALSE,
+            .logicOp = VK_LOGIC_OP_COPY,
+            .attachmentCount = 1,
+            .pAttachments = &colorBlendAttachment,
+        };
+
+        const VkGraphicsPipelineCreateInfo pipelineInfo{
+            .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+            .stageCount = static_cast<uint32_t>(stages.size()),
+            .pStages = stages.data(),
+            .pVertexInputState = &vertexInputInfo,
+            .pInputAssemblyState = &inputAssembly,
+            .pViewportState = &viewportState,
+            .pRasterizationState = &rasterizer,
+            .pMultisampleState = &multiSampling,
+            .pDepthStencilState = &depthStencil,
+            .pColorBlendState = &colorBlending,
+            .pDynamicState = &dynamicState,
+            .layout = deferredPipelineLayout,
+            .renderPass = renderPass,
+            .subpass = 1,
+            .basePipelineHandle = VK_NULL_HANDLE,
+        };
+        if (vkCreateGraphicsPipelines(
+                device.GetLogical(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                &deferredGraphicsPipeline) == VK_SUCCESS) {
+          return;
+        }
+      }
       return;
     }
   }
@@ -165,7 +241,7 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
   MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
-  COLOR_BLEND_STATE_CREATE_INFO(0, nullptr);
+  COLOR_BLEND_STATE_CREATE_INFO(0, nullptr, VK_LOGIC_OP_COPY);
   const std::vector dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                      VK_DYNAMIC_STATE_SCISSOR,
                                      VK_DYNAMIC_STATE_DEPTH_BIAS};
@@ -174,22 +250,16 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
       .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
       .pDynamicStates = dynamicStates.data(),
   };
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &zPrePassDescriptorSetLayout,
-  };
-  if (vkCreatePipelineLayout(device.GetLogical(), &pipelineLayoutInfo, nullptr,
-                             &zPrePassPipelineLayout) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create pipeline layout!");
-  }
+  CreatePipelineLayout(device.GetLogical(), zPrePassDescriptorSetLayout,
+                       zPrePassPipelineLayout);
 
   ShaderStages shaderStages(
       shader.AutoCreateStages(device.GetLogical(), rootPath, depthShaderPath));
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = static_cast<uint32_t>(shaderStages.size()),
-      .pStages = shaderStages.data(),
+      .stageCount =
+          static_cast<uint32_t>(shaderStages[PipelineType::Forward].size()),
+      .pStages = shaderStages[PipelineType::Forward].data(),
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &inputAssembly,
       .pViewportState = &viewportState,
@@ -239,7 +309,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
   MULTISAMPLE_CREATE_INFO(VK_SAMPLE_COUNT_1_BIT);
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
-  COLOR_BLEND_STATE_CREATE_INFO(0, nullptr);
+  COLOR_BLEND_STATE_CREATE_INFO(0, nullptr, VK_LOGIC_OP_COPY);
   const std::vector dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
                                      VK_DYNAMIC_STATE_SCISSOR,
                                      VK_DYNAMIC_STATE_DEPTH_BIAS};
@@ -248,22 +318,16 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
       .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
       .pDynamicStates = dynamicStates.data(),
   };
-  const VkPipelineLayoutCreateInfo pipelineLayoutInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &shadowMapDescriptorSetLayout,
-  };
-  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
-                             &shadowMapPipelineLayout) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create pipeline layout!");
-  }
+  CreatePipelineLayout(device, shadowMapDescriptorSetLayout,
+                       shadowMapPipelineLayout);
 
   ShaderStages shaderStages(
       shader.AutoCreateStages(device, rootPath, depthShaderPath));
   const VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = static_cast<uint32_t>(shaderStages.size()),
-      .pStages = shaderStages.data(),
+      .stageCount =
+          static_cast<uint32_t>(shaderStages[PipelineType::Forward].size()),
+      .pStages = shaderStages[PipelineType::Forward].data(),
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &inputAssembly,
       .pViewportState = &viewportState,

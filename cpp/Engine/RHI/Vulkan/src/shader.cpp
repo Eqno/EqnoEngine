@@ -12,9 +12,28 @@ shaderc::Compiler compiler;
 shaderc::CompileOptions options;
 shaderc_util::FileFinder fileFinder;
 std::unordered_map<std::string, ShaderTypeInfo> shaderTypes{
-    {"vert", {shaderc_glsl_vertex_shader, VK_SHADER_STAGE_VERTEX_BIT, "main"}},
+    // Forward shading
+    {"vert",
+     {PipelineType::Forward, shaderc_glsl_vertex_shader,
+      VK_SHADER_STAGE_VERTEX_BIT, "main"}},
     {"frag",
-     {shaderc_glsl_fragment_shader, VK_SHADER_STAGE_FRAGMENT_BIT, "main"}},
+     {PipelineType::Forward, shaderc_glsl_fragment_shader,
+      VK_SHADER_STAGE_FRAGMENT_BIT, "main"}},
+
+    // Deferred shading
+    {"verto",
+     {PipelineType::DeferredOutputGBuffer, shaderc_glsl_vertex_shader,
+      VK_SHADER_STAGE_VERTEX_BIT, "main"}},
+    {"frago",
+     {PipelineType::DeferredOutputGBuffer, shaderc_glsl_fragment_shader,
+      VK_SHADER_STAGE_FRAGMENT_BIT, "main"}},
+
+    {"vertp",
+     {PipelineType::DeferredProcessGBuffer, shaderc_glsl_vertex_shader,
+      VK_SHADER_STAGE_VERTEX_BIT, "main"}},
+    {"fragp",
+     {PipelineType::DeferredProcessGBuffer, shaderc_glsl_fragment_shader,
+      VK_SHADER_STAGE_FRAGMENT_BIT, "main"}},
 };
 }  // namespace ShaderRcStatic
 
@@ -93,7 +112,7 @@ ShaderStages Shader::AutoCreateStages(const VkDevice& device,
     shaderModules.emplace_back(CreateModule(
         ReadGLSLFileAsBinary(glslPath, rootPath + shaderPath + "/glsl"),
         device));
-    shaderStages.push_back({
+    shaderStages[GetTypeByName(glslPath).type].push_back({
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         .stage = GetTypeByName(glslPath).stage,
         .module = shaderModules.back(),

@@ -30,6 +30,10 @@ class Pipeline : public Base {
   VkPipelineLayout colorPipelineLayout;
   VkPipeline colorGraphicsPipeline;
 
+  VkDescriptorSetLayout deferredDescriptorSetLayout;
+  VkPipelineLayout deferredPipelineLayout;
+  VkPipeline deferredGraphicsPipeline;
+
   VkDescriptorSetLayout zPrePassDescriptorSetLayout;
   VkPipelineLayout zPrePassPipelineLayout;
   VkPipeline zPrePassGraphicsPipeline;
@@ -38,6 +42,9 @@ class Pipeline : public Base {
   VkPipelineLayout shadowMapPipelineLayout;
   VkPipeline shadowMapGraphicsPipeline;
 
+  void CreatePipelineLayout(const VkDevice& device,
+                            const VkDescriptorSetLayout& dstLayout,
+                            VkPipelineLayout& pipelineLayout);
   void CreateColorGraphicsPipeline(const Device& device, Render& render,
                                    const Shader& shader,
                                    const std::string& rootPath,

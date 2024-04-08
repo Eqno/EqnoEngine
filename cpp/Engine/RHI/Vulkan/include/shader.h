@@ -8,10 +8,13 @@
 #include "Engine/Utility/include/TypeUtils.h"
 #include "base.h"
 
-using ShaderStages = std::vector<VkPipelineShaderStageCreateInfo>;
+using ShaderStages =
+    std::unordered_map<PipelineType,
+                       std::vector<VkPipelineShaderStageCreateInfo>>;
 using Definitions = std::vector<std::pair<std::string, std::string>>;
 
 struct ShaderTypeInfo {
+  PipelineType type;
   shaderc_shader_kind kind;
   VkShaderStageFlagBits stage;
   std::string entrance;

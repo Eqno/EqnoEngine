@@ -68,6 +68,13 @@ struct VertexData {
   glm::vec3 texCoord;
 };
 
+enum class PipelineType {
+  Unset = 0,
+  Forward = 1,
+  DeferredOutputGBuffer = 2,
+  DeferredProcessGBuffer = 3,
+};
+
 enum class TextureType {
   Unset = 0,
   BaseColor = 1,
