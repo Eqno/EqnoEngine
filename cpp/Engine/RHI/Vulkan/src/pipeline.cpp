@@ -360,6 +360,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
   std::vector<VkDescriptorSetLayoutBinding> bindings;
 
   if (render.GetEnableDeferred()) {
+    // Deferred shading output gBuffer
     bindings.push_back({
         .binding = 0,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -385,6 +386,8 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
                                     &colorDescriptorSetLayout) != VK_SUCCESS) {
       throw std::runtime_error("Failed to create descriptor set layout!");
     }
+
+    // Deferred shading process gBuffer
     bindings.clear();
     for (unsigned int i = 0; i < UniformBufferNum - 1; i++) {
       bindings.push_back({
@@ -417,6 +420,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
       throw std::runtime_error("Failed to create descriptor set layout!");
     }
   } else {
+    // Forward shading
     for (unsigned int i = 0; i < UniformBufferNum; i++) {
       bindings.push_back({
           .binding = i,

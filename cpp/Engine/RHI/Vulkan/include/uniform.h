@@ -56,10 +56,12 @@ class Descriptor : public Base {
   std::unordered_map<uint32_t, ShadowMapBuffer> shadowMapBuffers;
 
   VkDescriptorPool colorDescriptorPool;
+  VkDescriptorPool deferredDescriptorPool;
   VkDescriptorPool zPrePassDescriptorPool;
   std::unordered_map<uint32_t, VkDescriptorPool> shadowMapDescriptorPools;
 
   DescriptorSets colorDescriptorSets;
+  DescriptorSets deferredDescriptorSets;
   DescriptorSets zPrePassDescriptorSets;
   VkDescriptorSetLayout shadowMapDescriptorSetLayout;
   std::unordered_map<uint32_t, DescriptorSets> shadowMapDescriptorSets;
