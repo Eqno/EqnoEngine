@@ -35,6 +35,8 @@ class BaseScene final : public BaseObject {
   std::weak_ptr<BaseMaterial> GetMaterialByPath(const std::string& path,
                                                 aiMaterial* matData);
   std::weak_ptr<BaseCamera> GetCameraByName(const std::string& name);
+  const std::unordered_map<std::string, std::shared_ptr<BaseLight>>& GetLights()
+      const;
   std::weak_ptr<BaseLight> GetLightByName(const std::string& name);
   std::weak_ptr<LightChannel> GetLightChannelByName(const std::string& name);
 

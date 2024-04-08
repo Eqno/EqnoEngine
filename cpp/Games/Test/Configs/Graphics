@@ -26,5 +26,5 @@
     "EnableMipmap": true,
     "EnableZPrePass": false,
     "EnableShadowMap": true,
-    "EnableDeferred": false
+    "EnableDeferred": true
 }

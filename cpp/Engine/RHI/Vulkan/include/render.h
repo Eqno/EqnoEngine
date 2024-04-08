@@ -22,7 +22,7 @@
     return lower##CommandBuffers;                   \
   }
 
-#define GBUFFER_SIZE 4
+#define GBUFFER_SIZE 6
 
 class Mesh;
 class Draw;

@@ -12,6 +12,26 @@
 #include <ranges>
 #include <stdexcept>
 
+#define AddGBufferAttachment(lower, _format, index)            \
+  VkAttachmentDescription lower##Attachment{                   \
+      .format = _format,                                       \
+      .samples = device.GetMSAASamples(),                      \
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,                   \
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,             \
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,        \
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,      \
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,              \
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, \
+  };                                                           \
+  VkAttachmentReference lower##AttachmentRef{                  \
+      .attachment = gBufferAttachmentIndex + 2 + index,        \
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,      \
+  };                                                           \
+  VkAttachmentReference lower##InputRef {                      \
+    .attachment = gBufferAttachmentIndex + 2 + index,          \
+    .layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,        \
+  }
+
 bool Render::GetEnableMipmap() const {
   return static_cast<Vulkan*>(owner)->GetEnableMipmap();
 }
@@ -93,62 +113,12 @@ void Render::CreateColorRenderPass(const Device& device) {
     gBufferAttachmentIndex = 1;
   }
 
-  VkAttachmentDescription fragColorAttachment{
-      .format = swapChain.GetImageFormat(),
-      .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentReference fragColorAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 2,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentDescription fragNormalAttachment{
-      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-      .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentReference fragNormalAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 3,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentDescription fragPositionAttachment{
-      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-      .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentReference fragPositionAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 4,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentDescription fragMaterialAttachment{
-      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-      .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentReference fragMaterialAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 5,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
+  AddGBufferAttachment(fragColor, swapChain.GetImageFormat(), 0);
+  AddGBufferAttachment(fragNormal, VK_FORMAT_R32G32B32A32_SFLOAT, 1);
+  AddGBufferAttachment(fragPosition, VK_FORMAT_R32G32B32A32_SFLOAT, 2);
+  AddGBufferAttachment(fragMaterial, VK_FORMAT_R32G32B32A32_SFLOAT, 3);
+  AddGBufferAttachment(cameraNormal, VK_FORMAT_R32G32B32A32_SFLOAT, 4);
+  AddGBufferAttachment(cameraPosition, VK_FORMAT_R32G32B32A32_SFLOAT, 5);
 
   std::vector attachments{colorAttachment, depthAttachment};
   if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
@@ -159,11 +129,18 @@ void Render::CreateColorRenderPass(const Device& device) {
     attachments.emplace_back(fragNormalAttachment);
     attachments.emplace_back(fragPositionAttachment);
     attachments.emplace_back(fragMaterialAttachment);
+    attachments.emplace_back(cameraNormalAttachment);
+    attachments.emplace_back(cameraPositionAttachment);
   }
 
-  std::array<VkAttachmentReference, 4> gBufferAttachmentRefs{
-      fragColorAttachmentRef, fragNormalAttachmentRef,
-      fragPositionAttachmentRef, fragMaterialAttachmentRef};
+  std::array<VkAttachmentReference, GBUFFER_SIZE> gBufferAttachmentRefs{
+      fragColorAttachmentRef,    fragNormalAttachmentRef,
+      fragPositionAttachmentRef, fragMaterialAttachmentRef,
+      cameraNormalAttachmentRef, cameraPositionAttachmentRef};
+
+  std::array<VkAttachmentReference, GBUFFER_SIZE> gBufferInputRefs{
+      fragColorInputRef,    fragNormalInputRef,   fragPositionInputRef,
+      fragMaterialInputRef, cameraNormalInputRef, cameraPositionInputRef};
 
   // Forward or deferred subpasses
   std::vector<VkSubpassDescription> subPasses = {{
@@ -184,8 +161,8 @@ void Render::CreateColorRenderPass(const Device& device) {
                  {
                      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
                      .inputAttachmentCount =
-                         static_cast<uint32_t>(gBufferAttachmentRefs.size()),
-                     .pInputAttachments = gBufferAttachmentRefs.data(),
+                         static_cast<uint32_t>(gBufferInputRefs.size()),
+                     .pInputAttachments = gBufferInputRefs.data(),
                      .colorAttachmentCount = 1,
                      .pColorAttachments = &colorAttachmentRef,
                      .pResolveAttachments = pColorAttachmentResolveRef,
@@ -713,10 +690,21 @@ void Render::RecordColorCommandBuffer(
     ConvertShadowMapDepthToShaderSource(device, commandBuffer);
   }
 
-  constexpr std::array clearValues{
+  std::vector clearValues{
       VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 1.0f}}},
-      VkClearValue{.depthStencil = {1.0f, 0}},
+      VkClearValue{
+          .depthStencil = {1.0f, 0},
+      },
   };
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    clearValues.emplace_back(VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 1.0f}}});
+  }
+  if (GetEnableDeferred()) {
+    for (int i = 0; i < GBUFFER_SIZE; i++) {
+      clearValues.emplace_back(
+          VkClearValue{.color = {{0.0f, 0.0f, 0.0f, 1.0f}}});
+    }
+  }
   VkRenderPassBeginInfo renderPassBeginInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
       .renderPass = colorRenderPass,
@@ -766,6 +754,20 @@ void Render::RecordColorCommandBuffer(
       vkCmdDrawIndexed(commandBuffer,
                        static_cast<uint32_t>(mesh->GetIndices().size()), 1, 0,
                        0, 0);
+    }
+  }
+  if (GetEnableDeferred()) {
+    vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+    for (Draw* draw : draws | std::views::values) {
+      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        draw->GetDeferredGraphicsPipeline());
+
+      vkCmdBindDescriptorSets(
+          commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+          draw->GetDeferredPipelineLayout(), 0, 1,
+          &draw->GetDeferredDescriptorSetByIndex(currentFrame), 0, nullptr);
+
+      vkCmdDraw(commandBuffer, 4, 1, 0, 0);
     }
   }
   vkCmdEndRenderPass(commandBuffer);
@@ -1020,3 +1022,5 @@ void Render::DestroySyncObjects(const VkDevice& device) {
     }
   }
 }
+
+#undef AddGBufferAttachment

@@ -40,4 +40,7 @@ class Application final : public BaseObject {
   virtual void OnUpdate() override;
   virtual void OnStop() override;
   virtual void OnDestroy() override;
+
+  std::weak_ptr<LightChannel> GetLightChannelByName(
+      const std::string& name) const;
 };

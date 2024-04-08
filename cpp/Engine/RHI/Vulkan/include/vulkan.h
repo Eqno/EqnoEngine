@@ -109,4 +109,5 @@ class Vulkan final : public GraphicsInterface, public Base {
   float GetDepthBiasClamp() const { return depthBiasClamp; }
   float GetDepthBiasSlopeFactor() const { return depthBiasSlopeFactor; }
   float GetDepthBiasConstantFactor() const { return depthBiasConstantFactor; }
+  std::weak_ptr<LightChannel> GetLightChannelByName(const std::string& name);
 };

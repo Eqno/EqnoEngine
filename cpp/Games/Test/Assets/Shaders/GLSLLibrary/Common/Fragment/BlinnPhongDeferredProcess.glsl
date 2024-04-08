@@ -1,14 +1,3 @@
-layout(binding = 0) uniform CameraData {
-    vec3 pos;
-    vec3 normal;
-} camera;
-
-layout(binding = 1) uniform MaterialData {
-    vec4 color;
-    float roughness;
-    float metallic;
-} material;
-
 struct LightData {
     int id;
     uint type;
@@ -20,13 +9,13 @@ struct LightData {
     mat4 projMatrix;
 };
 
-layout(binding = 2) uniform LightsData {
+layout(binding = 0) uniform LightsData {
     uint num;
     LightData object[MaxLightNum];
 } lights;
 
 #ifdef EnableShadowMap
-layout(binding = 3) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+layout(binding = 1) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
 #endif
 
 layout(location = 0) in vec4 fragColor;

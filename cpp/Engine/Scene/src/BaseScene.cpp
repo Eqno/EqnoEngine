@@ -53,17 +53,33 @@ std::weak_ptr<BaseMaterial> BaseScene::GetMaterialByPath(
   return materials[name];
 }
 std::weak_ptr<BaseCamera> BaseScene::GetCameraByName(const std::string& name) {
-  return cameras[name];
+  if (cameras.contains(name)) {
+    return cameras[name];
+  }
+  return std::shared_ptr<BaseCamera>(nullptr);
+}
+const std::unordered_map<std::string, std::shared_ptr<BaseLight>>&
+BaseScene::GetLights() const {
+  return lights;
 }
 std::weak_ptr<BaseLight> BaseScene::GetLightByName(const std::string& name) {
-  return lights[name];
+  if (lights.contains(name)) {
+    return lights[name];
+  }
+  return std::shared_ptr<BaseLight>(nullptr);
 }
 std::weak_ptr<BaseLight> BaseScene::GetLightById(int id) {
-  return lightsById[id];
+  if (lightsById.contains(id)) {
+    return lightsById[id];
+  }
+  return std::shared_ptr<BaseLight>(nullptr);
 }
 std::weak_ptr<LightChannel> BaseScene::GetLightChannelByName(
     const std::string& name) {
-  return lightChannels[name];
+  if (lightChannels.contains(name)) {
+    return lightChannels[name];
+  }
+  return std::shared_ptr<LightChannel>(nullptr);
 }
 void BaseScene::RegisterCamera(const std::string& name,
                                std::shared_ptr<BaseCamera> camera) {

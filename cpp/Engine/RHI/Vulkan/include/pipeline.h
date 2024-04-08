@@ -70,6 +70,7 @@ class Pipeline : public Base {
   [[nodiscard]] int GetShaderFallbackIndex() { return shaderFallbackIndex; }
 
   DEFINE_GET_PIPELINE_AND_DSL(color, Color)
+  DEFINE_GET_PIPELINE_AND_DSL(deferred, Deferred)
   DEFINE_GET_PIPELINE_AND_DSL(zPrePass, ZPrePass)
   DEFINE_GET_PIPELINE_AND_DSL(shadowMap, ShadowMap)
 

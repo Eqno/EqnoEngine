@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include <vulkan/vulkan_core.h>
 
@@ -41,8 +40,6 @@ class ShadowMapBuffer : public UniformBuffer {
 };
 
 class Descriptor : public Base {
-  BufferManager* bufferManager = nullptr;
-
   BaseCamera* cameraPointer = nullptr;
   CameraBuffer* cameraBuffer = nullptr;
 
@@ -56,12 +53,10 @@ class Descriptor : public Base {
   std::unordered_map<uint32_t, ShadowMapBuffer> shadowMapBuffers;
 
   VkDescriptorPool colorDescriptorPool;
-  VkDescriptorPool deferredDescriptorPool;
   VkDescriptorPool zPrePassDescriptorPool;
   std::unordered_map<uint32_t, VkDescriptorPool> shadowMapDescriptorPools;
 
   DescriptorSets colorDescriptorSets;
-  DescriptorSets deferredDescriptorSets;
   DescriptorSets zPrePassDescriptorSets;
   VkDescriptorSetLayout shadowMapDescriptorSetLayout;
   std::unordered_map<uint32_t, DescriptorSets> shadowMapDescriptorSets;
@@ -98,6 +93,8 @@ class Descriptor : public Base {
   }
   Descriptor() = default;
   ~Descriptor() override = default;
+
+  BufferManager& GetBufferManager() const;
   std::weak_ptr<MeshData> GetBridgeData();
 
   virtual void TriggerRegisterMember() override {

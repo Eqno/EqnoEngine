@@ -26,12 +26,28 @@ class Draw : public Base {
   Pipeline pipeline;
   std::list<Mesh*> meshes;
 
+  VkDescriptorPool deferredDescriptorPool;
+  DescriptorSets deferredDescriptorSets;
+
+  LightChannel* allLightsChannelPointer = nullptr;
+  LightChannelBuffer* allLightsChannelBufferPointer = nullptr;
+  void CreateDeferredDescriptorPool(const VkDevice& device, Render& render);
+  void CreateDeferredDescriptorSets(const Device& device, Render& render);
+
  public:
+  BufferManager& GetBufferManager() const;
+  void UpdateDeferredDescriptorSets(const VkDevice& device, Render& render);
+  const VkDescriptorSet& GetDeferredDescriptorSetByIndex(
+      const uint32_t index) const {
+    return deferredDescriptorSets[index];
+  }
+
   [[nodiscard]] int GetShaderFallbackIndex() {
     return pipeline.GetShaderFallbackIndex();
   }
 
   DEFINE_GET_PIPELINE_MEMBER(Color)
+  DEFINE_GET_PIPELINE_MEMBER(Deferred)
   DEFINE_GET_PIPELINE_MEMBER(ZPrePass)
   DEFINE_GET_PIPELINE_MEMBER(ShadowMap)
 

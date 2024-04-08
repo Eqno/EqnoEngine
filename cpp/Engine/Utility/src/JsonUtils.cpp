@@ -179,6 +179,16 @@ void JsonUtils::ParseSceneLightChannels(const std::string& root,
       }
     }
   }
+  if (auto ownerPtr = owner.lock()) {
+    if (!ownerPtr->GetLightChannelByName("All").lock()) {
+      std::shared_ptr<LightChannel> object =
+          BaseObject::CreateImmediately<LightChannel>("All", false, root, file,
+                                                      owner);
+      for (auto light : ownerPtr->GetLights() | std::views::values) {
+        object->AddLightToChannel(light);
+      }
+    }
+  }
 }
 
 MaterialInfo JsonUtils::ParseMeshDataInfos(const std::string& filePath,

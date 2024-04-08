@@ -361,14 +361,18 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
 
   if (render.GetEnableDeferred()) {
     // Deferred shading output gBuffer
-    bindings.push_back({
-        .binding = 0,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = 1,
-        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        .pImmutableSamplers = nullptr,
-    });
-    for (unsigned int i = 1; i < 1 + texCount; i++) {
+    for (uint32_t i = 0; i < UniformBufferNum - 1; i++) {
+      bindings.push_back({
+          .binding = i,
+          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .descriptorCount = 1,
+          .stageFlags =
+              VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
+    for (uint32_t i = UniformBufferNum - 1; i < UniformBufferNum - 1 + texCount;
+         i++) {
       bindings.push_back({
           .binding = i,
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -389,19 +393,16 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
 
     // Deferred shading process gBuffer
     bindings.clear();
-    for (unsigned int i = 0; i < UniformBufferNum - 1; i++) {
-      bindings.push_back({
-          .binding = i,
-          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-          .descriptorCount = 1,
-          .stageFlags =
-              VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-          .pImmutableSamplers = nullptr,
-      });
-    }
+    bindings.push_back({
+        .binding = 0,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        .pImmutableSamplers = nullptr,
+    });
     if (render.GetEnableShadowMap()) {
       bindings.push_back({
-          .binding = UniformBufferNum - 1,
+          .binding = 1,
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
           .descriptorCount =
               static_cast<uint32_t>(render.GetShadowMapDepthNum()),

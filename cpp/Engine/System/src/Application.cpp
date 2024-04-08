@@ -1,5 +1,6 @@
 #include "../include/Application.h"
 
+#include <Engine/Light/include/LightChannel.h>
 #include <Engine/RHI/Vulkan/include/vulkan.h>
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Scene/include/StartScene.h>
@@ -90,4 +91,8 @@ void Application::OnDestroy() {
 std::unordered_map<int, std::weak_ptr<BaseLight>>&
 Application::GetLightsById() {
   return scene->GetLightsById();
+}
+std::weak_ptr<LightChannel> Application::GetLightChannelByName(
+    const std::string& name) const {
+  return scene->GetLightChannelByName(name);
 }

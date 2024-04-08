@@ -1,6 +1,10 @@
-#include "../include/mesh.h"
+#include <Engine/RHI/Vulkan/include/draw.h>
+#include <Engine/RHI/Vulkan/include/mesh.h>
+#include <Engine/RHI/Vulkan/include/utils.h>
 
-#include "../include/utils.h"
+BufferManager& Mesh::GetBufferManager() const {
+  return static_cast<Draw*>(owner)->GetBufferManager();
+}
 
 void Mesh::CreateMesh(
     const Device& device, Render& render, std::weak_ptr<MeshData> inData,

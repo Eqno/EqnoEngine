@@ -18,16 +18,24 @@
 
 /////////////////////////// POOLS ///////////////////////////
 
+BufferManager& Descriptor::GetBufferManager() const {
+  return static_cast<Mesh*>(owner)->GetBufferManager();
+}
+
 void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
                                            Render& render,
                                            const size_t textureNum) {
   if (render.GetEnableDeferred()) {
     // Deferred shading output gBuffer
-    std::vector<VkDescriptorPoolSize> poolSizes(1 + textureNum);
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount =
-        static_cast<uint32_t>(render.GetMaxFramesInFlight());
-    for (size_t i = 1; i < 1 + textureNum; i++) {
+    std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum - 1 +
+                                                textureNum);
+    for (int i = 0; i < UniformBufferNum - 1; i++) {
+      poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      poolSizes[i].descriptorCount =
+          static_cast<uint32_t>(render.GetMaxFramesInFlight());
+    }
+    for (size_t i = UniformBufferNum - 1; i < UniformBufferNum - 1 + textureNum;
+         i++) {
       poolSizes[i].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
       poolSizes[i].descriptorCount =
           static_cast<uint32_t>(render.GetMaxFramesInFlight());
@@ -43,32 +51,7 @@ void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
       throw std::runtime_error("failed to create descriptor pool!");
     }
 
-    // Deferred shading process gBuffer
-    poolSizes.resize(UniformBufferNum - 1);
-    if (render.GetEnableShadowMap()) {
-      poolSizes.resize(UniformBufferNum);
-    }
-    for (int i = 0; i < UniformBufferNum - 1; i++) {
-      poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-      poolSizes[i].descriptorCount =
-          static_cast<uint32_t>(render.GetMaxFramesInFlight());
-    }
-    if (render.GetEnableShadowMap()) {
-      poolSizes[UniformBufferNum - 1].type =
-          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      poolSizes[UniformBufferNum - 1].descriptorCount = static_cast<uint32_t>(
-          render.GetMaxFramesInFlight() * render.GetShadowMapDepthNum());
-    }
-    poolInfo = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .maxSets = static_cast<uint32_t>(render.GetMaxFramesInFlight()),
-        .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-        .pPoolSizes = poolSizes.data(),
-    };
-    if (vkCreateDescriptorPool(device, &poolInfo, nullptr,
-                               &deferredDescriptorPool) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create descriptor pool!");
-    }
+    // Deferred shading process gBuffer -> draw.cpp
   } else {
     // Forward shading
     size_t texBindingIndex = 0;
@@ -200,8 +183,12 @@ void Descriptor::CreateColorDescriptorSets(
     }
 
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-      std::vector<VkWriteDescriptorSet> descriptorWrites(1 + textures.size());
-      AddDescriptorWrite(color, 0, TransformData, &transformBuffer);
+      std::vector<VkWriteDescriptorSet> descriptorWrites(UniformBufferNum - 1 +
+                                                         textures.size());
+
+      AddDescriptorWrite(color, 0, CameraData, cameraBuffer);
+      AddDescriptorWrite(color, 1, MaterialData, materialBuffer);
+      AddDescriptorWrite(color, 2, TransformData, &transformBuffer);
 
       std::vector<VkDescriptorImageInfo> imageInfos(textures.size());
       for (size_t j = 0; j < textures.size(); j++) {
@@ -210,10 +197,10 @@ void Descriptor::CreateColorDescriptorSets(
             .imageView = textures[j].GetTextureImageView(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         };
-        descriptorWrites[1 + j] = {
+        descriptorWrites[UniformBufferNum - 1 + j] = {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .dstSet = colorDescriptorSets[i],
-            .dstBinding = static_cast<uint32_t>(1 + j),
+            .dstBinding = static_cast<uint32_t>(UniformBufferNum - 1 + j),
             .dstArrayElement = 0,
             .descriptorCount = 1,
             .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -225,57 +212,7 @@ void Descriptor::CreateColorDescriptorSets(
                              descriptorWrites.data(), 0, nullptr);
     }
 
-    // Deferred shading process gBuffer
-    allocInfo = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = deferredDescriptorPool,
-        .descriptorSetCount =
-            static_cast<uint32_t>(render.GetMaxFramesInFlight()),
-        .pSetLayouts = layouts.data(),
-    };
-
-    deferredDescriptorSets.resize(render.GetMaxFramesInFlight());
-    if (vkAllocateDescriptorSets(device, &allocInfo,
-                                 deferredDescriptorSets.data()) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to allocate descriptor sets!");
-    }
-
-    for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-      std::vector<VkWriteDescriptorSet> descriptorWrites(UniformBufferNum - 1);
-      if (render.GetEnableShadowMap()) {
-        descriptorWrites.resize(UniformBufferNum);
-      }
-
-      AddDescriptorWrite(color, 0, CameraData, cameraBuffer);
-      AddDescriptorWrite(color, 1, MaterialData, materialBuffer);
-      AddDescriptorWrite(color, 2, LightChannelData, lightChannelBuffer);
-
-      // Put the codes outside if enable shadow map or it will be destructed
-      uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
-      std::vector<VkDescriptorImageInfo> shadowMapImageInfos(shadowMapDepthNum);
-
-      if (render.GetEnableShadowMap()) {
-        for (uint32_t j = 0; j < shadowMapDepthNum; j++) {
-          shadowMapImageInfos[j] = {
-              .sampler = render.GetShadowMapDepthSamplerByIndex(j),
-              .imageView = render.GetShadowMapDepthImageViewByIndex(j),
-              .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-          };
-        }
-        descriptorWrites[UniformBufferNum - 1] = {
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = deferredDescriptorSets[i],
-            .dstBinding = static_cast<uint32_t>(UniformBufferNum - 1),
-            .dstArrayElement = 0,
-            .descriptorCount = shadowMapDepthNum,
-            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .pImageInfo = shadowMapImageInfos.data(),
-        };
-      }
-      vkUpdateDescriptorSets(device,
-                             static_cast<uint32_t>(descriptorWrites.size()),
-                             descriptorWrites.data(), 0, nullptr);
-    }
+    // Deferred shading process gBuffer -> draw.cpp
   } else {
     // Forward shading
     const VkDescriptorSetAllocateInfo allocInfo{
@@ -424,7 +361,6 @@ void Descriptor::CreateShadowMapDescriptorSets(
 void Descriptor::UpdateBufferPointers() {
   if (auto bridgePtr = GetBridgeData().lock()) {
     const UniformData& uniform = bridgePtr->uniform;
-    bufferManager = uniform.bufferManager;
     if (auto camera = uniform.camera.lock()) {
       cameraPointer = camera.get();
     }
@@ -461,17 +397,6 @@ void Descriptor::UpdateColorDescriptorSets(const VkDevice& device,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .pImageInfo = shadowMapImageInfos.data(),
     };
-    if (render.GetEnableDeferred()) {
-      descriptorWrite = {
-          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-          .dstSet = deferredDescriptorSets[i],
-          .dstBinding = static_cast<uint32_t>(UniformBufferNum - 1),
-          .dstArrayElement = 0,
-          .descriptorCount = shadowMapDepthNum,
-          .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-          .pImageInfo = shadowMapImageInfos.data(),
-      };
-    }
     vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
   }
 }
@@ -480,9 +405,6 @@ void Descriptor::UpdateUniformBuffer(const uint32_t currentImage) {
   transformBuffer.UpdateUniformBuffer(currentImage);
 
   UpdateBufferPointers();
-  if (bufferManager == nullptr) {
-    return;
-  }
   if (cameraPointer != nullptr) {
     cameraBuffer->UpdateUniformBuffer(cameraPointer, currentImage);
   }
@@ -553,19 +475,16 @@ void Descriptor::CreateUniformBuffer(const Device& device, Render& render) {
   transformBuffer.CreateUniformBuffer(device, render, sizeof(TransformData));
 
   UpdateBufferPointers();
-  if (bufferManager == nullptr) {
-    return;
-  }
   if (cameraPointer != nullptr) {
     cameraBuffer =
-        &bufferManager->CreateCameraBuffer(cameraPointer, device, render);
+        &GetBufferManager().CreateCameraBuffer(cameraPointer, device, render);
   }
   if (materialPointer != nullptr) {
-    materialBuffer =
-        &bufferManager->CreateMaterialBuffer(materialPointer, device, render);
+    materialBuffer = &GetBufferManager().CreateMaterialBuffer(materialPointer,
+                                                              device, render);
   }
   if (lightChannelPointer != nullptr) {
-    lightChannelBuffer = &bufferManager->CreateLightChannelBuffer(
+    lightChannelBuffer = &GetBufferManager().CreateLightChannelBuffer(
         lightChannelPointer, device, render);
   }
 }
@@ -581,12 +500,10 @@ void Descriptor::DestroyUniformBuffer(const VkDevice& device,
     }
   }
 
-  if (bufferManager == nullptr) {
-    return;
-  }
-  bufferManager->DestroyCameraBuffer(cameraPointer, device, render);
-  bufferManager->DestroyMaterialBuffer(materialPointer, device, render);
-  bufferManager->DestroyLightChannelBuffer(lightChannelPointer, device, render);
+  GetBufferManager().DestroyCameraBuffer(cameraPointer, device, render);
+  GetBufferManager().DestroyMaterialBuffer(materialPointer, device, render);
+  GetBufferManager().DestroyLightChannelBuffer(lightChannelPointer, device,
+                                               render);
 }
 
 /////////////////////////// DESCRIPTOR ///////////////////////////
@@ -615,9 +532,6 @@ void Descriptor::CreateDescriptor(
 void Descriptor::DestroyDesciptor(const VkDevice& device,
                                   const Render& render) {
   vkDestroyDescriptorPool(device, colorDescriptorPool, nullptr);
-  if (render.GetEnableDeferred()) {
-    vkDestroyDescriptorPool(device, deferredDescriptorPool, nullptr);
-  }
   if (render.GetEnableZPrePass()) {
     vkDestroyDescriptorPool(device, zPrePassDescriptorPool, nullptr);
   }

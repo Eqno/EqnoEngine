@@ -251,9 +251,14 @@ void SwapChain::RecreateSwapChain(
 
   if (GetEnableShadowMap()) {
     for (Draw* draw : draws | std::views::values) {
-      for (const auto& mesh : draw->GetMeshes()) {
-        mesh->UpdateColorDescriptorSets(device.GetLogical(),
-                                        *static_cast<Render*>(owner));
+      if (GetEnableDeferred()) {
+        draw->UpdateDeferredDescriptorSets(device.GetLogical(),
+                                           *static_cast<Render*>(owner));
+      } else {
+        for (const auto& mesh : draw->GetMeshes()) {
+          mesh->UpdateColorDescriptorSets(device.GetLogical(),
+                                          *static_cast<Render*>(owner));
+        }
       }
     }
   }

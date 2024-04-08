@@ -33,6 +33,8 @@ class Mesh : public Base {
       const VkDescriptorSetLayout& shadowMapDescriptorSetLayout);
 
  public:
+  BufferManager& GetBufferManager() const;
+
   [[nodiscard]] const VkBuffer& GetIndexBuffer() const {
     return buffer.GetIndexBuffer();
   }

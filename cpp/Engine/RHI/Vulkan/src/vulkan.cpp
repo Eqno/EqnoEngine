@@ -215,7 +215,6 @@ void Vulkan::ParseMeshDatas() {
             continue;
           }
 
-          mesh->uniform.bufferManager = &bufferManager;
           if (draws.contains(shaders[0])) {
             draws[shaders[0]]->LoadDrawResource(device, render, mesh);
           } else {
@@ -262,3 +261,8 @@ void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>&& meshDatas) {
 }
 
 float Vulkan::GetViewportAspect() { return render.GetViewportAspect(); }
+std::weak_ptr<LightChannel> Vulkan::GetLightChannelByName(
+    const std::string& name) {
+  GetAppPointer();
+  return appPointer->GetLightChannelByName(name);
+}
