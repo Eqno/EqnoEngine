@@ -24,7 +24,7 @@
 
     "MSAAMaxSamples": 4,
     "EnableMipmap": true,
-    "EnableZPrePass": true,
+    "EnableZPrePass": false,
     "EnableShadowMap": true,
     "EnableDeferred": false
 }

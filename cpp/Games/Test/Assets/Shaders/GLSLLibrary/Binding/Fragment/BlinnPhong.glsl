@@ -1,4 +1,4 @@
-#include <GLSLLibrary/Binding/Fragment/DataStructure.glsl>
+#include <GLSLLibrary/Binding/DataStructure.glsl>
 
 #ifdef EnableShadowMap
 layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];

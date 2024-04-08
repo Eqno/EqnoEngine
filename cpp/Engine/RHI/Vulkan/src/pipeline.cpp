@@ -40,7 +40,7 @@
                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,  \
   };                                                                          \
   std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments(     \
-      6, colorBlendAttachment)
+      GBUFFER_SIZE, colorBlendAttachment)
 #define COLOR_BLEND_STATE_CREATE_INFO(_attachmentCount, _pAttachments,  \
                                       _logicOp)                         \
   VkPipelineColorBlendStateCreateInfo colorBlending {                   \
@@ -88,6 +88,7 @@ void Pipeline::CreateColorGraphicsPipeline(
           static_cast<uint32_t>(attributeDescriptions.size()),
       .pVertexAttributeDescriptions = attributeDescriptions.data(),
   };
+
   constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
       .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -164,9 +165,6 @@ void Pipeline::CreateColorGraphicsPipeline(
     if (vkCreateGraphicsPipelines(device.GetLogical(), VK_NULL_HANDLE, 1,
                                   &pipelineInfo, nullptr,
                                   &colorGraphicsPipeline) == VK_SUCCESS) {
-      shaderFallbackIndex = i;
-      shader.DestroyModules(device.GetLogical());
-
       if (render.GetEnableDeferred()) {
         // Deferred process pipeline
         constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly{
@@ -187,8 +185,10 @@ void Pipeline::CreateColorGraphicsPipeline(
 
         const VkGraphicsPipelineCreateInfo pipelineInfo{
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-            .stageCount = static_cast<uint32_t>(stages.size()),
-            .pStages = stages.data(),
+            .stageCount = static_cast<uint32_t>(
+                shaderStages[PipelineType::DeferredProcessGBuffer].size()),
+            .pStages =
+                shaderStages[PipelineType::DeferredProcessGBuffer].data(),
             .pVertexInputState = &vertexInputInfo,
             .pInputAssemblyState = &inputAssembly,
             .pViewportState = &viewportState,
@@ -205,10 +205,15 @@ void Pipeline::CreateColorGraphicsPipeline(
         if (vkCreateGraphicsPipelines(
                 device.GetLogical(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                 &deferredGraphicsPipeline) == VK_SUCCESS) {
+          shaderFallbackIndex = i;
+          shader.DestroyModules(device.GetLogical());
           return;
         }
+      } else {
+        shaderFallbackIndex = i;
+        shader.DestroyModules(device.GetLogical());
+        return;
       }
-      return;
     }
   }
   throw std::runtime_error("failed to create color graphics pipeline!");
@@ -353,44 +358,107 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
 void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
                                               Render& render, int texCount) {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
-  for (unsigned int i = 0; i < UniformBufferNum; i++) {
+
+  if (render.GetEnableDeferred()) {
     bindings.push_back({
-        .binding = i,
+        .binding = 0,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         .descriptorCount = 1,
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         .pImmutableSamplers = nullptr,
     });
-  }
-  unsigned int texBindingIndex = 0;
-  if (render.GetEnableShadowMap()) {
-    texBindingIndex = 1;
-    bindings.push_back({
-        .binding = UniformBufferNum,
-        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        .descriptorCount = static_cast<uint32_t>(render.GetShadowMapDepthNum()),
-        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-        .pImmutableSamplers = nullptr,
-    });
-  }
-  for (unsigned int i = texBindingIndex; i < texBindingIndex + texCount; i++) {
-    bindings.push_back({
-        .binding = i + UniformBufferNum,
-        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        .descriptorCount = 1,
-        .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-        .pImmutableSamplers = nullptr,
-    });
-  }
+    for (unsigned int i = 1; i < 1 + texCount; i++) {
+      bindings.push_back({
+          .binding = i,
+          .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          .descriptorCount = 1,
+          .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
+    VkDescriptorSetLayoutCreateInfo layoutInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .bindingCount = static_cast<uint32_t>(bindings.size()),
+        .pBindings = bindings.data(),
+    };
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
+                                    &colorDescriptorSetLayout) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to create descriptor set layout!");
+    }
+    bindings.clear();
+    for (unsigned int i = 0; i < UniformBufferNum - 1; i++) {
+      bindings.push_back({
+          .binding = i,
+          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .descriptorCount = 1,
+          .stageFlags =
+              VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
+    if (render.GetEnableShadowMap()) {
+      bindings.push_back({
+          .binding = UniformBufferNum - 1,
+          .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          .descriptorCount =
+              static_cast<uint32_t>(render.GetShadowMapDepthNum()),
+          .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
+    layoutInfo = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .bindingCount = static_cast<uint32_t>(bindings.size()),
+        .pBindings = bindings.data(),
+    };
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
+                                    &deferredDescriptorSetLayout) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("Failed to create descriptor set layout!");
+    }
+  } else {
+    for (unsigned int i = 0; i < UniformBufferNum; i++) {
+      bindings.push_back({
+          .binding = i,
+          .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          .descriptorCount = 1,
+          .stageFlags =
+              VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
+    unsigned int texBindingIndex = 0;
+    if (render.GetEnableShadowMap()) {
+      texBindingIndex = 1;
+      bindings.push_back({
+          .binding = UniformBufferNum,
+          .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          .descriptorCount =
+              static_cast<uint32_t>(render.GetShadowMapDepthNum()),
+          .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
+    for (unsigned int i = texBindingIndex; i < texBindingIndex + texCount;
+         i++) {
+      bindings.push_back({
+          .binding = i + UniformBufferNum,
+          .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          .descriptorCount = 1,
+          .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
 
-  VkDescriptorSetLayoutCreateInfo layoutInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-      .bindingCount = static_cast<uint32_t>(bindings.size()),
-      .pBindings = bindings.data(),
-  };
-  if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
-                                  &colorDescriptorSetLayout) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to create descriptor set layout!");
+    VkDescriptorSetLayoutCreateInfo layoutInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .bindingCount = static_cast<uint32_t>(bindings.size()),
+        .pBindings = bindings.data(),
+    };
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
+                                    &colorDescriptorSetLayout) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to create descriptor set layout!");
+    }
   }
 }
 

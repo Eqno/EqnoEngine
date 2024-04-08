@@ -22,6 +22,8 @@
     return lower##CommandBuffers;                   \
   }
 
+#define GBUFFER_SIZE 4
+
 class Mesh;
 class Draw;
 class Depth;
@@ -134,7 +136,7 @@ class Render : public Base {
   void DestroyRenderResources(const Device& device) {
     swapChain.DestroyColorResource(device);
     swapChain.DestroyDepthResource(device.GetLogical());
-    swapChain.CleanupRenderTarget(device.GetLogical());
+    swapChain.CleanupRenderTarget(device);
     DestroyRenderPasses(device.GetLogical());
     DestroySyncObjects(device.GetLogical());
     DestroyCommandPool(device.GetLogical());

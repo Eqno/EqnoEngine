@@ -109,15 +109,18 @@ ShaderStages Shader::AutoCreateStages(const VkDevice& device,
   for (const auto& fileInfo :
        std::filesystem::directory_iterator(rootPath + shaderPath + "/glsl")) {
     const auto glslPath = fileInfo.path().filename().string();
-    shaderModules.emplace_back(CreateModule(
-        ReadGLSLFileAsBinary(glslPath, rootPath + shaderPath + "/glsl"),
-        device));
-    shaderStages[GetTypeByName(glslPath).type].push_back({
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-        .stage = GetTypeByName(glslPath).stage,
-        .module = shaderModules.back(),
-        .pName = GetTypeByName(glslPath).entrance.c_str(),
-    });
+    if (ShaderRcStatic::shaderTypes.find(glslPath.substr(
+            glslPath.find('.') + 1)) != ShaderRcStatic::shaderTypes.end()) {
+      shaderModules.emplace_back(CreateModule(
+          ReadGLSLFileAsBinary(glslPath, rootPath + shaderPath + "/glsl"),
+          device));
+      shaderStages[GetTypeByName(glslPath).type].push_back({
+          .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+          .stage = GetTypeByName(glslPath).stage,
+          .module = shaderModules.back(),
+          .pName = GetTypeByName(glslPath).entrance.c_str(),
+      });
+    }
   }
   return shaderStages;
 }

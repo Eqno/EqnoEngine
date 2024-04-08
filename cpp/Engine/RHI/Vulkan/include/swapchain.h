@@ -34,6 +34,10 @@ class SwapChain : public Base {
   VkDeviceMemory colorImageMemory;
   VkImageView colorImageView;
 
+  std::vector<VkImage> gBufferImages;
+  std::vector<VkDeviceMemory> gBufferImageMemories;
+  std::vector<VkImageView> gBufferImageViews;
+
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 
@@ -43,6 +47,7 @@ class SwapChain : public Base {
 
   bool GetEnableZPrePass() const;
   bool GetEnableShadowMap() const;
+  bool GetEnableDeferred() const;
 
   uint32_t GetShadowMapWidth() const;
   uint32_t GetShadowMapHeight() const;
@@ -120,7 +125,7 @@ class SwapChain : public Base {
   void CreateRenderTarget(const Device& device, const Window& window);
   void CreateRenderTarget(const std::string& format, const std::string& space,
                           const Device& device, const Window& window);
-  void CleanupRenderTarget(const VkDevice& device) const;
+  void CleanupRenderTarget(const Device& device) const;
   void DestroyColorResource(const Device& device) const;
   void DestroyDepthResource(const VkDevice& device) {
     zPrePassDepth.DestroyDepthResource(device);

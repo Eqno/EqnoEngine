@@ -93,20 +93,6 @@ void Render::CreateColorRenderPass(const Device& device) {
     gBufferAttachmentIndex = 1;
   }
 
-  VkAttachmentDescription fragPositionAttachment{
-      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-      .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentReference fragPositionAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 2,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
   VkAttachmentDescription fragColorAttachment{
       .format = swapChain.GetImageFormat(),
       .samples = device.GetMSAASamples(),
@@ -118,7 +104,7 @@ void Render::CreateColorRenderPass(const Device& device) {
       .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
   VkAttachmentReference fragColorAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 3,
+      .attachment = gBufferAttachmentIndex + 2,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
   VkAttachmentDescription fragNormalAttachment{
@@ -132,35 +118,21 @@ void Render::CreateColorRenderPass(const Device& device) {
       .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
   VkAttachmentReference fragNormalAttachmentRef{
+      .attachment = gBufferAttachmentIndex + 3,
+      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentDescription fragPositionAttachment{
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .samples = device.GetMSAASamples(),
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+  };
+  VkAttachmentReference fragPositionAttachmentRef{
       .attachment = gBufferAttachmentIndex + 4,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentDescription fragTexCoordAttachment{
-      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-      .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentReference fragTexCoordAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 5,
-      .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentDescription fragTangentAttachment{
-      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-      .samples = device.GetMSAASamples(),
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-  };
-  VkAttachmentReference fragTangentAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 6,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
   VkAttachmentDescription fragMaterialAttachment{
@@ -174,7 +146,7 @@ void Render::CreateColorRenderPass(const Device& device) {
       .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
   VkAttachmentReference fragMaterialAttachmentRef{
-      .attachment = gBufferAttachmentIndex + 7,
+      .attachment = gBufferAttachmentIndex + 5,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
   };
 
@@ -183,18 +155,15 @@ void Render::CreateColorRenderPass(const Device& device) {
     attachments.emplace_back(colorAttachmentResolve);
   }
   if (GetEnableDeferred()) {
-    attachments.emplace_back(fragPositionAttachment);
     attachments.emplace_back(fragColorAttachment);
     attachments.emplace_back(fragNormalAttachment);
-    attachments.emplace_back(fragTexCoordAttachment);
-    attachments.emplace_back(fragTangentAttachment);
+    attachments.emplace_back(fragPositionAttachment);
     attachments.emplace_back(fragMaterialAttachment);
   }
 
-  std::array<VkAttachmentReference, 6> gBufferAttachmentRefs{
-      fragPositionAttachmentRef, fragColorAttachmentRef,
-      fragNormalAttachmentRef,   fragTexCoordAttachmentRef,
-      fragTangentAttachmentRef,  fragMaterialAttachmentRef};
+  std::array<VkAttachmentReference, 4> gBufferAttachmentRefs{
+      fragColorAttachmentRef, fragNormalAttachmentRef,
+      fragPositionAttachmentRef, fragMaterialAttachmentRef};
 
   // Forward or deferred subpasses
   std::vector<VkSubpassDescription> subPasses = {{
@@ -207,13 +176,15 @@ void Render::CreateColorRenderPass(const Device& device) {
   if (GetEnableDeferred()) {
     subPasses = {{
                      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-                     .colorAttachmentCount = 6,
+                     .colorAttachmentCount =
+                         static_cast<uint32_t>(gBufferAttachmentRefs.size()),
                      .pColorAttachments = gBufferAttachmentRefs.data(),
                      .pDepthStencilAttachment = &depthAttachmentRef,
                  },
                  {
                      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-                     .inputAttachmentCount = 6,
+                     .inputAttachmentCount =
+                         static_cast<uint32_t>(gBufferAttachmentRefs.size()),
                      .pInputAttachments = gBufferAttachmentRefs.data(),
                      .colorAttachmentCount = 1,
                      .pColorAttachments = &colorAttachmentRef,

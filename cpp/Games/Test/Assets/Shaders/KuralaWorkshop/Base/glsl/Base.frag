@@ -1,6 +1,6 @@
 #version 450
 
-#include <GLSLLibrary/Binding/Fragment/DataStructure.glsl>
+#include <GLSLLibrary/Binding/DataStructure.glsl>
 
 
 #ifdef EnableShadowMap

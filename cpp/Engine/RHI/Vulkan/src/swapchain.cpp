@@ -18,6 +18,9 @@ bool SwapChain::GetEnableZPrePass() const {
 bool SwapChain::GetEnableShadowMap() const {
   return static_cast<Render*>(owner)->GetEnableShadowMap();
 }
+bool SwapChain::GetEnableDeferred() const {
+  return static_cast<Render*>(owner)->GetEnableDeferred();
+}
 
 uint32_t SwapChain::GetShadowMapWidth() const {
   return static_cast<Render*>(owner)->GetShadowMapWidth();
@@ -138,30 +141,34 @@ void SwapChain::CreateImageViews(const VkDevice& device) {
 }
 
 void SwapChain::DestroyColorResource(const Device& device) const {
-  if (device.GetMSAASamples() == VK_SAMPLE_COUNT_1_BIT) {
-    return;
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    vkDestroyImageView(device.GetLogical(), colorImageView, nullptr);
+    vkDestroyImage(device.GetLogical(), colorImage, nullptr);
+    vkFreeMemory(device.GetLogical(), colorImageMemory, nullptr);
   }
-  vkDestroyImageView(device.GetLogical(), colorImageView, nullptr);
-  vkDestroyImage(device.GetLogical(), colorImage, nullptr);
-  vkFreeMemory(device.GetLogical(), colorImageMemory, nullptr);
+  if (GetEnableDeferred()) {
+    for (const auto& imageView : gBufferImageViews) {
+      vkDestroyImageView(device.GetLogical(), imageView, nullptr);
+    }
+  }
 }
 
-void SwapChain::CleanupRenderTarget(const VkDevice& device) const {
+void SwapChain::CleanupRenderTarget(const Device& device) const {
   for (const auto& frameBuffer : colorFrameBuffers) {
-    vkDestroyFramebuffer(device, frameBuffer, nullptr);
+    vkDestroyFramebuffer(device.GetLogical(), frameBuffer, nullptr);
   }
   if (GetEnableZPrePass()) {
-    vkDestroyFramebuffer(device, zPrePassFrameBuffer, nullptr);
+    vkDestroyFramebuffer(device.GetLogical(), zPrePassFrameBuffer, nullptr);
   }
   if (GetEnableShadowMap()) {
     for (const auto& frameBuffer : shadowMapFrameBuffers) {
-      vkDestroyFramebuffer(device, frameBuffer, nullptr);
+      vkDestroyFramebuffer(device.GetLogical(), frameBuffer, nullptr);
     }
   }
   for (const auto& imageView : swapChainImageViews) {
-    vkDestroyImageView(device, imageView, nullptr);
+    vkDestroyImageView(device.GetLogical(), imageView, nullptr);
   }
-  vkDestroySwapchainKHR(device, chain, nullptr);
+  vkDestroySwapchainKHR(device.GetLogical(), chain, nullptr);
 }
 
 void SwapChain::CreateColorFrameBuffers(const Device& device) {
@@ -172,6 +179,11 @@ void SwapChain::CreateColorFrameBuffers(const Device& device) {
     if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
       attachments = {colorImageView, zPrePassDepth.GetDepthImageView(),
                      swapChainImageViews[i]};
+    }
+    if (GetEnableDeferred()) {
+      for (VkImageView imageView : gBufferImageViews) {
+        attachments.push_back(imageView);
+      }
     }
     VkFramebufferCreateInfo frameBufferInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -230,7 +242,7 @@ void SwapChain::RecreateSwapChain(
 
   DestroyColorResource(device);
   DestroyDepthResource(device.GetLogical());
-  CleanupRenderTarget(device.GetLogical());
+  CleanupRenderTarget(device);
 
   CreateRenderTarget(device, window);
   CreateColorResource(device);
@@ -263,20 +275,34 @@ void SwapChain::CreateRenderTarget(const std::string& format,
 }
 
 void SwapChain::CreateColorResource(const Device& device) {
-  if (device.GetMSAASamples() == VK_SAMPLE_COUNT_1_BIT) {
-    return;
+  if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
+    auto [image, memory] = Texture::CreateImage(
+        device, extent.width, extent.height, 1, device.GetMSAASamples(),
+        imageFormat, VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    colorImage = image;
+    colorImageMemory = memory;
+    colorImageView =
+        Texture::CreateImageView(device.GetLogical(), colorImage, 1,
+                                 imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
   }
-  auto [image, memory] = Texture::CreateImage(
-      device, extent.width, extent.height, 1, device.GetMSAASamples(),
-      imageFormat, VK_IMAGE_TILING_OPTIMAL,
-      VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
-          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  colorImage = image;
-  colorImageMemory = memory;
-  colorImageView =
-      Texture::CreateImageView(device.GetLogical(), colorImage, 1, imageFormat,
-                               VK_IMAGE_ASPECT_COLOR_BIT);
+  if (GetEnableDeferred()) {
+    for (int i = 0; i < GBUFFER_SIZE; i++) {
+      auto [image, memory] = Texture::CreateImage(
+          device, extent.width, extent.height, 1, device.GetMSAASamples(),
+          imageFormat, VK_IMAGE_TILING_OPTIMAL,
+          VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
+              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+      gBufferImages.push_back(image);
+      gBufferImageMemories.push_back(memory);
+      gBufferImageViews.push_back(
+          Texture::CreateImageView(device.GetLogical(), gBufferImages.back(), 1,
+                                   imageFormat, VK_IMAGE_ASPECT_COLOR_BIT));
+    }
+  }
 }
 
 void SwapChain::CreateDepthResources(const Device& device) {
