@@ -24,5 +24,5 @@ void main() {
     float texRoughness = texture(roughnessSampler, fragTexCoord)[0];
     float texMetallic = texture(metallicSampler, fragTexCoord)[0];
     float texAO = texture(AOSampler, fragTexCoord)[0];
-    outMaterial = vec4(texRoughness, texMetallic, texAO, 0.);
+    outMaterial = vec4(texRoughness, texMetallic, texAO, 1.);
 }

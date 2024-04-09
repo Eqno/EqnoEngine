@@ -1,49 +1,53 @@
 {
-            "Name": "Kurala_Workshop",
-            "Type": "BaseModel",
-            "Path": "Assets/Models/Kurala_Workshop/Kurala_Workshop",
-            "Camera": "MainCamera",
-            "LightChannel": "All",
-            "Transform": {
-                "Position": "45,0,-30",
-                "Rotation": "0,0,0",
-                "Scale": "1,1,1"
-            }
-        },
+    "Name": "SecondaryCamera",
+    "Type": "BaseCamera",
+    "Path": "Assets/Cameras/MainCamera",
+    "Transform": {
+        "Position": "0,0,0",
+        "Rotation": "0,180,0",
+        "Scale": "1,1,1"
+    }
+}, {
+    "Name": "VikingRoom",
+    "Type": "BaseModel",
+    "Path": "Assets/Models/viking_room/viking_room",
+    "Camera": "MainCamera",
+    "LightChannel": "None",
+    "Transform": {
+        "Position": "-30,0,-30",
+        "Rotation": "-90,-90,0",
+        "Scale": "10,10,10"
+    }
+}, 
 
 
-        {
-            "Name": "SunLight",
-            "Type": "SunLight",
-            "Path": "Assets/Lights/SunLight",
-            "Transform": {
-                "Position": "0,20,20",
-                "Rotation": "20,180,0",
-                "Scale": "1,1,1"
-            }
-        },
 
-        {
-            "Name": "LampBulb",
-            "Type": "BaseModel",
-            "Path": "Assets/Models/LampBulb/LampBulb",
-            "Camera": "MainCamera",
-            "LightChannel": "All",
-            "Transform": {
-                "Position": "0,17,-20",
-                "Rotation": "180,0,0",
-                "Scale": "1,1,1"
-            },
+,
             "Sons": [
                 {
-                    "Name": "SpotLight",
-                    "Type": "SpotLight",
-                    "Path": "Assets/Lights/SpotLight",
+                    "Name": "MasterSword",
+                    "Type": "BaseModel",
+                    "Path": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon",
+                    "Camera": "SecondaryCamera",
+                    "LightChannel": "All",
                     "Transform": {
-                        "Position": "0,3,0",
-                        "Rotation": "-90,0,0",
+                        "Position": "5,20,0",
+                        "Rotation": "0,0,0",
                         "Scale": "1,1,1"
                     }
                 }
             ]
-        },
+
+
+            {
+                "Name": "Kurala_Workshop",
+                "Type": "BaseModel",
+                "Path": "Assets/Models/Kurala_Workshop/Kurala_Workshop",
+                "Camera": "MainCamera",
+                "LightChannel": "All",
+                "Transform": {
+                    "Position": "45,0,-30",
+                    "Rotation": "0,0,0",
+                    "Scale": "1,1,1"
+                }
+            }

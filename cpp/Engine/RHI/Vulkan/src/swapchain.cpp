@@ -150,6 +150,12 @@ void SwapChain::DestroyColorResource(const Device& device) const {
     for (const auto& imageView : gBufferImageViews) {
       vkDestroyImageView(device.GetLogical(), imageView, nullptr);
     }
+    for (const auto& image : gBufferImages) {
+      vkDestroyImage(device.GetLogical(), image, nullptr);
+    }
+    for (const auto& imageMemory : gBufferImageMemories) {
+      vkFreeMemory(device.GetLogical(), imageMemory, nullptr);
+    }
   }
 }
 
@@ -295,17 +301,22 @@ void SwapChain::CreateColorResource(const Device& device) {
   }
   if (GetEnableDeferred()) {
     for (int i = 0; i < GBUFFER_SIZE; i++) {
+      VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
+      if (i == 0) {
+        format = imageFormat;
+      }
       auto [image, memory] = Texture::CreateImage(
           device, extent.width, extent.height, 1, device.GetMSAASamples(),
-          imageFormat, VK_IMAGE_TILING_OPTIMAL,
+          format, VK_IMAGE_TILING_OPTIMAL,
           VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |
-              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+              VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
       gBufferImages.push_back(image);
       gBufferImageMemories.push_back(memory);
       gBufferImageViews.push_back(
           Texture::CreateImageView(device.GetLogical(), gBufferImages.back(), 1,
-                                   imageFormat, VK_IMAGE_ASPECT_COLOR_BIT));
+                                   format, VK_IMAGE_ASPECT_COLOR_BIT));
     }
   }
 }
