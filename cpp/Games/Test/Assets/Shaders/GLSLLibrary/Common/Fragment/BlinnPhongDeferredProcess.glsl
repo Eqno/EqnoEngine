@@ -19,9 +19,13 @@ layout(binding = 1) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
 #endif
 
 layout(location = 0) in vec4 fragColor;
-layout(location = 1) in vec4 fragNormal;
-layout(location = 2) in vec4 fragPosition;
+layout(location = 1) in vec3 fragNormal;
+layout(location = 2) in vec3 fragPosition;
 layout(location = 3) in vec4 fragMaterial;
+layout(location = 4) in vec3 cameraNormal;
+layout(location = 5) in vec3 cameraPosition;
+
+layout(location = 0) out vec4 outColor;
 
 void main() {
     float ambientStrength = fragMaterial[0];
@@ -35,7 +39,7 @@ void main() {
 
     for (int i=0; i<lights.num; ++i) {
         vec3 lightDir = normalize(lights.object[i].pos - fragPosition);
-        vec3 viewDir = normalize(camera.pos - fragPosition);
+        vec3 viewDir = normalize(cameraPosition - fragPosition);
         vec4 light = lights.object[i].color * lights.object[i].intensity;
 
         ambient += light * ambientStrength;
