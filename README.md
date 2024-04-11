@@ -2,7 +2,7 @@
 ### 框架层
 
 - [x] RHI 与引擎层分离，分别由 Game / Render 线程驱动。
-- [x] 借助可变参数模板，通过封装实例的创建和销毁，实现 class member / owner 的递归注册。
+- [x] 借助可变参数模板，封装实例的创建和销毁（工厂模式），实现 class owner 的递归注册。
 - [x] 实现异步加载队列，只需将函数 bind 后 push 入队列，便可在单独的 resource 线程执行。
 - [x] 引擎层使用 shared_ptr 持有 Object 实例，RHI 层使用 weak_ptr 持有引擎数据。
   - [x] RHI 层借此实现 mesh 的生命周期管理，保证线程安全。
@@ -10,9 +10,9 @@
 
 ### RHI 层
 
-- [ ] 使用延迟管线进行 Deferred Shading，解决多光照环境下的性能问题。
+- [ ] 使用 Subpass 和 InputAttachment 实现 One Pass Defer，解决多光照的性能问题。
 - [x] 使用 Z-PrePass 进行深度测试优化，减少 Fragment Shader 的执行次数，提高渲染性能。
-- [ ] 支持为 Z-PrePass、Shadow Map、Deferred Shading 和 MSAA 在 Config 中配置开启和关闭。
+- [x] 支持为 Z-PrePass、Shadow Map、Deferred Shading 和 MSAA 在 Config 中配置开启和关闭。
 - [x] 提供了多套 Lit/Unlit 内置 Shader，其中包括 Blinn-Phong 和基于 Cook-Torrance 的 PBR。
 - [x] 使用 Fence、Barrier 和 Semaphore 进行设备、内存、管线、命令和 Render Pass 的同步。
 - [x] 支持 Multiple Frames In Flight，可以为交换链指定 Frame 数量，减少 CPU 和 GPU 同步带来的性能浪费。
@@ -43,6 +43,22 @@
 - [x] 实现 Object 的生命周期管理和事件调用，其中 OnStart 的调用位于下一帧的开始，保证晚于同一帧内的所有 OnCreate。
 
 ## Q & A
+
 ### 框架层
+
 #### Q：为什么部分指针下转不使用 dynamic_cast 和 dynamic_pointer_cast？
 A：dynamic_cast 匹配虚表，性能堪忧，如果可以确定下转目标类型，使用 static_cast。
+
+### RHI 层
+
+#### Q：Deferred Shading 相比 Forward + ZPrePass 优化的性能优势在哪？
+A：延迟管线的第二个 Subpass，不会对每一个 mesh DrawIndexed，而是仅仅 Draw Fullscreen Quad。
+
+#### Q：为 Dscriptor 指定 ImageInfo 时，为什么不可以合并两次遍历为一次？
+A：Vector 的 push_back 会导致扩容时内存被整体移动，先前指定的指针失效，变为野指针。
+
+#### Q：为什么要为每个光源的 ShadowMap 生成创建独立的 UBO，而非通过切换来复用同一个？
+A：RecordCommandBuffer 的顺序不是 Pipeline 在 GPU 内的执行顺序，真正的执行是【乱序】且【异步】的。
+
+#### Q：上一个问题的延伸，为什么不使用 MemoryBarrier 或 Fence 进行同步？
+A：MemoryBarrier 是 GPU 与 GPU 之间的内存屏障，Fence 虽然可以同步但会影响性能。
