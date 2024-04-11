@@ -126,25 +126,34 @@ VkSampleCountFlagBits Device::GetMaxUsableSampleCount(int msaaMaxSamples) {
       physicalDeviceProperties.limits.framebufferColorSampleCounts &
       physicalDeviceProperties.limits.framebufferDepthSampleCounts;
   if (msaaMaxSamples >= 64 && (counts & VK_SAMPLE_COUNT_64_BIT)) {
+    msaaSamplesNum = 64;
     return VK_SAMPLE_COUNT_64_BIT;
   }
   if (msaaMaxSamples >= 32 && (counts & VK_SAMPLE_COUNT_32_BIT)) {
+    msaaSamplesNum = 32;
     return VK_SAMPLE_COUNT_32_BIT;
   }
   if (msaaMaxSamples >= 16 && (counts & VK_SAMPLE_COUNT_16_BIT)) {
+    msaaSamplesNum = 16;
     return VK_SAMPLE_COUNT_16_BIT;
   }
   if (msaaMaxSamples >= 8 && (counts & VK_SAMPLE_COUNT_8_BIT)) {
+    msaaSamplesNum = 8;
     return VK_SAMPLE_COUNT_8_BIT;
   }
   if (msaaMaxSamples >= 4 && (counts & VK_SAMPLE_COUNT_4_BIT)) {
+    msaaSamplesNum = 4;
     return VK_SAMPLE_COUNT_4_BIT;
   }
   if (msaaMaxSamples >= 2 && (counts & VK_SAMPLE_COUNT_2_BIT)) {
+    msaaSamplesNum = 2;
     return VK_SAMPLE_COUNT_2_BIT;
   }
+  msaaSamplesNum = 1;
   return VK_SAMPLE_COUNT_1_BIT;
 }
+
+uint32_t Device::GetMultiSampleNum() const { return msaaSamplesNum; }
 
 void Device::PickPhysicalDevice(const VkInstance& instance,
                                 const VkSurfaceKHR& surface) {

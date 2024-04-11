@@ -143,6 +143,13 @@ void Pipeline::CreateColorGraphicsPipeline(
     auto& stages = shaderStages[PipelineType::Forward];
     if (render.GetEnableDeferred()) {
       stages = shaderStages[PipelineType::DeferredOutputGBuffer];
+      if (stages.size() < 2) {
+        throw std::runtime_error("missing deferred output shader stages!");
+      }
+    } else {
+      if (stages.size() < 2) {
+        throw std::runtime_error("missing forward shader stages!");
+      }
     }
 
     const VkGraphicsPipelineCreateInfo pipelineInfo{
@@ -173,7 +180,11 @@ void Pipeline::CreateColorGraphicsPipeline(
             .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
             .primitiveRestartEnable = VK_FALSE,
         };
-        const VkPipelineVertexInputStateCreateInfo vertexInputInfo;
+
+        // Remember to initialize its sType
+        const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        };
 
         VkPipelineColorBlendStateCreateInfo colorBlending{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
@@ -183,12 +194,15 @@ void Pipeline::CreateColorGraphicsPipeline(
             .pAttachments = &colorBlendAttachment,
         };
 
+        auto& stages = shaderStages[PipelineType::DeferredProcessGBuffer];
+        if (stages.size() < 2) {
+          throw std::runtime_error("missing deferred process shader stages!");
+        }
+
         const VkGraphicsPipelineCreateInfo pipelineInfo{
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-            .stageCount = static_cast<uint32_t>(
-                shaderStages[PipelineType::DeferredProcessGBuffer].size()),
-            .pStages =
-                shaderStages[PipelineType::DeferredProcessGBuffer].data(),
+            .stageCount = static_cast<uint32_t>(stages.size()),
+            .pStages = stages.data(),
             .pVertexInputState = &vertexInputInfo,
             .pInputAssemblyState = &inputAssembly,
             .pViewportState = &viewportState,
@@ -363,7 +377,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     // Deferred shading output gBuffer
     for (uint32_t i = 0; i < UniformBufferNum - 1; i++) {
       bindings.push_back({
-          .binding = i,
+          .binding = static_cast<uint32_t>(bindings.size()),
           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
           .descriptorCount = 1,
           .stageFlags =
@@ -371,10 +385,9 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
           .pImmutableSamplers = nullptr,
       });
     }
-    for (uint32_t i = UniformBufferNum - 1; i < UniformBufferNum - 1 + texCount;
-         i++) {
+    for (uint32_t i = 0; i < texCount; i++) {
       bindings.push_back({
-          .binding = i,
+          .binding = static_cast<uint32_t>(bindings.size()),
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
           .descriptorCount = 1,
           .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -394,15 +407,24 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     // Deferred shading process gBuffer
     bindings.clear();
     bindings.push_back({
-        .binding = 0,
+        .binding = static_cast<uint32_t>(bindings.size()),
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         .descriptorCount = 1,
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         .pImmutableSamplers = nullptr,
     });
+    for (uint32_t i = 0; i < GBUFFER_SIZE; i++) {
+      bindings.push_back({
+          .binding = static_cast<uint32_t>(bindings.size()),
+          .descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
+          .descriptorCount = 1,
+          .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+          .pImmutableSamplers = nullptr,
+      });
+    }
     if (render.GetEnableShadowMap()) {
       bindings.push_back({
-          .binding = 1,
+          .binding = static_cast<uint32_t>(bindings.size()),
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
           .descriptorCount =
               static_cast<uint32_t>(render.GetShadowMapDepthNum()),
@@ -422,9 +444,9 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     }
   } else {
     // Forward shading
-    for (unsigned int i = 0; i < UniformBufferNum; i++) {
+    for (uint32_t i = 0; i < UniformBufferNum; i++) {
       bindings.push_back({
-          .binding = i,
+          .binding = static_cast<uint32_t>(bindings.size()),
           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
           .descriptorCount = 1,
           .stageFlags =
@@ -432,11 +454,9 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
           .pImmutableSamplers = nullptr,
       });
     }
-    unsigned int texBindingIndex = 0;
     if (render.GetEnableShadowMap()) {
-      texBindingIndex = 1;
       bindings.push_back({
-          .binding = UniformBufferNum,
+          .binding = static_cast<uint32_t>(bindings.size()),
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
           .descriptorCount =
               static_cast<uint32_t>(render.GetShadowMapDepthNum()),
@@ -444,10 +464,9 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
           .pImmutableSamplers = nullptr,
       });
     }
-    for (unsigned int i = texBindingIndex; i < texBindingIndex + texCount;
-         i++) {
+    for (uint32_t i = 0; i < texCount; i++) {
       bindings.push_back({
-          .binding = i + UniformBufferNum,
+          .binding = static_cast<uint32_t>(bindings.size()),
           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
           .descriptorCount = 1,
           .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -544,6 +563,11 @@ void Pipeline::DestroyPipeline(const VkDevice& device,
     vkDestroyPipeline(device, shadowMapGraphicsPipeline, nullptr);
     vkDestroyDescriptorSetLayout(device, shadowMapDescriptorSetLayout, nullptr);
     vkDestroyPipelineLayout(device, shadowMapPipelineLayout, nullptr);
+  }
+  if (render.GetEnableDeferred()) {
+    vkDestroyPipeline(device, deferredGraphicsPipeline, nullptr);
+    vkDestroyDescriptorSetLayout(device, deferredDescriptorSetLayout, nullptr);
+    vkDestroyPipelineLayout(device, deferredPipelineLayout, nullptr);
   }
 }
 

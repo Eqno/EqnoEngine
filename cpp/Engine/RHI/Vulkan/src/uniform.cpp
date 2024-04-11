@@ -27,18 +27,16 @@ void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
                                            const size_t textureNum) {
   if (render.GetEnableDeferred()) {
     // Deferred shading output gBuffer
-    std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum - 1 +
-                                                textureNum);
-    for (int i = 0; i < UniformBufferNum - 1; i++) {
-      poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-      poolSizes[i].descriptorCount =
-          static_cast<uint32_t>(render.GetMaxFramesInFlight());
+    std::vector<VkDescriptorPoolSize> poolSizes;
+    for (uint32_t i = 0; i < UniformBufferNum - 1; i++) {
+      poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                           .descriptorCount = static_cast<uint32_t>(
+                               render.GetMaxFramesInFlight())});
     }
-    for (size_t i = UniformBufferNum - 1; i < UniformBufferNum - 1 + textureNum;
-         i++) {
-      poolSizes[i].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      poolSizes[i].descriptorCount =
-          static_cast<uint32_t>(render.GetMaxFramesInFlight());
+    for (uint32_t i = 0; i < textureNum; i++) {
+      poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                           .descriptorCount = static_cast<uint32_t>(
+                               render.GetMaxFramesInFlight())});
     }
     VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -54,33 +52,23 @@ void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
     // Deferred shading process gBuffer -> draw.cpp
   } else {
     // Forward shading
-    size_t texBindingIndex = 0;
+    std::vector<VkDescriptorPoolSize> poolSizes;
+    for (uint32_t i = 0; i < UniformBufferNum; i++) {
+      poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                           .descriptorCount = static_cast<uint32_t>(
+                               render.GetMaxFramesInFlight())});
+    }
     if (render.GetEnableShadowMap()) {
-      texBindingIndex = 1;
+      poolSizes.push_back(
+          {.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+           .descriptorCount = static_cast<uint32_t>(
+               render.GetMaxFramesInFlight() * render.GetShadowMapDepthNum())});
     }
-
-    std::vector<VkDescriptorPoolSize> poolSizes(UniformBufferNum +
-                                                texBindingIndex + textureNum);
-    for (int i = 0; i < UniformBufferNum; i++) {
-      poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-      poolSizes[i].descriptorCount =
-          static_cast<uint32_t>(render.GetMaxFramesInFlight());
+    for (uint32_t i = 0; i < textureNum; i++) {
+      poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                           .descriptorCount = static_cast<uint32_t>(
+                               render.GetMaxFramesInFlight())});
     }
-
-    if (render.GetEnableShadowMap()) {
-      poolSizes[UniformBufferNum].type =
-          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      poolSizes[UniformBufferNum].descriptorCount = static_cast<uint32_t>(
-          render.GetMaxFramesInFlight() * render.GetShadowMapDepthNum());
-    }
-
-    for (size_t i = texBindingIndex; i < texBindingIndex + textureNum; i++) {
-      poolSizes[i + UniformBufferNum].type =
-          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      poolSizes[i + UniformBufferNum].descriptorCount =
-          static_cast<uint32_t>(render.GetMaxFramesInFlight());
-    }
-
     const VkDescriptorPoolCreateInfo poolInfo{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .maxSets = static_cast<uint32_t>(render.GetMaxFramesInFlight()),
@@ -133,32 +121,23 @@ void Descriptor::CreateShadowMapDescriptorPool(
 
 /////////////////////////// DSETS ///////////////////////////
 
-#define AddDescriptorWrite(member, index, type, buf)         \
-  {                                                          \
-    VkDescriptorBufferInfo bufferInfo{                       \
-        .buffer = (buf)->GetUniformBufferByIndex(i),         \
-        .offset = 0,                                         \
-        .range = sizeof(type),                               \
-    };                                                       \
-    descriptorWrites[index] = {                              \
-        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,     \
-        .dstSet = member##DescriptorSets[i],                 \
-        .dstBinding = index,                                 \
-        .dstArrayElement = 0,                                \
-        .descriptorCount = 1,                                \
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, \
-        .pBufferInfo = &bufferInfo,                          \
-    };                                                       \
+#define AddDescriptorWrite(member, type, buf)                         \
+  {                                                                   \
+    VkDescriptorBufferInfo bufferInfo{                                \
+        .buffer = (buf)->GetUniformBufferByIndex(i),                  \
+        .offset = 0,                                                  \
+        .range = sizeof(type),                                        \
+    };                                                                \
+    descriptorWrites.push_back({                                      \
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,              \
+        .dstSet = member##DescriptorSets[i],                          \
+        .dstBinding = static_cast<uint32_t>(descriptorWrites.size()), \
+        .dstArrayElement = 0,                                         \
+        .descriptorCount = 1,                                         \
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,          \
+        .pBufferInfo = &bufferInfo,                                   \
+    });                                                               \
   }
-#define AddColorDescriptorWrites()                                      \
-  {                                                                     \
-    AddDescriptorWrite(color, 0, CameraData, cameraBuffer);             \
-    AddDescriptorWrite(color, 1, MaterialData, materialBuffer);         \
-    AddDescriptorWrite(color, 2, TransformData, &transformBuffer);      \
-    AddDescriptorWrite(color, 3, LightChannelData, lightChannelBuffer); \
-  }
-#define AddZPrePassDescriptorWrites() \
-  AddDescriptorWrite(zPrePass, 0, TransformData, &transformBuffer)
 
 void Descriptor::CreateColorDescriptorSets(
     const VkDevice& device, Render& render,
@@ -183,29 +162,32 @@ void Descriptor::CreateColorDescriptorSets(
     }
 
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-      std::vector<VkWriteDescriptorSet> descriptorWrites(UniformBufferNum - 1 +
-                                                         textures.size());
+      std::vector<VkWriteDescriptorSet> descriptorWrites;
 
-      AddDescriptorWrite(color, 0, CameraData, cameraBuffer);
-      AddDescriptorWrite(color, 1, MaterialData, materialBuffer);
-      AddDescriptorWrite(color, 2, TransformData, &transformBuffer);
+      AddDescriptorWrite(color, CameraData, cameraBuffer);
+      AddDescriptorWrite(color, MaterialData, materialBuffer);
+      AddDescriptorWrite(color, TransformData, &transformBuffer);
 
-      std::vector<VkDescriptorImageInfo> imageInfos(textures.size());
+      //  Do not merge the loops because `push_back` would move the memory to
+      //  another location
+      std::vector<VkDescriptorImageInfo> imageInfos;
       for (size_t j = 0; j < textures.size(); j++) {
-        imageInfos[j] = {
+        imageInfos.push_back({
             .sampler = textures[j].GetTextureSampler(),
             .imageView = textures[j].GetTextureImageView(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        };
-        descriptorWrites[UniformBufferNum - 1 + j] = {
+        });
+      }
+      for (size_t j = 0; j < textures.size(); j++) {
+        descriptorWrites.push_back({
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .dstSet = colorDescriptorSets[i],
-            .dstBinding = static_cast<uint32_t>(UniformBufferNum - 1 + j),
+            .dstBinding = static_cast<uint32_t>(descriptorWrites.size()),
             .dstArrayElement = 0,
             .descriptorCount = 1,
             .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .pImageInfo = &imageInfos[j],
-        };
+            .pImageInfo = &imageInfos.back(),
+        });
       }
       vkUpdateDescriptorSets(device,
                              static_cast<uint32_t>(descriptorWrites.size()),
@@ -230,55 +212,56 @@ void Descriptor::CreateColorDescriptorSets(
     }
 
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-      uint32_t texBindingIndex = 0;
-      if (render.GetEnableShadowMap()) {
-        texBindingIndex = 1;
-      }
+      std::vector<VkWriteDescriptorSet> descriptorWrites;
 
-      std::vector<VkWriteDescriptorSet> descriptorWrites(
-          UniformBufferNum + texBindingIndex + textures.size());
-      AddColorDescriptorWrites();
+      AddDescriptorWrite(color, CameraData, cameraBuffer);
+      AddDescriptorWrite(color, MaterialData, materialBuffer);
+      AddDescriptorWrite(color, TransformData, &transformBuffer);
+      AddDescriptorWrite(color, LightChannelData, lightChannelBuffer);
 
       // Put the codes outside if enable shadow map or it will be destructed
       uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
-      std::vector<VkDescriptorImageInfo> shadowMapImageInfos(shadowMapDepthNum);
+      std::vector<VkDescriptorImageInfo> shadowMapImageInfos;
 
       if (render.GetEnableShadowMap()) {
         for (uint32_t j = 0; j < shadowMapDepthNum; j++) {
-          shadowMapImageInfos[j] = {
+          shadowMapImageInfos.push_back({
               .sampler = render.GetShadowMapDepthSamplerByIndex(j),
               .imageView = render.GetShadowMapDepthImageViewByIndex(j),
               .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-          };
+          });
         }
-        descriptorWrites[UniformBufferNum] = {
+        descriptorWrites.push_back({
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .dstSet = colorDescriptorSets[i],
-            .dstBinding = static_cast<uint32_t>(UniformBufferNum),
+            .dstBinding = static_cast<uint32_t>(descriptorWrites.size()),
             .dstArrayElement = 0,
             .descriptorCount = shadowMapDepthNum,
             .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
             .pImageInfo = shadowMapImageInfos.data(),
-        };
+        });
       }
 
-      std::vector<VkDescriptorImageInfo> imageInfos(textures.size());
+      //  Do not merge the loops because `push_back` would move the memory to
+      //  another location
+      std::vector<VkDescriptorImageInfo> imageInfos;
       for (size_t j = 0; j < textures.size(); j++) {
-        imageInfos[j] = {
+        imageInfos.push_back({
             .sampler = textures[j].GetTextureSampler(),
             .imageView = textures[j].GetTextureImageView(),
             .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        };
-        descriptorWrites[UniformBufferNum + texBindingIndex + j] = {
+        });
+      }
+      for (size_t j = 0; j < textures.size(); j++) {
+        descriptorWrites.push_back({
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .dstSet = colorDescriptorSets[i],
-            .dstBinding =
-                static_cast<uint32_t>(UniformBufferNum + texBindingIndex + j),
+            .dstBinding = static_cast<uint32_t>(descriptorWrites.size()),
             .dstArrayElement = 0,
             .descriptorCount = 1,
             .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .pImageInfo = &imageInfos[j],
-        };
+            .pImageInfo = &imageInfos.back(),
+        });
       }
       vkUpdateDescriptorSets(device,
                              static_cast<uint32_t>(descriptorWrites.size()),
@@ -308,7 +291,7 @@ void Descriptor::CreateZPrePassDescriptorSets(
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     std::vector<VkWriteDescriptorSet> descriptorWrites(1);
-    AddZPrePassDescriptorWrites();
+    AddDescriptorWrite(zPrePass, TransformData, &transformBuffer);
 
     vkUpdateDescriptorSets(device,
                            static_cast<uint32_t>(descriptorWrites.size()),
@@ -379,14 +362,14 @@ void Descriptor::UpdateColorDescriptorSets(const VkDevice& device,
     VkWriteDescriptorSet descriptorWrite;
 
     uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
-    std::vector<VkDescriptorImageInfo> shadowMapImageInfos(shadowMapDepthNum);
+    std::vector<VkDescriptorImageInfo> shadowMapImageInfos;
 
     for (size_t j = 0; j < shadowMapDepthNum; j++) {
-      shadowMapImageInfos[j] = {
+      shadowMapImageInfos.push_back({
           .sampler = render.GetShadowMapDepthSamplerByIndex(j),
           .imageView = render.GetShadowMapDepthImageViewByIndex(j),
           .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-      };
+      });
     }
     descriptorWrite = {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -555,9 +538,6 @@ std::weak_ptr<MeshData> TransformBuffer::GetBridgeData() {
 std::weak_ptr<MeshData> Descriptor::GetBridgeData() {
   return static_cast<Mesh*>(owner)->GetBridgeData();
 }
-
-#undef AddColorDescriptorWrites
-#undef AddZPrePassDescriptorWrites
 
 ShadowMapBuffer& Descriptor::CreateShadowMapUniformBufferByIndex(
     const Device& device, const Render& render, const uint32_t lightId) {

@@ -112,6 +112,9 @@ class SwapChain : public Base {
   VkImageView GetShadowMapDepthImageViewByIndex(uint32_t index) {
     return shadowMapDepths[index].GetDepthImageView();
   }
+  VkImageView GetGBufferImageViewByIndex(uint32_t index) {
+    return gBufferImageViews[index];
+  }
 
   void CreateSwapChain(const Device& device, const Window& window);
   void CreateImageViews(const VkDevice& device);

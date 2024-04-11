@@ -767,7 +767,7 @@ void Render::RecordColorCommandBuffer(
           draw->GetDeferredPipelineLayout(), 0, 1,
           &draw->GetDeferredDescriptorSetByIndex(currentFrame), 0, nullptr);
 
-      vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+      vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     }
   }
   vkCmdEndRenderPass(commandBuffer);

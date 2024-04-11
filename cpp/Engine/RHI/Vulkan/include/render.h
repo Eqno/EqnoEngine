@@ -160,6 +160,9 @@ class Render : public Base {
   [[nodiscard]] VkImageView GetShadowMapDepthImageViewByIndex(uint32_t index) {
     return swapChain.GetShadowMapDepthImageViewByIndex(index);
   }
+  [[nodiscard]] VkImageView GetGBufferImageViewByIndex(uint32_t index) {
+    return swapChain.GetGBufferImageViewByIndex(index);
+  }
 
   [[nodiscard]] uint32_t GetSwapChainExtentWidth() const {
     return swapChain.GetExtentWidth();

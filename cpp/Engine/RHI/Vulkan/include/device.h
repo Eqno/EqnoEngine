@@ -33,11 +33,14 @@ class Device : public Base {
 
   VkQueue graphicsQueue;
   VkQueue presentQueue;
+
+  uint32_t msaaSamplesNum = 1;
   VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
+ public:
+  uint32_t GetMultiSampleNum() const;
   VkSampleCountFlagBits GetMaxUsableSampleCount(int msaaMaxSamples);
 
- public:
   /** Behaviors And Logic **/
   /**
    * 使当前逻辑设备闲置等待
