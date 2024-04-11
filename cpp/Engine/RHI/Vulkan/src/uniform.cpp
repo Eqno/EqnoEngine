@@ -186,7 +186,7 @@ void Descriptor::CreateColorDescriptorSets(
             .dstArrayElement = 0,
             .descriptorCount = 1,
             .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .pImageInfo = &imageInfos.back(),
+            .pImageInfo = &imageInfos[j],
         });
       }
       vkUpdateDescriptorSets(device,
@@ -260,7 +260,7 @@ void Descriptor::CreateColorDescriptorSets(
             .dstArrayElement = 0,
             .descriptorCount = 1,
             .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .pImageInfo = &imageInfos.back(),
+            .pImageInfo = &imageInfos[j],
         });
       }
       vkUpdateDescriptorSets(device,
