@@ -290,7 +290,7 @@ void Descriptor::CreateZPrePassDescriptorSets(
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
-    std::vector<VkWriteDescriptorSet> descriptorWrites(1);
+    std::vector<VkWriteDescriptorSet> descriptorWrites;
     AddDescriptorWrite(zPrePass, TransformData, &transformBuffer);
 
     vkUpdateDescriptorSets(device,
