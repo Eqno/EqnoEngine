@@ -94,5 +94,4 @@ void main() {
         #endif
     }
     outColor = (ambient + diffuse + specular) * fragColor;
-    outColor = vec4(1., 0., 0., 1.);
 }

@@ -175,6 +175,8 @@ void Draw::CreateDrawResource(const Device& device, Render& render,
   }
   shader.SetFileIncluder(shaderSearchPaths);
   shader.SetOptimizationLevel(ShaderOptimizationLevel);
+  shader.SetGenerateDebugInfo(
+      static_cast<Vulkan*>(owner)->GetEnableShaderDebug());
   pipeline.CreatePipeline(device, render, shader, texCount, rootPath,
                           shaderPaths, zPrePassShaderPath, shadowMapShaderPath);
 

@@ -43,6 +43,7 @@ class Shader : public Base {
   void AddDefinitions(const Definitions& definitions);
   void SetFileIncluder(const std::vector<std::string>& searchPaths);
   void SetOptimizationLevel(shaderc_optimization_level level);
+  void SetGenerateDebugInfo(const bool flag);
   void DestroyModules(const VkDevice& device) const;
 
   [[nodiscard]] ShaderStages AutoCreateStages(

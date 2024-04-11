@@ -25,6 +25,7 @@ void Vulkan::InitConfig() {
   enableZPrePass = JSON_CONFIG(Bool, "EnableZPrePass");
   enableShadowMap = JSON_CONFIG(Bool, "EnableShadowMap");
   enableDeferred = JSON_CONFIG(Bool, "EnableDeferred");
+  enableShaderDebug = JSON_CONFIG(Bool, "EnableShaderDebug");
 
   shadowMapWidth = JSON_CONFIG(Int, "ShadowMapWidth");
   shadowMapHeight = JSON_CONFIG(Int, "ShadowMapHeight");

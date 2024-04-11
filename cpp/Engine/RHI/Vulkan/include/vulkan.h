@@ -80,6 +80,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   bool enableZPrePass = false;
   bool enableShadowMap = false;
   bool enableDeferred = false;
+  bool enableShaderDebug = false;
 
   int shadowMapWidth = -1;
   int shadowMapHeight = -1;
@@ -96,6 +97,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   bool GetEnableZPrePass() const { return enableZPrePass; }
   bool GetEnableShadowMap() const { return enableShadowMap; }
   bool GetEnableDeferred() const { return enableDeferred; }
+  bool GetEnableShaderDebug() const { return enableShaderDebug; }
 
   uint32_t GetShadowMapWidth() const {
     return shadowMapWidth >= 0 ? shadowMapWidth

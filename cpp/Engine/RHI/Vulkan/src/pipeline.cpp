@@ -174,18 +174,17 @@ void Pipeline::CreateColorGraphicsPipeline(
                                   &colorGraphicsPipeline) == VK_SUCCESS) {
       if (render.GetEnableDeferred()) {
         // Deferred process pipeline
+        // Remember to initialize its sType
+        const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        };
         constexpr VkPipelineInputAssemblyStateCreateInfo inputAssembly{
             .sType =
                 VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
             .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
             .primitiveRestartEnable = VK_FALSE,
         };
-
-        // Remember to initialize its sType
-        const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        };
-
+        RASTERIZER_CREATE_INFO(VK_CULL_MODE_FRONT_BIT, VK_FALSE);
         VkPipelineColorBlendStateCreateInfo colorBlending{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
             .logicOpEnable = VK_FALSE,

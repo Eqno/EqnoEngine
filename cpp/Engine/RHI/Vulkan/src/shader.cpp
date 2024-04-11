@@ -51,6 +51,11 @@ void Shader::SetFileIncluder(const std::vector<std::string>& searchPaths) {
 void Shader::SetOptimizationLevel(shaderc_optimization_level level) {
   ShaderRcStatic::options.SetOptimizationLevel(level);
 }
+void Shader::SetGenerateDebugInfo(const bool flag) {
+  if (flag == true) {
+    ShaderRcStatic::options.SetGenerateDebugInfo();
+  }
+}
 
 const ShaderTypeInfo& Shader::GetTypeByName(const std::string& glslPath) {
   return ShaderRcStatic::shaderTypes
