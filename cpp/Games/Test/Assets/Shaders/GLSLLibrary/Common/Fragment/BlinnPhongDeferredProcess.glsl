@@ -14,8 +14,6 @@ layout(binding = 0) uniform LightsData {
     LightData object[MaxLightNum];
 } lights;
 
-#define SampleNum 6
-
 #ifdef EnableMultiSample
 layout(input_attachment_index = 0, binding = 1) uniform subpassInputMS inColor;
 layout(input_attachment_index = 1, binding = 2) uniform subpassInputMS inNormal;
