@@ -4,7 +4,7 @@
 void main() {
     ProcessSubpassInput;
     if (fragMaterial.w > 0.) {
-        return;
+        discard;
     }
 
     float texRoughness = fragMaterial.x;

@@ -185,13 +185,8 @@ void Pipeline::CreateColorGraphicsPipeline(
             .primitiveRestartEnable = VK_FALSE,
         };
         RASTERIZER_CREATE_INFO(VK_CULL_MODE_FRONT_BIT, VK_FALSE);
-        VkPipelineColorBlendStateCreateInfo colorBlending{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-            .logicOpEnable = VK_FALSE,
-            .logicOp = VK_LOGIC_OP_COPY,
-            .attachmentCount = 1,
-            .pAttachments = &colorBlendAttachment,
-        };
+        COLOR_BLEND_STATE_CREATE_INFO(1, &colorBlendAttachment,
+                                      VK_LOGIC_OP_COPY);
 
         auto& stages = shaderStages[PipelineType::DeferredProcessGBuffer];
         if (stages.size() < 2) {
