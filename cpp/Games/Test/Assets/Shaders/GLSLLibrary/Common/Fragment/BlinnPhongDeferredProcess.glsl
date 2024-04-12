@@ -14,6 +14,8 @@ layout(binding = 0) uniform LightsData {
     LightData object[MaxLightNum];
 } lights;
 
+#define SampleNum 6
+
 #ifdef EnableMultiSample
 layout(input_attachment_index = 0, binding = 1) uniform subpassInputMS inColor;
 layout(input_attachment_index = 1, binding = 2) uniform subpassInputMS inNormal;
@@ -38,12 +40,26 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     #ifdef EnableMultiSample
-    vec4 fragColor = subpassLoad(inColor, EnableMultiSample);
-    vec3 fragNormal = subpassLoad(inNormal, EnableMultiSample).xyz;
-    vec3 fragPosition = subpassLoad(inPosition, EnableMultiSample).xyz;
-    vec4 fragMaterial = subpassLoad(inMaterial, EnableMultiSample);
-    vec3 cameraNormal = subpassLoad(inCameraNormal, EnableMultiSample).xyz;
-    vec3 cameraPosition = subpassLoad(inCameraPosition, EnableMultiSample).xyz;
+    vec4 fragColor = vec4(0.);
+    vec3 fragNormal = vec3(0.);
+    vec3 fragPosition = vec3(0.);
+    vec4 fragMaterial = vec4(0.);
+    vec3 cameraNormal = vec3(0.);
+    vec3 cameraPosition = vec3(0.);
+    for (int i=0; i<EnableMultiSample; i++) {
+        fragColor += subpassLoad(inColor, i);
+        fragNormal += subpassLoad(inNormal, i).xyz;
+        fragPosition += subpassLoad(inPosition, i).xyz;
+        fragMaterial += subpassLoad(inMaterial, i);
+        cameraNormal += subpassLoad(inCameraNormal, i).xyz;
+        cameraPosition += subpassLoad(inCameraPosition, i).xyz;
+    }
+    fragColor /= EnableMultiSample;
+    fragNormal /= EnableMultiSample;
+    fragPosition /= EnableMultiSample;
+    fragMaterial /= EnableMultiSample;
+    cameraNormal /= EnableMultiSample;
+    cameraPosition /= EnableMultiSample;
     #else
     vec4 fragColor = subpassLoad(inColor);
     vec3 fragNormal = subpassLoad(inNormal).xyz;
