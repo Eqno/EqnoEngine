@@ -1,33 +1,16 @@
-struct LightData {
-    int id;
-    uint type;
-    float intensity;
-    vec3 pos;
-    vec4 color;
-    vec3 normal;
-    mat4 viewMatrix;
-    mat4 projMatrix;
-};
-
-layout(binding = 0) uniform LightsData {
-    uint num;
-    LightData object[MaxLightNum];
-} lights;
-
-#ifdef EnableShadowMap
-layout(binding = 1) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
-#endif
-
-layout(location = 0) in vec4 fragColor;
-layout(location = 1) in vec4 fragNormal;
-layout(location = 2) in vec4 fragPosition;
-layout(location = 3) in vec4 fragMaterial;
+#include <GLSLLibrary/BRDF/CookTorrance.glsl>
+#include <GLSLLibrary/Binding/Fragment/PBRDeferredProcess.glsl>
 
 void main() {
-    float texRoughness = fragMaterial[0];
-    float texMetallic = fragMaterial[1];
-    float texAO = fragMaterial[2];    
+    ProcessSubpassInput;
+    if (fragMaterial.w > 0.) {
+        return;
+    }
 
+    float texRoughness = fragMaterial.x;
+    float texMetallic = fragMaterial.y;
+    float texAO = fragMaterial.z;
+    
     float DiffuseStrength = .5;
     float SpecularStength = 5.;
     outColor = DiffuseStrength * fragColor / PI * texAO;
@@ -40,7 +23,7 @@ void main() {
         float lightIntensity = lights.object[i].intensity;
 
         vec3 lightDir = normalize(lights.object[i].pos - fragPosition);
-        vec3 viewDir = normalize(camera.pos - fragPosition);
+        vec3 viewDir = normalize(cameraPosition - fragPosition);
 
         if (lights.object[i].type == 1) {
             vec3 brdf = BRDF(fragNormal, lightNormal, viewDir, fragColor.rgb, texRoughness, vec3(0.1), texMetallic);

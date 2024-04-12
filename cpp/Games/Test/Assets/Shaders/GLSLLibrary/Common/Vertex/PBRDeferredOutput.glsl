@@ -1,32 +1,4 @@
-layout(binding = 0) uniform CameraData {
-    vec3 pos;
-    vec3 normal;
-} camera;
-
-layout(binding = 1) uniform MaterialData {
-    vec4 color;
-    float roughness;
-    float metallic;
-} material;
-
-layout(binding = 2) uniform TransformData {
-    mat4 modelMatrix;
-    mat4 viewMatrix;
-    mat4 projMatrix;
-} transform;
-
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec4 inColor;
-layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec3 inTangent;
-layout(location = 4) in vec2 inTexCoord;
-
-layout(location = 0) out vec3 fragPosition;
-layout(location = 1) out vec4 fragColor;
-layout(location = 2) out vec3 fragNormal;
-layout(location = 3) out vec2 fragTexCoord;
-
-layout(location = 4) out vec3 fragTangent;
+#include <GLSLLibrary/Binding/Vertex/PBRDeferredOutput.glsl>
 
 void main() {
     fragColor = inColor;
