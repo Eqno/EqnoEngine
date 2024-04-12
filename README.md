@@ -10,7 +10,7 @@
 
 ### RHI 层
 
-- [ ] 使用 Subpass 和 InputAttachment 实现 One Pass Defer，解决多光照的性能问题。
+- [x] 使用 Subpass 和 InputAttachment 实现 One Pass Defer，解决多光照的性能问题。
 - [x] 使用 Z-PrePass 进行深度测试优化，减少 Fragment Shader 的执行次数，提高渲染性能。
 - [x] 支持为 Z-PrePass、Shadow Map、Deferred Shading 和 MSAA 在 Config 中配置开启和关闭。
 - [x] 提供了多套 Lit/Unlit 内置 Shader，其中包括 Blinn-Phong 和基于 Cook-Torrance 的 PBR。
@@ -62,3 +62,6 @@ A：RecordCommandBuffer 的顺序不是 Pipeline 在 GPU 内的执行顺序，�
 
 #### Q：上一个问题的延伸，为什么不使用 MemoryBarrier 或 Fence 进行同步？
 A：MemoryBarrier 是 GPU 与 GPU 之间的内存屏障，Fence 虽然可以同步但会影响性能。
+
+#### Q：为什么会有一种说法 —— Deferred Shading 和 MSAA 不兼容？
+A：使用 MultiSample 输出 GBuffer，占用显存太大了，后面的 Process 还要取 Average，性能堪忧。
