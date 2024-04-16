@@ -245,5 +245,8 @@ void Draw::SetShaderPath(const std::string& shaderPath) {
 }
 void Draw::SetPipelineId(const Render& render, const int pipelineId) {
   pipeline.SetPipelineId(pipelineId);
-  pipelineBuffer.InitUniformBuffer(render, pipelineId);
+
+  if (render.GetEnableDeferred()) {
+    pipelineBuffer.InitUniformBuffer(render, pipelineId);
+  }
 }

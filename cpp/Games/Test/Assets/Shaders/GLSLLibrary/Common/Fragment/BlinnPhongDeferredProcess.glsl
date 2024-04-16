@@ -3,7 +3,6 @@
 
 void main() {
     ProcessSubpassInput;
-    discard;
     if (FloatEqual(fragPosition.w, pipeline.id) == false) {
         discard;
     }
