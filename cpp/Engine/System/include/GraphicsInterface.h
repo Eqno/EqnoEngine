@@ -23,9 +23,9 @@ class GraphicsInterface : public BaseObject {
   virtual void GameLoop() = 0;
   virtual void RenderLoop() = 0;
 
-  virtual void ParseMeshDatas() = 0;
-  virtual void ParseMeshDatas(
-      std::vector<std::weak_ptr<MeshData>>&& meshDatas) = 0;
+  virtual void ParseMeshData() = 0;
+  virtual void ParseMeshData(std::weak_ptr<MeshData> meshData) = 0;
+
   virtual float GetViewportAspect() = 0;
   virtual bool GetRenderLoopEnd() { return renderLoopEnd; }
   virtual void SetRenderLoopEnd(bool inEnd) { renderLoopEnd = inEnd; }

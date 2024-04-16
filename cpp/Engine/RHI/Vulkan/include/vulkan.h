@@ -30,7 +30,7 @@ class Vulkan final : public GraphicsInterface, public Base {
 
   std::mutex updateMeshDataMutex;
   std::atomic<bool> needToUpdateMeshDatas = false;
-  std::queue<std::vector<std::weak_ptr<MeshData>>> meshDataQueue;
+  std::queue<std::weak_ptr<MeshData>> meshDataQueue;
 
  public:
   template <typename... Args>
@@ -56,10 +56,10 @@ class Vulkan final : public GraphicsInterface, public Base {
   void ShowRenderFrameCount();
 
   BufferManager& GetBufferManager() { return bufferManager; }
-  void ParseMeshDatas() override;
-  void ParseMeshDatas(
-      std::vector<std::weak_ptr<MeshData>>&& meshDatas) override;
   float GetViewportAspect() override;
+
+  void ParseMeshData() override;
+  void ParseMeshData(std::weak_ptr<MeshData> meshData) override;
 
   virtual void OnCreate() override {
     GraphicsInterface::OnCreate();

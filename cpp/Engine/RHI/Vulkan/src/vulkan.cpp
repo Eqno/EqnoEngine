@@ -172,7 +172,7 @@ void Vulkan::RenderLoop() {
       UpdateRenderDeltaTime();
       ShowRenderFrameCount();
     }
-    ParseMeshDatas();
+    ParseMeshData();
     TriggerOnUpdate(appPointer->GetLightsById());
     ReleaseBufferLocks();
 
@@ -201,18 +201,12 @@ void Vulkan::CleanupGraphics() {
   window.DestroyWindow();
 }
 
-void Vulkan::ParseMeshDatas() {
+void Vulkan::ParseMeshData() {
   if (needToUpdateMeshDatas.exchange(false)) {
     updateMeshDataMutex.lock();
 
     while (meshDataQueue.empty() == false) {
-      std::vector<std::weak_ptr<MeshData>>& meshDatas = meshDataQueue.front();
-
-      for (std::weak_ptr<MeshData> meshData : meshDatas) {
-        auto mesh = meshData.lock();
-        if (!mesh) {
-          continue;
-        }
+      if (auto mesh = meshDataQueue.front().lock()) {
         if (auto materialPtr = mesh->uniform.material.lock()) {
           std::vector<std::string>& shaders = materialPtr->GetShaders();
           if (shaders.empty()) {
@@ -273,10 +267,10 @@ void Vulkan::ParseMeshDatas() {
   }
 }
 
-void Vulkan::ParseMeshDatas(std::vector<std::weak_ptr<MeshData>>&& meshDatas) {
+void Vulkan::ParseMeshData(std::weak_ptr<MeshData> meshData) {
   updateMeshDataMutex.lock();
   needToUpdateMeshDatas = true;
-  meshDataQueue.emplace(meshDatas);
+  meshDataQueue.emplace(meshData);
   updateMeshDataMutex.unlock();
 }
 

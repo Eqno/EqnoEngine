@@ -2,11 +2,6 @@
     "Name": "SponzaMaterial",
     
     "Shaders": [
-        "Assets/Shaders/DefaultLit/PhysicallyBasedSDF"
-    ],
-    "Params": {
-        "Color": "1,1,1,1",
-        "Roughness": 0.3,
-        "Metallic": 0.9
-    }
+        "Assets/Shaders/Sponza"
+    ]
 }

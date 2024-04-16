@@ -18,7 +18,6 @@ class BaseModel final : public SceneObject {
   std::string _lightChannelName = "Unset";
   std::weak_ptr<LightChannel> _lightChannel;
   virtual void LoadFbxDatas(const unsigned int parserFlags);
-  virtual void ParseMeshDatas();
 
  public:
   template <typename... Args>
@@ -40,4 +39,5 @@ class BaseModel final : public SceneObject {
 
   virtual std::weak_ptr<BaseCamera> GetCamera();
   virtual std::weak_ptr<LightChannel> GetLightChannel();
+  virtual std::vector<std::shared_ptr<MeshData>>& GetMeshes();
 };
