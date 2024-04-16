@@ -11,6 +11,7 @@
 ### RHI 层
 
 - [x] 使用 Subpass 和 InputAttachment 实现 One Pass Defer，解决多光照的性能问题。
+  - [x] 在 GBuffer 中记录 pipeline id，在 Fragment Shader 中 discard 片段，实现 BlinnPhong 与 PBR 混合渲染。
 - [x] 使用 Z-PrePass 进行深度测试优化，减少 Fragment Shader 的执行次数，提高渲染性能。
 - [x] 支持为 Z-PrePass、Shadow Map、Deferred Shading 和 MSAA 在 Config 中配置开启和关闭。
 - [x] 提供了多套 Lit/Unlit 内置 Shader，其中包括 Blinn-Phong 和基于 Cook-Torrance 的 PBR。
