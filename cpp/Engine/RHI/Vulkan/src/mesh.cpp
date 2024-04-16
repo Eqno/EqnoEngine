@@ -60,3 +60,7 @@ void Mesh::ParseBufferAndDescriptor(
       device, render, textures, colorDescriptorSetLayout,
       zPrePassDescriptorSetLayout, shadowMapDescriptorSetLayout);
 }
+
+PipelineBuffer* Mesh::GetPipelineBuffer() {
+  return static_cast<Draw*>(owner)->GetPipelineBuffer();
+}

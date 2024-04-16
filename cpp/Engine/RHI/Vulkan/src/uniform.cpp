@@ -28,7 +28,7 @@ void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
   if (render.GetEnableDeferred()) {
     // Deferred shading output gBuffer
     std::vector<VkDescriptorPoolSize> poolSizes;
-    for (uint32_t i = 0; i < UniformBufferNum - 1; i++) {
+    for (uint32_t i = 0; i < UniformBufferNum; i++) {
       poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                            .descriptorCount = static_cast<uint32_t>(
                                render.GetMaxFramesInFlight())});
@@ -164,6 +164,8 @@ void Descriptor::CreateColorDescriptorSets(
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
       std::vector<VkWriteDescriptorSet> descriptorWrites;
 
+      AddDescriptorWrite(color, PipelineData,
+                         static_cast<Mesh*>(owner)->GetPipelineBuffer());
       AddDescriptorWrite(color, CameraData, cameraBuffer);
       AddDescriptorWrite(color, MaterialData, materialBuffer);
       AddDescriptorWrite(color, TransformData, &transformBuffer);

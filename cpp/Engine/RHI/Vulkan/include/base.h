@@ -19,7 +19,7 @@ class Base {
     ret->TriggerInitComponent(std::forward<Args>(args)...);
     return ret;
   }
-  void Destroy() { delete this; }
+  virtual void Destroy() { delete this; }
   void RegisterOwner(Base* owner) { this->owner = owner; }
 
   template <typename T>

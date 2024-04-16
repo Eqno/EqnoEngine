@@ -52,8 +52,8 @@ void Vulkan::InitGraphics() {
 
 void Vulkan::TriggerOnUpdate(
     std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById) {
-  auto drawIter = draws.begin();
-  while (drawIter != draws.end()) {
+  auto drawIter = drawsByShader.begin();
+  while (drawIter != drawsByShader.end()) {
     auto& meshes = drawIter->second->GetMeshes();
     auto meshIter = meshes.begin();
     while (meshIter != meshes.end()) {
@@ -76,7 +76,7 @@ void Vulkan::TriggerOnUpdate(
       // Destroy the draw if meshes empty
       drawIter->second->DestroyDrawResource(device.GetLogical(), render);
       drawIter->second->Destroy();
-      drawIter = draws.erase(drawIter);
+      drawIter = drawsByShader.erase(drawIter);
     } else {
       drawIter++;
     }
@@ -177,16 +177,19 @@ void Vulkan::RenderLoop() {
     ReleaseBufferLocks();
 
     glfwPollEvents();
-    render.DrawFrame(device, draws, appPointer->GetLightsById(), window);
+    render.DrawFrame(device, drawsByShader, appPointer->GetLightsById(),
+                     window);
     device.WaitIdle();
   }
   SetRenderLoopEnd(true);
 }
 
 void Vulkan::CleanupGraphics() {
-  for (const auto& val : draws | std::views::values) {
-    val->DestroyDrawResource(device.GetLogical(), render);
-    val->Destroy();
+  auto drawIter = drawsByShader.begin();
+  while (drawIter != drawsByShader.end()) {
+    drawIter->second->DestroyDrawResource(device.GetLogical(), render);
+    drawIter->second->Destroy();
+    drawIter = drawsByShader.begin();
   }
 
   render.DestroyRenderResources(device);
@@ -216,12 +219,12 @@ void Vulkan::ParseMeshDatas() {
             continue;
           }
 
-          if (draws.contains(shaders[0])) {
-            draws[shaders[0]]->LoadDrawResource(device, render, mesh);
+          if (drawsByShader.contains(shaders[0])) {
+            drawsByShader[shaders[0]]->LoadDrawResource(device, render, mesh);
           } else {
             int findFallbackIndex = -1;
             for (int i = 1; i < shaders.size(); i++) {
-              if (draws.contains(shaders[i])) {
+              if (drawsByShader.contains(shaders[i])) {
                 findFallbackIndex = i;
                 break;
               }
@@ -235,13 +238,29 @@ void Vulkan::ParseMeshDatas() {
 
             if (findFallbackIndex != -1 &&
                 findFallbackIndex < createFallbackIndex) {
-              draws[shaders[findFallbackIndex]]->LoadDrawResource(device,
-                                                                  render, mesh);
+              drawsByShader[shaders[findFallbackIndex]]->LoadDrawResource(
+                  device, render, mesh);
               draw->DestroyDrawResource(device.GetLogical(), render);
               draw->Destroy();
             } else if (createFallbackIndex != -1) {
               draw->LoadDrawResource(device, render, mesh);
-              draws[shaders[createFallbackIndex]] = draw;
+
+              const std::string& shaderPath = shaders[createFallbackIndex];
+              draw->SetShaderPath(shaderPath);
+              drawsByShader[shaderPath] = draw;
+
+              int pipelineId = 0;
+              while (pipelineId < MaxPipelineNum) {
+                if (drawsByPipeline.contains(pipelineId) == false) {
+                  draw->SetPipelineId(render, pipelineId);
+                  drawsByPipeline[pipelineId] = draw;
+                  break;
+                }
+                pipelineId++;
+              }
+              if (pipelineId >= MaxPipelineNum) {
+                throw std::runtime_error("pipeline num exceeds maximum!");
+              }
             } else {
               throw std::runtime_error("could not fallback to a valid shader!");
             }

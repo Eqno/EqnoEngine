@@ -12,9 +12,11 @@ void Draw::CreateDeferredDescriptorPool(const VkDevice& device,
                                         Render& render) {
   // Deferred shading process gBuffer
   std::vector<VkDescriptorPoolSize> poolSizes;
-  poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                       .descriptorCount = static_cast<uint32_t>(
-                           render.GetMaxFramesInFlight())});
+  for (int i = 0; i < 2; i++) {
+    poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                         .descriptorCount = static_cast<uint32_t>(
+                             render.GetMaxFramesInFlight())});
+  }
   for (uint32_t i = 0; i < GBUFFER_SIZE; i++) {
     poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
                          .descriptorCount = static_cast<uint32_t>(
@@ -59,7 +61,22 @@ void Draw::CreateDeferredDescriptorSets(const Device& device, Render& render) {
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     std::vector<VkWriteDescriptorSet> descriptorWrites;
 
-    VkDescriptorBufferInfo bufferInfo{
+    VkDescriptorBufferInfo pipelineBufferInfo{
+        .buffer = pipelineBuffer.GetUniformBufferByIndex(i),
+        .offset = 0,
+        .range = sizeof(PipelineData),
+    };
+    descriptorWrites.push_back({
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = deferredDescriptorSets[i],
+        .dstBinding = static_cast<uint32_t>(descriptorWrites.size()),
+        .dstArrayElement = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = &pipelineBufferInfo,
+    });
+
+    VkDescriptorBufferInfo allLightsChannelBufferInfo{
         .buffer = allLightsChannelBufferPointer->GetUniformBufferByIndex(i),
         .offset = 0,
         .range = sizeof(LightChannelData),
@@ -71,7 +88,7 @@ void Draw::CreateDeferredDescriptorSets(const Device& device, Render& render) {
         .dstArrayElement = 0,
         .descriptorCount = 1,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .pBufferInfo = &bufferInfo,
+        .pBufferInfo = &allLightsChannelBufferInfo,
     });
 
     //  Do not merge the loops because `push_back` would move the memory to
@@ -142,7 +159,7 @@ void Draw::UpdateDeferredDescriptorSets(const VkDevice& device,
     descriptorWrite = {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .dstSet = deferredDescriptorSets[i],
-        .dstBinding = 1 + GBUFFER_SIZE,
+        .dstBinding = 2 + GBUFFER_SIZE,
         .dstArrayElement = 0,
         .descriptorCount = shadowMapDepthNum,
         .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -189,6 +206,7 @@ void Draw::CreateDrawResource(const Device& device, Render& render,
           &GetBufferManager().CreateLightChannelBuffer(allLightsChannelPointer,
                                                        device, render);
     }
+    pipelineBuffer.CreateUniformBuffer(device, render, sizeof(PipelineData));
     CreateDeferredDescriptorSets(device, render);
   }
 }
@@ -206,6 +224,7 @@ void Draw::DestroyDrawResource(const VkDevice& device, const Render& render) {
   if (render.GetEnableDeferred()) {
     GetBufferManager().DestroyLightChannelBuffer(allLightsChannelPointer,
                                                  device, render);
+    pipelineBuffer.DestroyUniformBuffer(device, render);
     vkDestroyDescriptorPool(device, deferredDescriptorPool, nullptr);
   }
 
@@ -214,4 +233,17 @@ void Draw::DestroyDrawResource(const VkDevice& device, const Render& render) {
     mesh->DestroyMesh(device, render);
     mesh->Destroy();
   }
+}
+
+void Draw::Destroy() {
+  static_cast<Vulkan*>(owner)->RemoveDrawByShader(shader.GetShaderPath());
+  static_cast<Vulkan*>(owner)->RemoveDrawByPipeline(pipeline.GetPipelineId());
+  Base::Destroy();
+}
+void Draw::SetShaderPath(const std::string& shaderPath) {
+  shader.SetShaderPath(shaderPath);
+}
+void Draw::SetPipelineId(const Render& render, const int pipelineId) {
+  pipeline.SetPipelineId(pipelineId);
+  pipelineBuffer.InitUniformBuffer(render, pipelineId);
 }

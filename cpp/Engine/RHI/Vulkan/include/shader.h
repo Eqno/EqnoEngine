@@ -21,6 +21,7 @@ struct ShaderTypeInfo {
 };
 
 class Shader : public Base {
+  std::string shaderPath = "Unset";
   mutable std::vector<VkShaderModule> shaderModules;
   static const ShaderTypeInfo& GetTypeByName(const std::string& glslPath);
 
@@ -53,4 +54,9 @@ class Shader : public Base {
   [[nodiscard]] std::vector<ShaderStages> AutoCreateStagesSet(
       const VkDevice& device, const std::string& rootPath,
       const std::vector<std::string>& shaderPath) const;
+
+  const std::string& GetShaderPath() { return shaderPath; }
+  void SetShaderPath(const std::string& shaderPath) {
+    this->shaderPath = shaderPath;
+  }
 };

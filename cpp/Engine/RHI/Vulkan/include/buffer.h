@@ -10,6 +10,7 @@
 
 class Device;
 class Render;
+class Pipeline;
 
 using UniformMapped = std::vector<void*>;
 using UniformBuffers = std::vector<VkBuffer>;
@@ -74,6 +75,11 @@ class UniformBuffer : public Base {
   void CreateUniformBuffer(const Device& device, const Render& render,
                            unsigned long long bufferSize);
   void DestroyUniformBuffer(const VkDevice& device, const Render& render) const;
+};
+
+class PipelineBuffer : public UniformBuffer {
+ public:
+  void InitUniformBuffer(const Render& render, const int pipelineId);
 };
 
 class CameraBuffer : public UniformBuffer {

@@ -1,7 +1,12 @@
+#include <GLSLLibrary/Utils/Math.glsl>
 #include <GLSLLibrary/Binding/Fragment/BlinnPhongDeferredProcess.glsl>
 
 void main() {
     ProcessSubpassInput;
+    discard;
+    if (FloatEqual(fragPosition.w, pipeline.id) == false) {
+        discard;
+    }
 
     float ambientStrength = fragMaterial.x;
     float diffuseStrength = fragMaterial.y;
@@ -13,14 +18,14 @@ void main() {
     vec4 specular = vec4(0.);
 
     for (int i=0; i<lights.num; ++i) {
-        vec3 lightDir = normalize(lights.object[i].pos - fragPosition);
-        vec3 viewDir = normalize(cameraPosition - fragPosition);
+        vec3 lightDir = normalize(lights.object[i].pos - fragPosition.xyz);
+        vec3 viewDir = normalize(cameraPosition - fragPosition.xyz);
         vec4 light = lights.object[i].color * lights.object[i].intensity;
 
         ambient += light * ambientStrength;
 
         #ifdef EnableShadowMap
-        vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition, 1.);
+        vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition.xyz, 1.);
         shadowMapPos /= shadowMapPos.w;
 
         if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0  && shadowMapPos.z > -1.0 && shadowMapPos.z < 1.0) {

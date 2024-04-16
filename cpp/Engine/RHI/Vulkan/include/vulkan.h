@@ -25,7 +25,8 @@ class Vulkan final : public GraphicsInterface, public Base {
 
   BufferManager bufferManager;
   Application* appPointer = nullptr;
-  std::unordered_map<std::string, Draw*> draws;
+  std::unordered_map<std::string, Draw*> drawsByShader;
+  std::unordered_map<int, Draw*> drawsByPipeline;
 
   std::mutex updateMeshDataMutex;
   std::atomic<bool> needToUpdateMeshDatas = false;
@@ -68,6 +69,11 @@ class Vulkan final : public GraphicsInterface, public Base {
   virtual void OnUpdate() override { GraphicsInterface::OnUpdate(); }
   virtual void OnStop() override { GraphicsInterface::OnStop(); }
   virtual void OnDestroy() override { GraphicsInterface::OnDestroy(); }
+
+  void RemoveDrawByShader(const std::string& shader) {
+    drawsByShader.erase(shader);
+  }
+  void RemoveDrawByPipeline(const int id) { drawsByPipeline.erase(id); }
 
  private:
   const float oneSecondTime = 1;

@@ -29,8 +29,10 @@ class Draw : public Base {
   VkDescriptorPool deferredDescriptorPool;
   DescriptorSets deferredDescriptorSets;
 
+  PipelineBuffer pipelineBuffer;
   LightChannel* allLightsChannelPointer = nullptr;
   LightChannelBuffer* allLightsChannelBufferPointer = nullptr;
+
   void CreateDeferredDescriptorPool(const VkDevice& device, Render& render);
   void CreateDeferredDescriptorSets(const Device& device, Render& render);
 
@@ -69,11 +71,14 @@ class Draw : public Base {
                           const std::vector<std::string>& shaderPaths,
                           const std::string& zPrePassShaderPath,
                           const std::string& shadowMapShaderPath);
-
   void LoadDrawResource(const Device& device, Render& render,
                         std::weak_ptr<MeshData> data);
-
   void DestroyDrawResource(const VkDevice& device, const Render& render);
+
+  PipelineBuffer* GetPipelineBuffer() { return &pipelineBuffer; }
+  void SetShaderPath(const std::string& shaderPath);
+  void SetPipelineId(const Render& render, const int pipelineId);
+  virtual void Destroy() override;
 };
 
 #undef DEFINE_GET_PIPELINE_MEMBER

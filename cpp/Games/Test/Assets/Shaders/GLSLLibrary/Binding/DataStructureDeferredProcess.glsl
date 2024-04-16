@@ -1,3 +1,7 @@
+layout(binding = 0) uniform PipelineData {
+    int id;
+} pipeline;
+
 struct LightData {
     int id;
     uint type;
@@ -9,7 +13,7 @@ struct LightData {
     mat4 projMatrix;
 };
 
-layout(binding = 0) uniform LightsData {
+layout(binding = 1) uniform LightsData {
     uint num;
     LightData object[MaxLightNum];
 } lights;

@@ -8,7 +8,7 @@ void main() {
 
     outColor = fragColor * texture(baseColorSampler, fragTexCoord);
     outNormal = fragNormal;
-    outPosition = fragPosition;
+    outPosition = vec4(fragPosition, pipeline.id);
     outMaterial = vec4(ambientStrength, diffuseStrength, shininessStrength, specularStrength);
 
     outCameraNormal = camera.normal;

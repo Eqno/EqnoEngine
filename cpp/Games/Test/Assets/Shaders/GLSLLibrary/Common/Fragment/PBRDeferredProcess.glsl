@@ -3,7 +3,7 @@
 
 void main() {
     ProcessSubpassInput;
-    if (fragMaterial.w > 0.) {
+    if (FloatEqual(fragPosition.w, pipeline.id) == false) {
         discard;
     }
 
@@ -22,8 +22,8 @@ void main() {
         vec3 lightNormal = normalize(lights.object[i].normal);
         float lightIntensity = lights.object[i].intensity;
 
-        vec3 lightDir = normalize(lights.object[i].pos - fragPosition);
-        vec3 viewDir = normalize(cameraPosition - fragPosition);
+        vec3 lightDir = normalize(lights.object[i].pos - fragPosition.xyz);
+        vec3 viewDir = normalize(cameraPosition - fragPosition.xyz);
 
         if (lights.object[i].type == 1) {
             vec3 brdf = BRDF(fragNormal, lightNormal, viewDir, fragColor.rgb, texRoughness, vec3(0.1), texMetallic);

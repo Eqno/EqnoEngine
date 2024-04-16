@@ -42,6 +42,8 @@ using MaterialInfo =
     std::pair<std::string, std::vector<std::pair<std::string, std::string>>>;
 
 inline constexpr int MaxLightNum = 200;
+inline constexpr int MaxPipelineNum = 100;
+
 inline constexpr shaderc_optimization_level ShaderOptimizationLevel =
     shaderc_optimization_level_zero;
 inline const std::vector<std::string> ShaderSearchPaths = {
@@ -105,6 +107,10 @@ enum class LightType {
   Sun = 1,
   Point = 2,
   Spot = 3,
+};
+
+struct PipelineData {
+  alignas(4) int id;
 };
 
 struct CameraData {

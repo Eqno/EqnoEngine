@@ -16,6 +16,8 @@
     return descriptor.Get##member##DescriptorSetByIndex(index);             \
   }
 
+class Draw;
+
 class Mesh : public Base {
   std::weak_ptr<MeshData> bridge;
 
@@ -103,6 +105,7 @@ class Mesh : public Base {
     }
   }
   std::weak_ptr<MeshData> GetBridgeData() { return bridge; }
+  PipelineBuffer* GetPipelineBuffer();
 };
 
 #undef DEFINE_GET_DESCRIPTOR_SET

@@ -24,6 +24,7 @@ class Device;
 class Render;
 
 class Pipeline : public Base {
+  int pipelineId = -1;
   int shaderFallbackIndex = -1;
 
   VkDescriptorSetLayout colorDescriptorSetLayout;
@@ -81,6 +82,9 @@ class Pipeline : public Base {
                       const std::string& zPrePassShaderPath,
                       const std::string& shadowMapShaderPath);
   void DestroyPipeline(const VkDevice& device, const Render& render) const;
+
+  int GetPipelineId() { return pipelineId; }
+  void SetPipelineId(const int pipelineId) { this->pipelineId = pipelineId; }
 };
 
 #undef DEFINE_GET_PIPELINE_AND_DSL

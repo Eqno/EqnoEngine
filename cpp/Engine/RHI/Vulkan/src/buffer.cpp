@@ -157,6 +157,15 @@ void UniformBuffer::DestroyUniformBuffer(const VkDevice& device,
   }
 }
 
+void PipelineBuffer::InitUniformBuffer(const Render& render,
+                                       const int pipelineId) {
+  for (int i = 0; i < render.GetMaxFramesInFlight(); i++) {
+    PipelineData* buffer =
+        reinterpret_cast<PipelineData*>(uniformBuffersMapped[i]);
+    buffer->id = pipelineId;
+  }
+}
+
 void CameraBuffer::UpdateUniformBuffer(BaseCamera* camera,
                                        const uint32_t currentImage) {
   if (updateLock == false) {
