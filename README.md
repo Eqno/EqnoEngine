@@ -66,3 +66,6 @@ A：MemoryBarrier 是 GPU 与 GPU 之间的内存屏障，Fence 虽然可以同�
 
 #### Q：为什么会有一种说法 —— Deferred Shading 和 MSAA 不兼容？
 A：使用 MultiSample 输出 GBuffer，占用显存太大了，后面的 Process 还要取 Average，性能堪忧。
+
+#### Q：为什么在 Deferred Process Subpass 中，Draw Fullscreen Quad 多次？
+A：每一次 Draw Fullscreen Quad 都是在渲染一种着色模型，故而支持多着色模型混合渲染。
