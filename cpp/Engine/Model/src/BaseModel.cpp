@@ -48,42 +48,37 @@ std ::vector<BaseLight*> LightsEmpty;
   }
 
 void ParseFbxTextures(aiMaterial* material, std::shared_ptr<MeshData> meshData,
-                      const std::string& rootPath,
+                      const std::string& rootPath, const std::string& modelPath,
                       const std::string& dataPath) {
   if (material == nullptr) {
     return;
   }
-  // ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE,
-  //                     TextureType::BaseColor);
-  // ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS,
-  //                     TextureType::Roughness);
-  // ParseFbxTextureType(aiTextureType::aiTextureType_METALNESS,
-  //                     TextureType::Metallic);
-  // ParseFbxTextureType(aiTextureType::aiTextureType_NORMALS,
-  //                     TextureType::Normal);
-  // ParseFbxTextureType(aiTextureType::aiTextureType_AMBIENT_OCCLUSION,
-  //                     TextureType::AO);
+  const std::unordered_map<TextureType, std::string> combineInfo(
+      JsonUtils::GetCombineTextures(rootPath + modelPath));
 
-  for (int i = 0; i < AI_TEXTURE_TYPE_MAX; i++) {
-    for (int j = 0;
-         j < material->GetTextureCount(static_cast<aiTextureType>(i)); j++) {
-      aiString path;
-      if (material->GetTexture(static_cast<aiTextureType>(i), j, &path) ==
-          aiReturn_SUCCESS) {
-        std::string fullPath = rootPath + dataPath;
-        fullPath = fullPath.substr(0, fullPath.rfind('/') + 1) + path.C_Str();
+  if (combineInfo.empty()) {
+    ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE,
+                        TextureType::BaseColor);
+    ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS,
+                        TextureType::Roughness);
+    ParseFbxTextureType(aiTextureType::aiTextureType_METALNESS,
+                        TextureType::Metallic);
+    ParseFbxTextureType(aiTextureType::aiTextureType_NORMALS,
+                        TextureType::Normal);
+    ParseFbxTextureType(aiTextureType::aiTextureType_AMBIENT_OCCLUSION,
+                        TextureType::AO);
+  } else {
+    aiString path;
+    if (material->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &path) ==
+        AI_SUCCESS) {
+      std::string picPath = path.C_Str();
+      std::string texPath = rootPath + dataPath;
+      std::string prefPath = texPath.substr(0, texPath.rfind('/') + 1) +
+                             picPath.substr(0, picPath.rfind('_') + 1);
 
-        fullPath = fullPath;
-        /*{
-          int width, height, channels;
-          stbi_uc* data = stbi_load((fullPath.c_str()), &width, &height,
-                                    &channels, STBI_rgb_alpha);
-          if (!data) {
-            throw std::runtime_error("failed to load texture image!");
-          }
-          (meshData->textures)
-              .emplace_back(TextureType::AO, width, height, channels, data);
-        };*/
+      for (const auto& info : combineInfo) {
+        std::string fullPath = prefPath + info.second + ".png";
+        LoadPNGTexture(info.first, fullPath.c_str(), meshData->textures);
       }
     }
   }
@@ -167,7 +162,8 @@ void ParseFbxDatas(BaseModel* model, BaseScene* modelScene,
     EndProcessByRenderThread;
     if (texPaths.empty()) {
       // Parse Textures
-      ParseFbxTextures(matData, meshData, model->GetRoot(), dataPath);
+      ParseFbxTextures(matData, meshData, model->GetRoot(), model->GetFile(),
+                       dataPath);
     } else {
       // Parse Textures
       for (const auto& texPath : texPaths) {

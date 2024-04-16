@@ -1,3 +1,3 @@
 #version 450
 
-#include <GLSLLibrary/Common/Vertex/BlinnPhong.glsl>
+#include <GLSLLibrary/Common/Vertex/PBR.glsl>

@@ -344,3 +344,28 @@ void JsonUtils::ClearDocumentCache() {
   }
   docCache.clear();
 }
+
+std::unordered_map<TextureType, std::string> JsonUtils::GetCombineTextures(
+    const std::string& filePath) {
+  std::unordered_map<TextureType, std::string> res;
+  if (Document* doc = GetJsonDocFromFile(filePath);
+      doc->HasMember("CombineTextures")) {
+    const auto& combineInfo = (*doc)["CombineTextures"];
+    if (combineInfo.HasMember("BaseColor")) {
+      res[TextureType::BaseColor] = combineInfo["BaseColor"].GetString();
+    }
+    if (combineInfo.HasMember("Roughness")) {
+      res[TextureType::Roughness] = combineInfo["Roughness"].GetString();
+    }
+    if (combineInfo.HasMember("Metallic")) {
+      res[TextureType::Metallic] = combineInfo["Metallic"].GetString();
+    }
+    if (combineInfo.HasMember("Normal")) {
+      res[TextureType::Normal] = combineInfo["Normal"].GetString();
+    }
+    if (combineInfo.HasMember("AO")) {
+      res[TextureType::AO] = combineInfo["AO"].GetString();
+    }
+  }
+  return res;
+}

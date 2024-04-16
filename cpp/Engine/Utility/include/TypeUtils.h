@@ -41,7 +41,7 @@ using nanoseconds = std::chrono::duration<float, std::nano>;
 using MaterialInfo =
     std::pair<std::string, std::vector<std::pair<std::string, std::string>>>;
 
-inline constexpr int MaxLightNum = 10;
+inline constexpr int MaxLightNum = 2;
 inline constexpr int MaxPipelineNum = 10;
 
 inline constexpr shaderc_optimization_level ShaderOptimizationLevel =

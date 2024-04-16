@@ -70,4 +70,6 @@ void WriteStringsToFile(const std::string& filePath, const std::string& key,
 void AppendStringToFile(const std::string& filePath, const std::string& key,
                         const std::string& value);
 void ClearDocumentCache();
+std::unordered_map<TextureType, std::string> GetCombineTextures(
+    const std::string& filePath);
 }  // namespace JsonUtils
