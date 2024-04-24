@@ -18,7 +18,7 @@ std::vector<const char*> GetRequiredExtensions(const Validation& validation) {
 
 void Instance::CreateInstance(const Validation& validation) {
   if (validation.GetEnabled() && !validation.CheckLayerSupport()) {
-    throw std::runtime_error("validation layers requested, but not available!");
+    PRINT_AND_THROW_ERROR("validation layers requested, but not available!");
   }
   const auto extensions = GetRequiredExtensions(validation);
 
@@ -52,7 +52,7 @@ void Instance::CreateInstance(const Validation& validation) {
   }
 
   if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create instance!");
+    PRINT_AND_THROW_ERROR("failed to create instance!");
   }
 }
 

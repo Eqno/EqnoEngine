@@ -32,7 +32,7 @@ std::pair<VkImage, VkDeviceMemory> Texture::CreateImage(
   VkImage image;
   if (vkCreateImage(device.GetLogical(), &imageInfo, nullptr, &image) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to create image!");
+    PRINT_AND_THROW_ERROR("failed to create image!");
   }
   VkMemoryRequirements memRequirements;
   vkGetImageMemoryRequirements(device.GetLogical(), image, &memRequirements);
@@ -46,7 +46,7 @@ std::pair<VkImage, VkDeviceMemory> Texture::CreateImage(
   VkDeviceMemory imageMemory;
   if (vkAllocateMemory(device.GetLogical(), &allocInfo, nullptr,
                        &imageMemory) != VK_SUCCESS) {
-    throw std::runtime_error("failed to allocate image memory!");
+    PRINT_AND_THROW_ERROR("failed to allocate image memory!");
   }
   vkBindImageMemory(device.GetLogical(), image, imageMemory, 0);
   return {image, imageMemory};
@@ -73,7 +73,7 @@ VkImageView Texture::CreateImageView(const VkDevice& device,
   };
   VkImageView imageView;
   if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create texture image view!");
+    PRINT_AND_THROW_ERROR("failed to create texture image view!");
   }
   return imageView;
 }
@@ -108,7 +108,7 @@ VkSampler Texture::CreateSampler(const Device& device, const uint32_t mipLevels,
   VkSampler sampler;
   if (vkCreateSampler(device.GetLogical(), &samplerInfo, nullptr, &sampler) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to create texture sampler!");
+    PRINT_AND_THROW_ERROR("failed to create texture sampler!");
   }
   return sampler;
 }
@@ -217,7 +217,7 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
       static_cast<VkDeviceSize>(texWidth) * texHeight * 4;
 
   if (!pixels) {
-    throw std::runtime_error("texture pixels invalid!");
+    PRINT_AND_THROW_ERROR("texture pixels invalid!");
   }
 
   VkBuffer stagingBuffer;

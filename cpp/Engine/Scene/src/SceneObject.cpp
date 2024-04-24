@@ -86,7 +86,7 @@ void SceneObject::OnCreate() {
   if (auto ownerPtr = GetOwner().lock()) {
     scene = std::static_pointer_cast<BaseScene>(ownerPtr);
     if (!scene.lock()) {
-      throw std::runtime_error("please create camera through scene method!");
+      PRINT_AND_THROW_ERROR("please create camera through scene method!");
     }
   }
   transform.RegisterOwner(

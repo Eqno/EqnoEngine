@@ -161,7 +161,7 @@ void Device::PickPhysicalDevice(const VkInstance& instance,
   if (vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr) !=
           VK_SUCCESS ||
       deviceCount == 0) {
-    throw std::runtime_error("failed to find GPUs with Vulkan support!");
+    PRINT_AND_THROW_ERROR("failed to find GPUs with Vulkan support!");
   }
   std::vector<VkPhysicalDevice> devices(deviceCount);
   vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
@@ -175,7 +175,7 @@ void Device::PickPhysicalDevice(const VkInstance& instance,
     }
   }
   if (physicalDevice == VK_NULL_HANDLE) {
-    throw std::runtime_error("failed to find a suitable GPU!");
+    PRINT_AND_THROW_ERROR("failed to find a suitable GPU!");
   }
 }
 
@@ -221,7 +221,7 @@ void Device::CreateLogicalDevice(const VkSurfaceKHR& surface,
 
   if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to create logical logicalDevice!");
+    PRINT_AND_THROW_ERROR("failed to create logical logicalDevice!");
   }
   vkGetDeviceQueue(logicalDevice,
                    graphicsFamily.has_value() ? graphicsFamily.value() : 0, 0,

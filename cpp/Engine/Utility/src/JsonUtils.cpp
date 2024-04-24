@@ -118,7 +118,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
           parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",
           root, val["Path"].GetString(), owner);
     } else {
-      throw std::runtime_error("unknown scene object type!");
+      PRINT_AND_THROW_ERROR("unknown scene object type!");
     }
     if (val.HasMember("Transform")) {
       const auto& trans = val["Transform"];
@@ -141,7 +141,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
       }
     }
   } else {
-    throw std::runtime_error("scene object is incomplete!");
+    PRINT_AND_THROW_ERROR("scene object is incomplete!");
   }
 }
 

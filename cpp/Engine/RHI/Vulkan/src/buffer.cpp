@@ -23,7 +23,7 @@ uint32_t DataBuffer::MemoryType(const VkPhysicalDevice& physicalDevice,
       return i;
     }
   }
-  throw std::runtime_error("Failed to find suitable memory type!");
+  PRINT_AND_THROW_ERROR("Failed to find suitable memory type!");
 }
 
 void DataBuffer::CreateBuffer(const Device& device, const VkDeviceSize& size,
@@ -38,7 +38,7 @@ void DataBuffer::CreateBuffer(const Device& device, const VkDeviceSize& size,
   };
   if (vkCreateBuffer(device.GetLogical(), &bufferInfo, nullptr, &buffer) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create buffer!");
+    PRINT_AND_THROW_ERROR("Failed to create buffer!");
   }
 
   VkMemoryRequirements memRequirements;
@@ -52,7 +52,7 @@ void DataBuffer::CreateBuffer(const Device& device, const VkDeviceSize& size,
   };
   if (vkAllocateMemory(device.GetLogical(), &allocInfo, nullptr,
                        &bufferMemory) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to allocate buffer memory!");
+    PRINT_AND_THROW_ERROR("Failed to allocate buffer memory!");
   }
   vkBindBufferMemory(device.GetLogical(), buffer, bufferMemory, 0);
 }

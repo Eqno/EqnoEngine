@@ -120,7 +120,7 @@ void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
 
   if (vkCreateSwapchainKHR(device.GetLogical(), &createInfo, nullptr, &chain) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to create swap chain!");
+    PRINT_AND_THROW_ERROR("failed to create swap chain!");
   }
 
   vkGetSwapchainImagesKHR(device.GetLogical(), chain, &imageCount, nullptr);
@@ -202,7 +202,7 @@ void SwapChain::CreateColorFrameBuffers(const Device& device) {
     };
     if (vkCreateFramebuffer(device.GetLogical(), &frameBufferInfo, nullptr,
                             &colorFrameBuffers[i]) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create frame buffer!");
+      PRINT_AND_THROW_ERROR("failed to create frame buffer!");
     }
   }
 }
@@ -218,7 +218,7 @@ void SwapChain::CreateZPrePassFrameBuffer(const VkDevice& device) {
   };
   if (vkCreateFramebuffer(device, &frameBufferInfo, nullptr,
                           &zPrePassFrameBuffer) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create frame buffer!");
+    PRINT_AND_THROW_ERROR("failed to create frame buffer!");
   }
 }
 void SwapChain::CreateShadowMapFrameBuffers(const VkDevice& device) {
@@ -235,7 +235,7 @@ void SwapChain::CreateShadowMapFrameBuffers(const VkDevice& device) {
     };
     if (vkCreateFramebuffer(device, &frameBufferInfo, nullptr,
                             &shadowMapFrameBuffers[i]) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create frame buffer!");
+      PRINT_AND_THROW_ERROR("failed to create frame buffer!");
     }
   }
 }

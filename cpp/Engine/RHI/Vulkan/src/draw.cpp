@@ -36,7 +36,7 @@ void Draw::CreateDeferredDescriptorPool(const VkDevice& device,
   };
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr,
                              &deferredDescriptorPool) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create descriptor pool!");
+    PRINT_AND_THROW_ERROR("failed to create descriptor pool!");
   }
 }
 
@@ -55,7 +55,7 @@ void Draw::CreateDeferredDescriptorSets(const Device& device, Render& render) {
   deferredDescriptorSets.resize(render.GetMaxFramesInFlight());
   if (vkAllocateDescriptorSets(device.GetLogical(), &allocInfo,
                                deferredDescriptorSets.data()) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to allocate descriptor sets!");
+    PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {

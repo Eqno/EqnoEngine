@@ -253,10 +253,10 @@ void Vulkan::ParseMeshData() {
                 pipelineId++;
               }
               if (pipelineId >= MaxPipelineNum) {
-                throw std::runtime_error("pipeline num exceeds maximum!");
+                PRINT_AND_THROW_ERROR("pipeline num exceeds maximum!");
               }
             } else {
-              throw std::runtime_error("could not fallback to a valid shader!");
+              PRINT_AND_THROW_ERROR("could not fallback to a valid shader!");
             }
           }
         }

@@ -1,6 +1,7 @@
 #include "../include/BaseModel.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE2_IMPLEMENTATION
 
 #include <Engine/Camera/include/BaseCamera.h>
 #include <Engine/Model/include/BaseMaterial.h>
@@ -14,6 +15,7 @@
 #include <assimp/scene.h>
 #include <assimp/types.h>
 #include <stb_image.h>
+#include <stb_image_resize2.h>
 
 #include <assimp/Importer.hpp>
 #include <mutex>
@@ -39,14 +41,23 @@ void BaseModel::ClearTextureCache() {
                               texIter->second.height,                          \
                               texIter->second.channels, texIter->second.data); \
     } else {                                                                   \
-      int width, height, channels;                                             \
-      stbi_uc* data =                                                          \
-          stbi_load((_path), &width, &height, &channels, STBI_rgb_alpha);      \
-      if (!data) {                                                             \
-        throw std::runtime_error("failed to load texture image!");             \
+      int origWidth, origHeight, channels;                                     \
+      stbi_uc* origData = stbi_load((_path), &origWidth, &origHeight,          \
+                                    &channels, STBI_rgb_alpha);                \
+      if (origData == nullptr) {                                               \
+        PRINT_ERROR("failed to load texture image!");                          \
+      } else {                                                                 \
+        int width = 512, height = 512;                                         \
+        stbi_uc* data = (stbi_uc*)malloc(width * height * 4);                  \
+        data = stbir_resize_uint8_linear(origData, origWidth, origHeight, 0,   \
+                                         data, width, height, 0, STBIR_RGBA);  \
+        if (data == nullptr) {                                                 \
+          PRINT_AND_THROW_ERROR("failed to resize texture image!");            \
+        }                                                                      \
+        (textures).emplace_back(type, width, height, channels, data);          \
+        model->TextureCache[_path] = {type, width, height, channels, data};    \
+        stbi_image_free(origData);                                             \
       }                                                                        \
-      (textures).emplace_back(type, width, height, channels, data);            \
-      model->TextureCache[_path] = {type, width, height, channels, data};      \
     }                                                                          \
   }
 

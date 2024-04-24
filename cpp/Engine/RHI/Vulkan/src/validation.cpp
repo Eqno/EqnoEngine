@@ -78,7 +78,7 @@ bool Validation::CheckLayerSupport() const {
 void Validation::SetupMessenger(const VkInstance& instance) {
   if (enabled &&
       CreateMessengerEXT(instance, nullptr, &debugMessenger) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to set up debug messenger!");
+    PRINT_AND_THROW_ERROR("Failed to set up debug messenger!");
   }
 }
 

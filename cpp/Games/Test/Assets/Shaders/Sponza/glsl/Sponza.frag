@@ -4,6 +4,9 @@
 
 #ifdef EnableShadowMap
 layout(binding = 4) uniform sampler2DShadow shadowMapSamplers[MaxLightNum];
+layout(binding = 5) uniform sampler2D baseColorSampler;
+#else
+layout(binding = 4) uniform sampler2D baseColorSampler;
 #endif
 
 layout(location = 0) in vec3 fragPosition;
@@ -54,5 +57,6 @@ void main() {
         }
         #endif
     }
-    outColor = (ambient + diffuse + specular) * fragColor;
+    vec4 texColor = texture(baseColorSampler, fragTexCoord);
+    outColor = (ambient + diffuse + specular) * fragColor * texColor;
 }

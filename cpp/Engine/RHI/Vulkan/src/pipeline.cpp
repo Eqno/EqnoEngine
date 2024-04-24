@@ -69,7 +69,7 @@ void Pipeline::CreatePipelineLayout(const VkDevice& device,
   };
   if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
                              &pipelineLayout) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create pipeline layout!");
+    PRINT_AND_THROW_ERROR("failed to create pipeline layout!");
   }
 }
 
@@ -144,11 +144,11 @@ void Pipeline::CreateColorGraphicsPipeline(
     if (render.GetEnableDeferred()) {
       stages = shaderStages[PipelineType::DeferredOutputGBuffer];
       if (stages.size() < 2) {
-        throw std::runtime_error("missing deferred output shader stages!");
+        PRINT_AND_THROW_ERROR("missing deferred output shader stages!");
       }
     } else {
       if (stages.size() < 2) {
-        throw std::runtime_error("missing forward shader stages!");
+        PRINT_AND_THROW_ERROR("missing forward shader stages!");
       }
     }
 
@@ -190,7 +190,7 @@ void Pipeline::CreateColorGraphicsPipeline(
 
         auto& stages = shaderStages[PipelineType::DeferredProcessGBuffer];
         if (stages.size() < 2) {
-          throw std::runtime_error("missing deferred process shader stages!");
+          PRINT_AND_THROW_ERROR("missing deferred process shader stages!");
         }
 
         const VkGraphicsPipelineCreateInfo pipelineInfo{
@@ -224,7 +224,7 @@ void Pipeline::CreateColorGraphicsPipeline(
       }
     }
   }
-  throw std::runtime_error("failed to create color graphics pipeline!");
+  PRINT_AND_THROW_ERROR("failed to create color graphics pipeline!");
 }
 
 void Pipeline::CreateZPrePassGraphicsPipeline(
@@ -292,7 +292,7 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
     shader.DestroyModules(device.GetLogical());
     return;
   }
-  throw std::runtime_error("failed to create depth graphics pipeline!");
+  PRINT_AND_THROW_ERROR("failed to create depth graphics pipeline!");
 }
 
 void Pipeline::CreateShadowMapGraphicsPipeline(
@@ -360,7 +360,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
     shader.DestroyModules(device);
     return;
   }
-  throw std::runtime_error("failed to create depth graphics pipeline!");
+  PRINT_AND_THROW_ERROR("failed to create depth graphics pipeline!");
 }
 
 void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
@@ -395,7 +395,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     };
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                     &colorDescriptorSetLayout) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to create descriptor set layout!");
+      PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
     }
 
     // Deferred shading process gBuffer
@@ -437,7 +437,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                     &deferredDescriptorSetLayout) !=
         VK_SUCCESS) {
-      throw std::runtime_error("Failed to create descriptor set layout!");
+      PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
     }
   } else {
     // Forward shading
@@ -478,7 +478,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     };
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                     &colorDescriptorSetLayout) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to create descriptor set layout!");
+      PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
     }
   }
 }
@@ -498,7 +498,7 @@ void Pipeline::CreateZPrePassDescriptorSetLayout(const VkDevice& device) {
   };
   if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                   &zPrePassDescriptorSetLayout) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to create descriptor set layout!");
+    PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
   }
 }
 
@@ -518,7 +518,7 @@ void Pipeline::CreateShadowMapDescriptorSetLayout(const VkDevice& device) {
   if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                   &shadowMapDescriptorSetLayout) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create descriptor set layout!");
+    PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
   }
 }
 
