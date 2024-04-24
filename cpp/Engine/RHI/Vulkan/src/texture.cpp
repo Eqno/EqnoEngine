@@ -1,3 +1,4 @@
+#include <Engine/Model/include/BaseModel.h>
 #include <Engine/RHI/Vulkan/include/buffer.h>
 #include <Engine/RHI/Vulkan/include/device.h>
 #include <Engine/RHI/Vulkan/include/render.h>
@@ -229,10 +230,10 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
   void* imageData = nullptr;
   vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, imageSize, 0,
               &imageData);
+
   memcpy(imageData, pixels, imageSize);
   vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
-  stbi_image_free(pixels);
   auto [image, imageMemory] = CreateImage(
       device, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT,
       imageFormat, VK_IMAGE_TILING_OPTIMAL,

@@ -22,8 +22,8 @@
     "ShowRenderFrameCount": true,
     "ShowGameFrameCount": false,
 
-    "MSAAMaxSamples": 1,
-    "EnableMipmap": false,
+    "MSAAMaxSamples": 4,
+    "EnableMipmap": true,
     "EnableZPrePass": false,
     "EnableShadowMap": false,
     "EnableDeferred": false,

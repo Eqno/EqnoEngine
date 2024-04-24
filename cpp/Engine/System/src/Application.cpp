@@ -1,6 +1,7 @@
 #include "../include/Application.h"
 
 #include <Engine/Light/include/LightChannel.h>
+#include <Engine/Model/include/BaseModel.h>
 #include <Engine/RHI/Vulkan/include/vulkan.h>
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Scene/include/StartScene.h>
