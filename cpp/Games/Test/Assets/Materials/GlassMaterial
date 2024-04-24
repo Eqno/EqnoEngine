@@ -1,0 +1,7 @@
+{
+    "Name": "GlassMaterial",
+    
+    "Shaders": [
+        "Assets/Shaders/Glass"
+    ]
+}

@@ -60,6 +60,17 @@
                     }
                 }
             ]
+        }, {
+            "Name": "Sponza",
+            "Type": "BaseModel",
+            "Path": "Assets/Models/Sponza/Sponza",
+            "Camera": "MainCamera",
+            "LightChannel": "All",
+            "Transform": {
+                "Position": "0,-10,-40",
+                "Rotation": "0,0,0",
+                "Scale": "1,1,1"
+            }
         }
     ]
 }

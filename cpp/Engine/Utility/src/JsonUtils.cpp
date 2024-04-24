@@ -369,3 +369,17 @@ std::unordered_map<TextureType, std::string> JsonUtils::GetCombineTextures(
   }
   return res;
 }
+
+std::unordered_map<std::string, std::string> JsonUtils::GetMaterialMap(
+    const std::string& filePath) {
+  std::unordered_map<std::string, std::string> res;
+  if (Document* doc = GetJsonDocFromFile(filePath);
+      doc->HasMember("MaterialMap")) {
+    const auto& mapInfo = (*doc)["MaterialMap"];
+    for (auto iter = mapInfo.MemberBegin(); iter != mapInfo.MemberEnd();
+         ++iter) {
+      res[iter->name.GetString()] = iter->value.GetString();
+    }
+  }
+  return res;
+}

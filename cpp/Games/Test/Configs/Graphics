@@ -22,10 +22,10 @@
     "ShowRenderFrameCount": true,
     "ShowGameFrameCount": false,
 
-    "MSAAMaxSamples": 4,
-    "EnableMipmap": true,
-    "EnableZPrePass": true,
-    "EnableShadowMap": true,
-    "EnableDeferred": true,
+    "MSAAMaxSamples": 1,
+    "EnableMipmap": false,
+    "EnableZPrePass": false,
+    "EnableShadowMap": false,
+    "EnableDeferred": false,
     "EnableShaderDebug": false
 }
