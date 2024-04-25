@@ -50,6 +50,15 @@ uint32_t Render::GetShadowMapWidth() const {
 uint32_t Render::GetShadowMapHeight() const {
   return static_cast<Vulkan*>(owner)->GetShadowMapHeight();
 }
+float Render::GetDepthBiasConstantFactor() const {
+  return static_cast<Vulkan*>(owner)->GetDepthBiasConstantFactor();
+}
+float Render::GetDepthBiasClamp() const {
+  return static_cast<Vulkan*>(owner)->GetDepthBiasClamp();
+}
+float Render::GetDepthBiasSlopeFactor() const {
+  return static_cast<Vulkan*>(owner)->GetDepthBiasSlopeFactor();
+}
 
 void Render::CreateColorRenderPass(const Device& device) {
   // Forward rendering attachments
@@ -637,10 +646,8 @@ void Render::RecordShadowMapCommandBuffer(
       .extent = {GetShadowMapWidth(), GetShadowMapHeight()},
   };
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-  vkCmdSetDepthBias(commandBuffer,
-                    static_cast<Vulkan*>(owner)->GetDepthBiasConstantFactor(),
-                    static_cast<Vulkan*>(owner)->GetDepthBiasClamp(),
-                    static_cast<Vulkan*>(owner)->GetDepthBiasSlopeFactor());
+  vkCmdSetDepthBias(commandBuffer, GetDepthBiasConstantFactor(),
+                    GetDepthBiasClamp(), GetDepthBiasSlopeFactor());
 
   for (Draw* draw : draws | std::views::values) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,

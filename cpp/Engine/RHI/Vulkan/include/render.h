@@ -112,6 +112,9 @@ class Render : public Base {
   bool GetEnableDeferred() const;
   uint32_t GetShadowMapWidth() const;
   uint32_t GetShadowMapHeight() const;
+  float GetDepthBiasConstantFactor() const;
+  float GetDepthBiasClamp() const;
+  float GetDepthBiasSlopeFactor() const;
 
   void CopyCommandBuffer(const Device& device, const VkBuffer& srcBuffer,
                          const VkBuffer& dstBuffer,

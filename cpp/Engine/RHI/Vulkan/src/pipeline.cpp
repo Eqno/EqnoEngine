@@ -10,14 +10,18 @@
 #include "../include/uniform.h"
 #include "../include/vertex.h"
 
-#define RASTERIZER_CREATE_INFO(_cullMode, _depthBiasEnable)              \
-  constexpr VkPipelineRasterizationStateCreateInfo rasterizer {          \
-    .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO, \
-    .depthClampEnable = VK_FALSE, .rasterizerDiscardEnable = VK_FALSE,   \
-    .polygonMode = VK_POLYGON_MODE_FILL, .cullMode = _cullMode,          \
-    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,                        \
-    .depthBiasEnable = _depthBiasEnable, .depthBiasConstantFactor = 0,   \
-    .depthBiasClamp = 0, .depthBiasSlopeFactor = 0, .lineWidth = 1.0f,   \
+#define RASTERIZER_CREATE_INFO(_cullMode, _depthBiasEnable,               \
+                               _depthBiasConstantFactor, _depthBiasClamp, \
+                               _depthBiasSlopeFactor)                     \
+  VkPipelineRasterizationStateCreateInfo rasterizer {                     \
+    .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,  \
+    .depthClampEnable = VK_FALSE, .rasterizerDiscardEnable = VK_FALSE,    \
+    .polygonMode = VK_POLYGON_MODE_FILL, .cullMode = _cullMode,           \
+    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,                         \
+    .depthBiasEnable = _depthBiasEnable,                                  \
+    .depthBiasConstantFactor = _depthBiasConstantFactor,                  \
+    .depthBiasClamp = _depthBiasClamp,                                    \
+    .depthBiasSlopeFactor = _depthBiasSlopeFactor, .lineWidth = 1.0f,     \
   }
 #define MULTISAMPLE_CREATE_INFO(_msaaSamples)                              \
   const VkPipelineMultisampleStateCreateInfo multiSampling {               \
@@ -99,7 +103,7 @@ void Pipeline::CreateColorGraphicsPipeline(
       .viewportCount = 1,
       .scissorCount = 1,
   };
-  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE);
+  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE, 0, 0, 0);
   MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   if (render.GetEnableZPrePass()) {
@@ -184,7 +188,7 @@ void Pipeline::CreateColorGraphicsPipeline(
             .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
             .primitiveRestartEnable = VK_FALSE,
         };
-        RASTERIZER_CREATE_INFO(VK_CULL_MODE_FRONT_BIT, VK_FALSE);
+        RASTERIZER_CREATE_INFO(VK_CULL_MODE_FRONT_BIT, VK_FALSE, 0, 0, 0);
         COLOR_BLEND_STATE_CREATE_INFO(1, &colorBlendAttachment,
                                       VK_LOGIC_OP_COPY);
 
@@ -250,7 +254,7 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
       .viewportCount = 1,
       .scissorCount = 1,
   };
-  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE);
+  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE, 0, 0, 0);
   MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
@@ -296,8 +300,8 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
 }
 
 void Pipeline::CreateShadowMapGraphicsPipeline(
-    const VkDevice& device, const Shader& shader, const std::string& rootPath,
-    const std::string& depthShaderPath, const VkRenderPass& renderPass) {
+    const VkDevice& device, Render& render, const Shader& shader,
+    const std::string& rootPath, const std::string& depthShaderPath) {
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
   const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
@@ -318,7 +322,9 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
       .viewportCount = 1,
       .scissorCount = 1,
   };
-  RASTERIZER_CREATE_INFO(VK_CULL_MODE_NONE, VK_TRUE);
+  RASTERIZER_CREATE_INFO(
+      VK_CULL_MODE_NONE, VK_TRUE, render.GetDepthBiasConstantFactor(),
+      render.GetDepthBiasClamp(), render.GetDepthBiasSlopeFactor());
   MULTISAMPLE_CREATE_INFO(VK_SAMPLE_COUNT_1_BIT);
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
@@ -350,7 +356,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicState,
       .layout = shadowMapPipelineLayout,
-      .renderPass = renderPass,
+      .renderPass = render.GetShadowMapRenderPass(),
       .subpass = 0,
       .basePipelineHandle = VK_NULL_HANDLE,
   };
@@ -539,9 +545,8 @@ void Pipeline::CreatePipeline(const Device& device, Render& render,
   }
   if (render.GetEnableShadowMap()) {
     CreateShadowMapDescriptorSetLayout(device.GetLogical());
-    CreateShadowMapGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                                    shadowMapShaderPath,
-                                    render.GetShadowMapRenderPass());
+    CreateShadowMapGraphicsPipeline(device.GetLogical(), render, shader,
+                                    rootPath, shadowMapShaderPath);
   }
 }
 
