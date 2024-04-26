@@ -118,7 +118,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
           parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",
           root, val["Path"].GetString(), owner);
     } else {
-      throw std::runtime_error("unknown scene object type!");
+      PRINT_AND_THROW_ERROR("unknown scene object type!");
     }
     if (val.HasMember("Transform")) {
       const auto& trans = val["Transform"];
@@ -141,7 +141,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
       }
     }
   } else {
-    throw std::runtime_error("scene object is incomplete!");
+    PRINT_AND_THROW_ERROR("scene object is incomplete!");
   }
 }
 
@@ -365,6 +365,20 @@ std::unordered_map<TextureType, std::string> JsonUtils::GetCombineTextures(
     }
     if (combineInfo.HasMember("AO")) {
       res[TextureType::AO] = combineInfo["AO"].GetString();
+    }
+  }
+  return res;
+}
+
+std::unordered_map<std::string, std::string> JsonUtils::GetMaterialMap(
+    const std::string& filePath) {
+  std::unordered_map<std::string, std::string> res;
+  if (Document* doc = GetJsonDocFromFile(filePath);
+      doc->HasMember("MaterialMap")) {
+    const auto& mapInfo = (*doc)["MaterialMap"];
+    for (auto iter = mapInfo.MemberBegin(); iter != mapInfo.MemberEnd();
+         ++iter) {
+      res[iter->name.GetString()] = iter->value.GetString();
     }
   }
   return res;

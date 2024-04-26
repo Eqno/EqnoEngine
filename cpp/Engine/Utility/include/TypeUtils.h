@@ -18,6 +18,12 @@
 #include <utility>
 #include <vector>
 
+#define PRINT_AND_THROW_ERROR(errorMsg) \
+  std::cout << (errorMsg) << std::endl; \
+  throw std::runtime_error((errorMsg))
+
+#define PRINT_ERROR(errorMsg) std::cout << (errorMsg) << std::endl
+
 class Vertex;
 class BaseLight;
 class BaseCamera;

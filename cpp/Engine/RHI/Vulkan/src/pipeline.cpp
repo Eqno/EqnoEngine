@@ -10,14 +10,18 @@
 #include "../include/uniform.h"
 #include "../include/vertex.h"
 
-#define RASTERIZER_CREATE_INFO(_cullMode, _depthBiasEnable)              \
-  constexpr VkPipelineRasterizationStateCreateInfo rasterizer {          \
-    .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO, \
-    .depthClampEnable = VK_FALSE, .rasterizerDiscardEnable = VK_FALSE,   \
-    .polygonMode = VK_POLYGON_MODE_FILL, .cullMode = _cullMode,          \
-    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,                        \
-    .depthBiasEnable = _depthBiasEnable, .depthBiasConstantFactor = 0,   \
-    .depthBiasClamp = 0, .depthBiasSlopeFactor = 0, .lineWidth = 1.0f,   \
+#define RASTERIZER_CREATE_INFO(_cullMode, _depthBiasEnable,               \
+                               _depthBiasConstantFactor, _depthBiasClamp, \
+                               _depthBiasSlopeFactor)                     \
+  VkPipelineRasterizationStateCreateInfo rasterizer {                     \
+    .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,  \
+    .depthClampEnable = VK_FALSE, .rasterizerDiscardEnable = VK_FALSE,    \
+    .polygonMode = VK_POLYGON_MODE_FILL, .cullMode = _cullMode,           \
+    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,                         \
+    .depthBiasEnable = _depthBiasEnable,                                  \
+    .depthBiasConstantFactor = _depthBiasConstantFactor,                  \
+    .depthBiasClamp = _depthBiasClamp,                                    \
+    .depthBiasSlopeFactor = _depthBiasSlopeFactor, .lineWidth = 1.0f,     \
   }
 #define MULTISAMPLE_CREATE_INFO(_msaaSamples)                              \
   const VkPipelineMultisampleStateCreateInfo multiSampling {               \
@@ -69,7 +73,7 @@ void Pipeline::CreatePipelineLayout(const VkDevice& device,
   };
   if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
                              &pipelineLayout) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create pipeline layout!");
+    PRINT_AND_THROW_ERROR("failed to create pipeline layout!");
   }
 }
 
@@ -99,7 +103,7 @@ void Pipeline::CreateColorGraphicsPipeline(
       .viewportCount = 1,
       .scissorCount = 1,
   };
-  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE);
+  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE, 0, 0, 0);
   MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   if (render.GetEnableZPrePass()) {
@@ -144,11 +148,11 @@ void Pipeline::CreateColorGraphicsPipeline(
     if (render.GetEnableDeferred()) {
       stages = shaderStages[PipelineType::DeferredOutputGBuffer];
       if (stages.size() < 2) {
-        throw std::runtime_error("missing deferred output shader stages!");
+        PRINT_AND_THROW_ERROR("missing deferred output shader stages!");
       }
     } else {
       if (stages.size() < 2) {
-        throw std::runtime_error("missing forward shader stages!");
+        PRINT_AND_THROW_ERROR("missing forward shader stages!");
       }
     }
 
@@ -184,13 +188,13 @@ void Pipeline::CreateColorGraphicsPipeline(
             .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
             .primitiveRestartEnable = VK_FALSE,
         };
-        RASTERIZER_CREATE_INFO(VK_CULL_MODE_FRONT_BIT, VK_FALSE);
+        RASTERIZER_CREATE_INFO(VK_CULL_MODE_FRONT_BIT, VK_FALSE, 0, 0, 0);
         COLOR_BLEND_STATE_CREATE_INFO(1, &colorBlendAttachment,
                                       VK_LOGIC_OP_COPY);
 
         auto& stages = shaderStages[PipelineType::DeferredProcessGBuffer];
         if (stages.size() < 2) {
-          throw std::runtime_error("missing deferred process shader stages!");
+          PRINT_AND_THROW_ERROR("missing deferred process shader stages!");
         }
 
         const VkGraphicsPipelineCreateInfo pipelineInfo{
@@ -224,7 +228,7 @@ void Pipeline::CreateColorGraphicsPipeline(
       }
     }
   }
-  throw std::runtime_error("failed to create color graphics pipeline!");
+  PRINT_AND_THROW_ERROR("failed to create color graphics pipeline!");
 }
 
 void Pipeline::CreateZPrePassGraphicsPipeline(
@@ -250,7 +254,7 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
       .viewportCount = 1,
       .scissorCount = 1,
   };
-  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE);
+  RASTERIZER_CREATE_INFO(VK_CULL_MODE_BACK_BIT, VK_FALSE, 0, 0, 0);
   MULTISAMPLE_CREATE_INFO(device.GetMSAASamples());
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
@@ -292,12 +296,12 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
     shader.DestroyModules(device.GetLogical());
     return;
   }
-  throw std::runtime_error("failed to create depth graphics pipeline!");
+  PRINT_AND_THROW_ERROR("failed to create depth graphics pipeline!");
 }
 
 void Pipeline::CreateShadowMapGraphicsPipeline(
-    const VkDevice& device, const Shader& shader, const std::string& rootPath,
-    const std::string& depthShaderPath, const VkRenderPass& renderPass) {
+    const VkDevice& device, Render& render, const Shader& shader,
+    const std::string& rootPath, const std::string& depthShaderPath) {
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
   const VkPipelineVertexInputStateCreateInfo vertexInputInfo{
@@ -318,7 +322,9 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
       .viewportCount = 1,
       .scissorCount = 1,
   };
-  RASTERIZER_CREATE_INFO(VK_CULL_MODE_NONE, VK_TRUE);
+  RASTERIZER_CREATE_INFO(
+      VK_CULL_MODE_NONE, VK_TRUE, render.GetDepthBiasConstantFactor(),
+      render.GetDepthBiasClamp(), render.GetDepthBiasSlopeFactor());
   MULTISAMPLE_CREATE_INFO(VK_SAMPLE_COUNT_1_BIT);
   DEPTH_STENCIL_STATE_CREATE_INFO(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS);
   COLOR_BLEND_ATTACHMENT_STATE();
@@ -350,7 +356,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicState,
       .layout = shadowMapPipelineLayout,
-      .renderPass = renderPass,
+      .renderPass = render.GetShadowMapRenderPass(),
       .subpass = 0,
       .basePipelineHandle = VK_NULL_HANDLE,
   };
@@ -360,7 +366,7 @@ void Pipeline::CreateShadowMapGraphicsPipeline(
     shader.DestroyModules(device);
     return;
   }
-  throw std::runtime_error("failed to create depth graphics pipeline!");
+  PRINT_AND_THROW_ERROR("failed to create depth graphics pipeline!");
 }
 
 void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
@@ -395,7 +401,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     };
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                     &colorDescriptorSetLayout) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to create descriptor set layout!");
+      PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
     }
 
     // Deferred shading process gBuffer
@@ -437,7 +443,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                     &deferredDescriptorSetLayout) !=
         VK_SUCCESS) {
-      throw std::runtime_error("Failed to create descriptor set layout!");
+      PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
     }
   } else {
     // Forward shading
@@ -478,7 +484,7 @@ void Pipeline::CreateColorDescriptorSetLayout(const VkDevice& device,
     };
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                     &colorDescriptorSetLayout) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to create descriptor set layout!");
+      PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
     }
   }
 }
@@ -498,7 +504,7 @@ void Pipeline::CreateZPrePassDescriptorSetLayout(const VkDevice& device) {
   };
   if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                   &zPrePassDescriptorSetLayout) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to create descriptor set layout!");
+    PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
   }
 }
 
@@ -518,7 +524,7 @@ void Pipeline::CreateShadowMapDescriptorSetLayout(const VkDevice& device) {
   if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                   &shadowMapDescriptorSetLayout) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create descriptor set layout!");
+    PRINT_AND_THROW_ERROR("Failed to create descriptor set layout!");
   }
 }
 
@@ -539,9 +545,8 @@ void Pipeline::CreatePipeline(const Device& device, Render& render,
   }
   if (render.GetEnableShadowMap()) {
     CreateShadowMapDescriptorSetLayout(device.GetLogical());
-    CreateShadowMapGraphicsPipeline(device.GetLogical(), shader, rootPath,
-                                    shadowMapShaderPath,
-                                    render.GetShadowMapRenderPass());
+    CreateShadowMapGraphicsPipeline(device.GetLogical(), render, shader,
+                                    rootPath, shadowMapShaderPath);
   }
 }
 

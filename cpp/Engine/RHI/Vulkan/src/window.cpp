@@ -1,6 +1,7 @@
 #include "../include/window.h"
 
 #include <Engine/System/include/BaseInput.h>
+#include <Engine/Utility/include/TypeUtils.h>
 
 #include <stdexcept>
 
@@ -44,7 +45,7 @@ void Window::CreateWindow(const int width, const int height,
 void Window::CreateSurface(const VkInstance& instance) {
   if (glfwCreateWindowSurface(instance, window, nullptr, &surface) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to create window surface!");
+    PRINT_AND_THROW_ERROR("Failed to create window surface!");
   }
 }
 

@@ -72,4 +72,6 @@ void AppendStringToFile(const std::string& filePath, const std::string& key,
 void ClearDocumentCache();
 std::unordered_map<TextureType, std::string> GetCombineTextures(
     const std::string& filePath);
+std::unordered_map<std::string, std::string> GetMaterialMap(
+    const std::string& filePath);
 }  // namespace JsonUtils

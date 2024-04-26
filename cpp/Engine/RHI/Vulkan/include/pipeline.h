@@ -56,11 +56,10 @@ class Pipeline : public Base {
                                       const std::string& rootPath,
                                       const std::string& depthShaderPath,
                                       const VkRenderPass& renderPass);
-  void CreateShadowMapGraphicsPipeline(const VkDevice& device,
+  void CreateShadowMapGraphicsPipeline(const VkDevice& device, Render& render,
                                        const Shader& shader,
                                        const std::string& rootPath,
-                                       const std::string& depthShaderPath,
-                                       const VkRenderPass& renderPass);
+                                       const std::string& depthShaderPath);
 
   void CreateColorDescriptorSetLayout(const VkDevice& device, Render& render,
                                       int texCount);

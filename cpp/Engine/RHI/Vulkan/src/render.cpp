@@ -50,6 +50,15 @@ uint32_t Render::GetShadowMapWidth() const {
 uint32_t Render::GetShadowMapHeight() const {
   return static_cast<Vulkan*>(owner)->GetShadowMapHeight();
 }
+float Render::GetDepthBiasConstantFactor() const {
+  return static_cast<Vulkan*>(owner)->GetDepthBiasConstantFactor();
+}
+float Render::GetDepthBiasClamp() const {
+  return static_cast<Vulkan*>(owner)->GetDepthBiasClamp();
+}
+float Render::GetDepthBiasSlopeFactor() const {
+  return static_cast<Vulkan*>(owner)->GetDepthBiasSlopeFactor();
+}
 
 void Render::CreateColorRenderPass(const Device& device) {
   // Forward rendering attachments
@@ -240,7 +249,7 @@ void Render::CreateColorRenderPass(const Device& device) {
   };
   if (vkCreateRenderPass(device.GetLogical(), &renderPassInfo, nullptr,
                          &colorRenderPass) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create color render pass!");
+    PRINT_AND_THROW_ERROR("failed to create color render pass!");
   }
 }
 
@@ -305,7 +314,7 @@ void Render::CreateZPrePassRenderPass(const Device& device) {
   };
   if (vkCreateRenderPass(device.GetLogical(), &renderPassInfo, nullptr,
                          &zPrePassRenderPass) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create z pre pass render pass!");
+    PRINT_AND_THROW_ERROR("failed to create z pre pass render pass!");
   }
 }
 
@@ -368,7 +377,7 @@ void Render::CreateShadowMapRenderPass(const Device& device) {
   };
   if (vkCreateRenderPass(device.GetLogical(), &renderPassInfo, nullptr,
                          &shadowMapRenderPass) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create shadow map render pass!");
+    PRINT_AND_THROW_ERROR("failed to create shadow map render pass!");
   }
 }
 
@@ -397,7 +406,7 @@ void Render::CreateCommandPool(const Device& device,
 
   if (vkCreateCommandPool(device.GetLogical(), &poolInfo, nullptr,
                           &commandPool) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create graphics command pool!");
+    PRINT_AND_THROW_ERROR("failed to create graphics command pool!");
   }
 }
 
@@ -414,7 +423,7 @@ void Render::CreateCommandBuffers(
 
   if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to allocate command buffers!");
+    PRINT_AND_THROW_ERROR("failed to allocate command buffers!");
   }
 }
 
@@ -523,7 +532,7 @@ void Render::RecordZPrePassCommandBuffer(
   };
   if (vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to begin recording command buffer!");
+    PRINT_AND_THROW_ERROR("failed to begin recording command buffer!");
   }
   constexpr std::array clearValues{
       VkClearValue{.depthStencil = {1.0f, 0}},
@@ -586,7 +595,7 @@ void Render::RecordZPrePassCommandBuffer(
   }
 
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-    throw std::runtime_error("failed to record command buffer!");
+    PRINT_AND_THROW_ERROR("failed to record command buffer!");
   }
 }
 
@@ -602,7 +611,7 @@ void Render::RecordShadowMapCommandBuffer(
       .pInheritanceInfo = nullptr,
   };
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-    throw std::runtime_error("failed to begin recording command buffer!");
+    PRINT_AND_THROW_ERROR("failed to begin recording command buffer!");
   }
 
   constexpr std::array clearValues{
@@ -637,10 +646,8 @@ void Render::RecordShadowMapCommandBuffer(
       .extent = {GetShadowMapWidth(), GetShadowMapHeight()},
   };
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-  vkCmdSetDepthBias(commandBuffer,
-                    static_cast<Vulkan*>(owner)->GetDepthBiasConstantFactor(),
-                    static_cast<Vulkan*>(owner)->GetDepthBiasClamp(),
-                    static_cast<Vulkan*>(owner)->GetDepthBiasSlopeFactor());
+  vkCmdSetDepthBias(commandBuffer, GetDepthBiasConstantFactor(),
+                    GetDepthBiasClamp(), GetDepthBiasSlopeFactor());
 
   for (Draw* draw : draws | std::views::values) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -668,7 +675,7 @@ void Render::RecordShadowMapCommandBuffer(
   vkCmdEndRenderPass(commandBuffer);
 
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-    throw std::runtime_error("failed to record command buffer!");
+    PRINT_AND_THROW_ERROR("failed to record command buffer!");
   }
 }
 
@@ -683,7 +690,7 @@ void Render::RecordColorCommandBuffer(
       .pInheritanceInfo = nullptr,
   };
   if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-    throw std::runtime_error("failed to begin recording command buffer!");
+    PRINT_AND_THROW_ERROR("failed to begin recording command buffer!");
   }
 
   if (GetEnableShadowMap()) {
@@ -772,7 +779,7 @@ void Render::RecordColorCommandBuffer(
   }
   vkCmdEndRenderPass(commandBuffer);
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-    throw std::runtime_error("failed to record command buffer!");
+    PRINT_AND_THROW_ERROR("failed to record command buffer!");
   }
 }
 
@@ -798,7 +805,7 @@ void Render::SubmitCommandBuffer(const Device& device,
   };
   if (vkQueueSubmit(device.GetGraphicsQueue(), 1, &submitInfo, waitFence) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to submit command buffer!");
+    PRINT_AND_THROW_ERROR("failed to submit command buffer!");
   }
 }
 
@@ -859,7 +866,7 @@ void Render::DrawFrame(
     return;
   }
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-    throw std::runtime_error("failed to acquire swap chain image!");
+    PRINT_AND_THROW_ERROR("failed to acquire swap chain image!");
   }
   ResetFences(device, lightsById);
 
@@ -924,7 +931,7 @@ void Render::DrawFrame(
     window.SetFrameBufferResized(false);
     swapChain.RecreateSwapChain(device, window, draws);
   } else if (result != VK_SUCCESS) {
-    throw std::runtime_error("failed to present swap chain image!");
+    PRINT_AND_THROW_ERROR("failed to present swap chain image!");
   }
   currentFrame = (currentFrame + 1) % maxFramesInFlight;
 }
@@ -971,7 +978,7 @@ void Render::CreateSyncObjects(const VkDevice& device) {
         (GetEnableZPrePass() &&
          vkCreateFence(device, &fenceInfo, nullptr,
                        &zPrePassInFlightFences[i]) != VK_SUCCESS)) {
-      throw std::runtime_error("failed to create render semaphores or fences!");
+      PRINT_AND_THROW_ERROR("failed to create render semaphores or fences!");
     }
 
     if (GetEnableShadowMap()) {

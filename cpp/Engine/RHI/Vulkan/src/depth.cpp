@@ -53,7 +53,7 @@ VkFormat Depth::FindSupportedFormat(const VkPhysicalDevice& device,
       return format;
     }
   }
-  throw std::runtime_error("failed to find supported format!");
+  PRINT_AND_THROW_ERROR("failed to find supported format!");
 }
 
 VkFormat Depth::FindDepthFormat(const VkPhysicalDevice& device) {

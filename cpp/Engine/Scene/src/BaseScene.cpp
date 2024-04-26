@@ -92,7 +92,7 @@ int BaseScene::GetAvailableLightId() {
       return i;
     }
   }
-  throw std::runtime_error("light id exceed max num!");
+  PRINT_AND_THROW_ERROR("light id exceed max num!");
 }
 int BaseScene::RegisterLight(const std::string& name,
                              std::shared_ptr<BaseLight> light) {

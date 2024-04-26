@@ -46,7 +46,7 @@ void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
     };
     if (vkCreateDescriptorPool(device, &poolInfo, nullptr,
                                &colorDescriptorPool) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create descriptor pool!");
+      PRINT_AND_THROW_ERROR("failed to create descriptor pool!");
     }
 
     // Deferred shading process gBuffer -> draw.cpp
@@ -77,7 +77,7 @@ void Descriptor::CreateColorDescriptorPool(const VkDevice& device,
     };
     if (vkCreateDescriptorPool(device, &poolInfo, nullptr,
                                &colorDescriptorPool) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create descriptor pool!");
+      PRINT_AND_THROW_ERROR("failed to create descriptor pool!");
     }
   }
 }
@@ -96,7 +96,7 @@ void Descriptor::CreateZPrePassDescriptorPool(const VkDevice& device,
   };
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr,
                              &zPrePassDescriptorPool) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create descriptor pool!");
+    PRINT_AND_THROW_ERROR("failed to create descriptor pool!");
   }
 }
 
@@ -115,7 +115,7 @@ void Descriptor::CreateShadowMapDescriptorPool(
   };
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) !=
       VK_SUCCESS) {
-    throw std::runtime_error("failed to create descriptor pool!");
+    PRINT_AND_THROW_ERROR("failed to create descriptor pool!");
   }
 }
 
@@ -158,7 +158,7 @@ void Descriptor::CreateColorDescriptorSets(
     colorDescriptorSets.resize(render.GetMaxFramesInFlight());
     if (vkAllocateDescriptorSets(device, &allocInfo,
                                  colorDescriptorSets.data()) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to allocate descriptor sets!");
+      PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
     }
 
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
@@ -210,7 +210,7 @@ void Descriptor::CreateColorDescriptorSets(
     colorDescriptorSets.resize(render.GetMaxFramesInFlight());
     if (vkAllocateDescriptorSets(device, &allocInfo,
                                  colorDescriptorSets.data()) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to allocate descriptor sets!");
+      PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
     }
 
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
@@ -288,7 +288,7 @@ void Descriptor::CreateZPrePassDescriptorSets(
   zPrePassDescriptorSets.resize(render.GetMaxFramesInFlight());
   if (vkAllocateDescriptorSets(device, &allocInfo,
                                zPrePassDescriptorSets.data()) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to allocate descriptor sets!");
+    PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
@@ -319,7 +319,7 @@ void Descriptor::CreateShadowMapDescriptorSets(
   descriptorSets.resize(render.GetMaxFramesInFlight());
   if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) !=
       VK_SUCCESS) {
-    throw std::runtime_error("Failed to allocate descriptor sets!");
+    PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {

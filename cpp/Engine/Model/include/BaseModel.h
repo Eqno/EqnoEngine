@@ -25,6 +25,9 @@ class BaseModel final : public SceneObject {
       : graphics(graphics), SceneObject(std::forward<Args>(args)...) {}
   ~BaseModel() override = default;
 
+  std::unordered_map<std::string, TextureData> TextureCache;
+  void ClearTextureCache();
+
   virtual void OnCreate() override;
   virtual void OnUpdate() override;
   virtual void OnDestroy() override;

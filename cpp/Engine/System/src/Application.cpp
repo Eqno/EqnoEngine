@@ -1,6 +1,7 @@
 #include "../include/Application.h"
 
 #include <Engine/Light/include/LightChannel.h>
+#include <Engine/Model/include/BaseModel.h>
 #include <Engine/RHI/Vulkan/include/vulkan.h>
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Scene/include/StartScene.h>
@@ -15,9 +16,11 @@ void Application::CreateGraphics() {
       rhiType == "Vulkan") {
     graphics = Create<Vulkan>(GetRoot(), apiPath);
   } else if (rhiType == "DirectX") {
-    throw std::runtime_error("DirectX not supported now!");
+    PRINT_AND_THROW_ERROR("DirectX not supported now!");
   } else {
-    throw std::runtime_error(rhiType + " not supported now!");
+    std::string errorMsg = rhiType + " not supported now!";
+    std::cout << errorMsg << std::endl;
+    throw std::runtime_error(errorMsg);
   }
 }
 

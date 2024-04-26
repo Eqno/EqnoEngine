@@ -104,7 +104,7 @@ VkShaderModule Shader::CreateModule(const UIntegers& code,
       VK_SUCCESS) {
     return shaderModule;
   }
-  throw std::runtime_error("failed to create shader module!");
+  PRINT_AND_THROW_ERROR("failed to create shader module!");
 }
 
 ShaderStages Shader::AutoCreateStages(const VkDevice& device,
