@@ -129,7 +129,7 @@ class SwapChain : public Base {
   void CreateRenderTarget(const std::string& format, const std::string& space,
                           const Device& device, const Window& window);
   void CleanupRenderTarget(const Device& device) const;
-  void DestroyColorResource(const Device& device) const;
+  void DestroyColorResource(const Device& device);
   void DestroyDepthResource(const VkDevice& device) {
     zPrePassDepth.DestroyDepthResource(device);
     if (GetEnableShadowMap()) {

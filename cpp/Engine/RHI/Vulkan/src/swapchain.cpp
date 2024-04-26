@@ -140,7 +140,7 @@ void SwapChain::CreateImageViews(const VkDevice& device) {
   }
 }
 
-void SwapChain::DestroyColorResource(const Device& device) const {
+void SwapChain::DestroyColorResource(const Device& device) {
   if (device.GetMSAASamples() != VK_SAMPLE_COUNT_1_BIT) {
     vkDestroyImageView(device.GetLogical(), colorImageView, nullptr);
     vkDestroyImage(device.GetLogical(), colorImage, nullptr);
@@ -150,12 +150,15 @@ void SwapChain::DestroyColorResource(const Device& device) const {
     for (const auto& imageView : gBufferImageViews) {
       vkDestroyImageView(device.GetLogical(), imageView, nullptr);
     }
+    gBufferImageViews.clear();
     for (const auto& image : gBufferImages) {
       vkDestroyImage(device.GetLogical(), image, nullptr);
     }
+    gBufferImages.clear();
     for (const auto& imageMemory : gBufferImageMemories) {
       vkFreeMemory(device.GetLogical(), imageMemory, nullptr);
     }
+    gBufferImageMemories.clear();
   }
 }
 
