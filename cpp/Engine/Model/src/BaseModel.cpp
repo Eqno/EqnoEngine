@@ -47,7 +47,7 @@ void BaseModel::ClearTextureCache() {
       if (origData == nullptr) {                                               \
         PRINT_ERROR("failed to load texture image!");                          \
       } else {                                                                 \
-        int width = 512, height = 512;                                         \
+        int width = origWidth / 4, height = origHeight / 4;                    \
         stbi_uc* data = (stbi_uc*)malloc(width * height * 4);                  \
         data = stbir_resize_uint8_linear(origData, origWidth, origHeight, 0,   \
                                          data, width, height, 0, STBIR_RGBA);  \

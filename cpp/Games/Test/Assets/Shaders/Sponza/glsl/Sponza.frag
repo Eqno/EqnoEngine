@@ -59,4 +59,5 @@ void main() {
     }
     vec4 texColor = texture(baseColorSampler, fragTexCoord);
     outColor = (ambient + diffuse + specular) * fragColor * texColor;
+    outColor = pow(outColor, vec4(.45, .45, .45, 1.));
 }
