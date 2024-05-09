@@ -18,6 +18,7 @@ class Application final : public BaseObject {
   std::shared_ptr<GraphicsInterface> graphics;
 
   void CreateGraphics();
+  void CreateEditor();
   void CreateLauncherScene();
 
   void CreateWindow() const;

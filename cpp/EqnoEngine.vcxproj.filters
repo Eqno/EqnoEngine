@@ -154,6 +154,24 @@
     <Filter Include="Engine\RHI\Vulkan\deps\gtest\include">
       <UniqueIdentifier>{861761ca-4561-4911-926e-93ea491b8c0d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Editor">
+      <UniqueIdentifier>{21f5ebdc-f63c-4736-9c4d-73bbcbc4ec89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Editor\include">
+      <UniqueIdentifier>{c0bedb49-43cb-4fd4-bd10-4f856c58340b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Editor\src">
+      <UniqueIdentifier>{8adadf33-cbeb-4319-a83d-1e4169628d2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Editor\deps">
+      <UniqueIdentifier>{29789262-b920-4992-8abe-1e35df509170}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Editor\deps\imgui">
+      <UniqueIdentifier>{1ce52d8e-282e-4731-bc64-0673bbbbb4f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Editor\deps\imgui\backends">
+      <UniqueIdentifier>{bcbd4820-cc75-4a43-90c9-ec0ec1aaefbc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\RHI\Vulkan\include\shader.h">
@@ -540,6 +558,33 @@
     <ClInclude Include="Engine\System\include\BaseResource.h">
       <Filter>Engine\System\include</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Editor\include\BaseEditor.h">
+      <Filter>Engine\Editor\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\imgui.h">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\imgui_internal.h">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\imstb_rectpack.h">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\imstb_textedit.h">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\imstb_truetype.h">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\imconfig.h">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\backends\imgui_impl_vulkan.h">
+      <Filter>Engine\Editor\deps\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Editor\deps\imgui\backends\imgui_impl_glfw.h">
+      <Filter>Engine\Editor\deps\imgui\backends</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\RHI\Vulkan\src\pipeline.cpp">
@@ -661,6 +706,30 @@
     </ClCompile>
     <ClCompile Include="Engine\System\src\BaseResource.cpp">
       <Filter>Engine\System\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\src\BaseEditor.cpp">
+      <Filter>Engine\Editor\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\deps\imgui\imgui_demo.cpp">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\deps\imgui\imgui_draw.cpp">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\deps\imgui\imgui_tables.cpp">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\deps\imgui\imgui_widgets.cpp">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\deps\imgui\imgui.cpp">
+      <Filter>Engine\Editor\deps\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\deps\imgui\backends\imgui_impl_vulkan.cpp">
+      <Filter>Engine\Editor\deps\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Editor\deps\imgui\backends\imgui_impl_glfw.cpp">
+      <Filter>Engine\Editor\deps\imgui\backends</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

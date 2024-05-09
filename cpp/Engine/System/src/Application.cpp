@@ -1,5 +1,6 @@
 #include "../include/Application.h"
 
+#include <Engine/Editor/include/BaseEditor.h>
 #include <Engine/Light/include/LightChannel.h>
 #include <Engine/Model/include/BaseModel.h>
 #include <Engine/RHI/Vulkan/include/vulkan.h>
@@ -23,6 +24,8 @@ void Application::CreateGraphics() {
     throw std::runtime_error(errorMsg);
   }
 }
+
+void Application::CreateEditor() { LoadImgui(); }
 
 void Application::CreateLauncherScene() {
   const std::string scenePath = JSON_CONFIG(String, "LauncherScene");
@@ -80,6 +83,7 @@ void Application::TriggerOnUpdate() {
 void Application::OnCreate() {
   BaseObject::OnCreate();
   CreateGraphics();
+  CreateEditor();
 }
 void Application::OnStart() { BaseObject::OnStart(); }
 void Application::OnUpdate() { BaseObject::OnUpdate(); }
