@@ -69,8 +69,14 @@ void WriteStringToFile(const std::string& filePath, const std::string& key,
                        const std::string& value);
 void WriteStringsToFile(const std::string& filePath, const std::string& key,
                         const std::vector<std::string>& values);
+void WriteBoolToFile(const std::string& filePath, const std::string& key,
+                     bool value);
 void AppendStringToFile(const std::string& filePath, const std::string& key,
                         const std::string& value);
+void ModifyBoolOfFile(const std::string& filePath, const std::string& key,
+                      bool value);
+void ModifyIntOfFile(const std::string& filePath, const std::string& key,
+                     int value);
 void ClearDocumentCache();
 std::unordered_map<TextureType, std::string> GetCombineTextures(
     const std::string& filePath);

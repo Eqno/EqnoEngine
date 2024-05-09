@@ -307,6 +307,33 @@ void JsonUtils::WriteStringsToFile(const std::string& filePath,
   FileUtils::WriteFileAsString(filePath, strBuf.GetString());
 }
 
+void JsonUtils::WriteBoolToFile(const std::string& filePath,
+                                const std::string& key, bool value) {
+  auto* doc = new Document;
+  docCache[filePath] = doc;
+
+  doc->SetObject();
+  auto& allocator = doc->GetAllocator();
+
+  Value strKey(kStringType);
+  strKey.SetString(key.c_str(), static_cast<unsigned int>(key.size()),
+                   allocator);
+
+  Value strValue(kStringType);
+  strValue.SetBool(value);
+
+  if (strKey.IsNull() || strValue.IsNull()) {
+    return;
+  }
+  doc->AddMember(strKey, strValue, allocator);
+
+  StringBuffer strBuf;
+  Writer writer(strBuf);
+
+  doc->Accept(writer);
+  FileUtils::WriteFileAsString(filePath + FILESUFFIX, strBuf.GetString());
+}
+
 void JsonUtils::AppendStringToFile(const std::string& filePath,
                                    const std::string& key,
                                    const std::string& value) {
@@ -335,7 +362,35 @@ void JsonUtils::AppendStringToFile(const std::string& filePath,
   Writer writer(strBuf);
 
   doc->Accept(writer);
-  FileUtils::WriteFileAsString(filePath, strBuf.GetString());
+  FileUtils::WriteFileAsString(filePath + FILESUFFIX, strBuf.GetString());
+}
+
+void JsonUtils::ModifyBoolOfFile(const std::string& filePath,
+                                 const std::string& key, bool value) {
+  if (Document* doc = GetJsonDocFromFile(filePath);
+      doc->HasMember(key.c_str())) {
+    (*doc)[key.c_str()].SetBool(value);
+
+    StringBuffer strBuf;
+    Writer writer(strBuf);
+
+    doc->Accept(writer);
+    FileUtils::WriteFileAsString(filePath + FILESUFFIX, strBuf.GetString());
+  }
+}
+
+void JsonUtils::ModifyIntOfFile(const std::string& filePath,
+                                const std::string& key, int value) {
+  if (Document* doc = GetJsonDocFromFile(filePath);
+      doc->HasMember(key.c_str())) {
+    (*doc)[key.c_str()].SetInt(value);
+
+    StringBuffer strBuf;
+    Writer writer(strBuf);
+
+    doc->Accept(writer);
+    FileUtils::WriteFileAsString(filePath + FILESUFFIX, strBuf.GetString());
+  }
 }
 
 void JsonUtils::ClearDocumentCache() {

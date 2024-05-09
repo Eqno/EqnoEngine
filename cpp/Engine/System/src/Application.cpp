@@ -165,3 +165,52 @@ uint32_t Application::GetRenderFrameCount() const {
 uint32_t Application::GetGameFrameCount() const {
   return graphics->GetGameFrameCount();
 }
+
+int Application::GetMSAASamples() const {
+  if (graphics) {
+    return graphics->GetMSAASamples();
+  }
+  std::string graphicsConfigPath = JSON_CONFIG(String, "GraphicsConfig");
+  return JsonUtils::ReadIntFromFile(GetRoot() + graphicsConfigPath,
+                                    "MSAAMaxSamples");
+}
+bool Application::GetEnableMipmap() const {
+  if (graphics) {
+    return graphics->GetEnableMipmap();
+  }
+  std::string graphicsConfigPath = JSON_CONFIG(String, "GraphicsConfig");
+  return JsonUtils::ReadBoolFromFile(GetRoot() + graphicsConfigPath,
+                                     "EnableMipmap");
+}
+bool Application::GetEnableZPrePass() const {
+  if (graphics) {
+    return graphics->GetEnableZPrePass();
+  }
+  std::string graphicsConfigPath = JSON_CONFIG(String, "GraphicsConfig");
+  return JsonUtils::ReadBoolFromFile(GetRoot() + graphicsConfigPath,
+                                     "EnableZPrePass");
+}
+bool Application::GetEnableShadowMap() const {
+  if (graphics) {
+    return graphics->GetEnableShadowMap();
+  }
+  std::string graphicsConfigPath = JSON_CONFIG(String, "GraphicsConfig");
+  return JsonUtils::ReadBoolFromFile(GetRoot() + graphicsConfigPath,
+                                     "EnableShadowMap");
+}
+bool Application::GetEnableDeferred() const {
+  if (graphics) {
+    return graphics->GetEnableDeferred();
+  }
+  std::string graphicsConfigPath = JSON_CONFIG(String, "GraphicsConfig");
+  return JsonUtils::ReadBoolFromFile(GetRoot() + graphicsConfigPath,
+                                     "EnableDeferred");
+}
+bool Application::GetEnableShaderDebug() const {
+  if (graphics) {
+    return graphics->GetEnableShaderDebug();
+  }
+  std::string graphicsConfigPath = JSON_CONFIG(String, "GraphicsConfig");
+  return JsonUtils::ReadBoolFromFile(GetRoot() + graphicsConfigPath,
+                                     "EnableShaderDebug");
+}

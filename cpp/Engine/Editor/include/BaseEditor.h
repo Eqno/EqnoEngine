@@ -1,5 +1,6 @@
 #pragma once
 #pragma once
+#pragma once
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
@@ -30,7 +31,7 @@ class BaseEditor : public BaseObject {
   float graphicsWindowHeight = 720;
   std::string windowTitle = "Unset";
 
-  bool enableMSAA = false;
+  int msaaSamples = 0;
   bool enableMipmap = false;
   bool enableZPrePass = false;
   bool enableShadowMap = false;
@@ -41,6 +42,7 @@ class BaseEditor : public BaseObject {
   bool showObjectInspector = false;
 
   void EditorDrawMenuBar();
+  void EditorDrawRestartTip();
   void EditorDrawFrameCount();
   void EditorDrawLaunchCommand();
   void EditorDrawFileExplorer();

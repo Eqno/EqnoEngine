@@ -19,6 +19,7 @@ class Application final : public BaseObject {
   std::shared_ptr<BaseEditor> editor;
   std::shared_ptr<GraphicsInterface> graphics;
 
+  bool graphicsSettingsModified = false;
   bool sceneLaunched = false;
   void CreateGraphics();
   void CreateWindow() const;
@@ -59,6 +60,12 @@ class Application final : public BaseObject {
   int GetGraphicsWindowHeight();
 
   bool GetSceneLaunched() const { return sceneLaunched; };
+  virtual bool GetGraphicsSettingsModified() const {
+    return graphicsSettingsModified;
+  }
+  virtual void SetGraphicsSettingsModified(bool modified) {
+    graphicsSettingsModified = modified;
+  }
 
  private:
   bool EnableEditor = false;
@@ -72,4 +79,11 @@ class Application final : public BaseObject {
 
   uint32_t GetRenderFrameCount() const;
   uint32_t GetGameFrameCount() const;
+
+  int GetMSAASamples() const;
+  bool GetEnableMipmap() const;
+  bool GetEnableZPrePass() const;
+  bool GetEnableShadowMap() const;
+  bool GetEnableDeferred() const;
+  bool GetEnableShaderDebug() const;
 };

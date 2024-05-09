@@ -431,6 +431,12 @@ void BaseEditor::InitConfig() {
   } else {
     windowTitle = JSON_CONFIG(String, "EditorName");
   }
+
+  msaaSamples = appPointer->GetMSAASamples();
+  enableMipmap = appPointer->GetEnableMipmap();
+  enableZPrePass = appPointer->GetEnableZPrePass();
+  enableShadowMap = appPointer->GetEnableShadowMap();
+  enableDeferredRendering = appPointer->GetEnableDeferred();
 }
 
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -551,6 +557,7 @@ void BaseEditor::UpdateImgui() {
   ImGui::NewFrame();
 
   EditorDrawMenuBar();
+  EditorDrawRestartTip();
   EditorDrawFrameCount();
   EditorDrawLaunchCommand();
   EditorDrawFileExplorer();
@@ -613,11 +620,46 @@ void BaseEditor::EditorDrawMenuBar() {
     float offset = (ImGui::GetWindowWidth() - menuWidth) * 0.5f;
     ImGui::SetCursorPosX(offset);
     if (ImGui::BeginMenu("Graphics Settings")) {
-      ImGui::Checkbox("Enable MSAA", &enableMSAA);
-      ImGui::Checkbox("Enable Mipmap", &enableMipmap);
-      ImGui::Checkbox("Enable Z-PrePass", &enableZPrePass);
-      ImGui::Checkbox("Enable ShadowMap", &enableShadowMap);
-      ImGui::Checkbox("Enable Deferred", &enableDeferredRendering);
+      ImGui::PushItemWidth(ImGui::CalcTextSize("0").x * 3);
+      if (ImGui::InputInt("MSAA Samples", &msaaSamples, 0, 0,
+                          ImGuiInputTextFlags_EnterReturnsTrue)) {
+        if (msaaSamples < 1) msaaSamples = 1;
+        if (msaaSamples > 64) msaaSamples = 64;
+        std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+            appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+        JsonUtils::ModifyIntOfFile(appPointer->GetRoot() + graphicsConfigPath,
+                                   "MSAAMaxSamples", msaaSamples);
+        appPointer->SetGraphicsSettingsModified(true);
+      }
+      ImGui::PopItemWidth();
+      if (ImGui::Checkbox("Enable Mipmap", &enableMipmap)) {
+        std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+            appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+        JsonUtils::ModifyBoolOfFile(appPointer->GetRoot() + graphicsConfigPath,
+                                    "EnableMipmap", enableMipmap);
+        appPointer->SetGraphicsSettingsModified(true);
+      }
+      if (ImGui::Checkbox("Enable Z-PrePass", &enableZPrePass)) {
+        std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+            appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+        JsonUtils::ModifyBoolOfFile(appPointer->GetRoot() + graphicsConfigPath,
+                                    "EnableZPrePass", enableZPrePass);
+        appPointer->SetGraphicsSettingsModified(true);
+      }
+      if (ImGui::Checkbox("Enable ShadowMap", &enableShadowMap)) {
+        std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+            appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+        JsonUtils::ModifyBoolOfFile(appPointer->GetRoot() + graphicsConfigPath,
+                                    "EnableShadowMap", enableShadowMap);
+        appPointer->SetGraphicsSettingsModified(true);
+      }
+      if (ImGui::Checkbox("Enable Deferred", &enableDeferredRendering)) {
+        std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+            appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+        JsonUtils::ModifyBoolOfFile(appPointer->GetRoot() + graphicsConfigPath,
+                                    "EnableDeferred", enableDeferredRendering);
+        appPointer->SetGraphicsSettingsModified(true);
+      }
       ImGui::EndMenu();
     }
     ImGui::SameLine();
@@ -627,9 +669,19 @@ void BaseEditor::EditorDrawMenuBar() {
       if (appPointer->GetGraphics().lock()) {
         if (ImGui::Checkbox("Show Render FPS",
                             &appPointer->GetShowRenderFrame())) {
+          std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+              appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+          JsonUtils::ModifyBoolOfFile(
+              appPointer->GetRoot() + graphicsConfigPath,
+              "ShowRenderFrameCount", appPointer->GetShowRenderFrame());
         }
         if (ImGui::Checkbox("Show Logic FPS",
                             &appPointer->GetShowGameFrame())) {
+          std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+              appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+          JsonUtils::ModifyBoolOfFile(
+              appPointer->GetRoot() + graphicsConfigPath, "ShowGameFrameCount",
+              appPointer->GetShowGameFrame());
         }
       } else {
         bool showRenderFrame = false, showGameFrame = false;
@@ -653,11 +705,40 @@ void BaseEditor::EditorDrawMenuBar() {
   }
 }
 
+void BaseEditor::EditorDrawRestartTip() {
+  if (appPointer->GetGraphicsSettingsModified()) {
+    float menuBarHeight = ImGui::GetFrameHeight();
+
+    float windowHeight = 20.0f;
+    ImVec2 windowPos = ImVec2(0, menuBarHeight);
+    ImVec2 windowSize = ImVec2(ImGui::GetIO().DisplaySize.x, windowHeight);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("Settings Notification", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoScrollbar)) {
+      const char* message = "Please restart to apply changed settings";
+      ImVec2 textSize = ImGui::CalcTextSize(message);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", message);
+      ImGui::End();
+    }
+  }
+}
+
 void BaseEditor::EditorDrawFrameCount() {
   if (appPointer->GetGraphics().lock() &&
       (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
     float fpsWindowHeight = 20.0f;
-    ImGui::SetNextWindowPos(ImVec2(0, ImGui::GetFrameHeight()));
+    float fpsWindowPosY = ImGui::GetFrameHeight();
+    if (appPointer->GetGraphicsSettingsModified()) {
+      fpsWindowPosY += 32.0f;
+    }
+    ImGui::SetNextWindowPos(ImVec2(0, fpsWindowPosY));
     ImGui::SetNextWindowSize(
         ImVec2(ImGui::GetIO().DisplaySize.x, fpsWindowHeight));
     if (ImGui::Begin("FPS Display", nullptr,
@@ -706,7 +787,7 @@ void BaseEditor::EditorDrawLaunchCommand() {
     } else {
       float buttonWidth = 150.0f;
       float buttonHeight = 30.0f;
-      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 150);
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 161);
       ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
       if (ImGui::Button("Launch Scene", ImVec2(buttonWidth, buttonHeight))) {
         appPointer->LaunchScene();
@@ -714,7 +795,7 @@ void BaseEditor::EditorDrawLaunchCommand() {
       ImGui::SameLine();
       ImGui::Text("|");
       ImGui::SameLine();
-      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 25);
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 13);
       ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
       if (ImGui::Button("Terminate Scene", ImVec2(buttonWidth, buttonHeight))) {
         appPointer->TerminateScene();
@@ -728,13 +809,16 @@ void BaseEditor::EditorDrawFileExplorer() {
   if (showFileExplorer) {
     std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
                                       "Document.txt", "Video.mp4"};
-    float fpsWindowHeight = 0;
+    float topWindowHeight = 0;
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
 
     if (appPointer->GetGraphics().lock() &&
         (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
-      fpsWindowHeight = 32.0f;
+      topWindowHeight += 32.0f;
+    }
+    if (appPointer->GetGraphicsSettingsModified()) {
+      topWindowHeight += 32.0f;
     }
 
     int detailsContentNum = 1;
@@ -746,10 +830,10 @@ void BaseEditor::EditorDrawFileExplorer() {
     }
     float fileExplorerWidth = ImGui::GetIO().DisplaySize.x / detailsContentNum;
 
-    ImVec2 windowPos = ImVec2(0, menuBarHeight + fpsWindowHeight);
+    ImVec2 windowPos = ImVec2(0, menuBarHeight + topWindowHeight);
     ImVec2 windowSize =
         ImVec2(fileExplorerWidth, ImGui::GetIO().DisplaySize.y - menuBarHeight -
-                                      fpsWindowHeight - buttonWindowHeight);
+                                      topWindowHeight - buttonWindowHeight);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -784,13 +868,16 @@ void BaseEditor::EditorDrawSceneHierarchy() {
   if (showSceneHierarchy) {
     std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
                                       "Document.txt", "Video.mp4"};
-    float fpsWindowHeight = 0;
+    float topWindowHeight = 0;
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
 
     if (appPointer->GetGraphics().lock() &&
         (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
-      fpsWindowHeight = 32.0f;
+      topWindowHeight = 32.0f;
+    }
+    if (appPointer->GetGraphicsSettingsModified()) {
+      topWindowHeight += 32.0f;
     }
 
     int detailsContentNum = 1;
@@ -809,10 +896,10 @@ void BaseEditor::EditorDrawSceneHierarchy() {
     }
 
     ImVec2 windowPos =
-        ImVec2(sceneHierarchyPosX, menuBarHeight + fpsWindowHeight);
+        ImVec2(sceneHierarchyPosX, menuBarHeight + topWindowHeight);
     ImVec2 windowSize = ImVec2(sceneHierarchyWidth,
                                ImGui::GetIO().DisplaySize.y - menuBarHeight -
-                                   fpsWindowHeight - buttonWindowHeight);
+                                   topWindowHeight - buttonWindowHeight);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -847,13 +934,16 @@ void BaseEditor::EditorDrawObjectInspector() {
   if (showObjectInspector) {
     std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
                                       "Document.txt", "Video.mp4"};
-    float fpsWindowHeight = 0;
+    float topWindowHeight = 0;
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
 
     if (appPointer->GetGraphics().lock() &&
         (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
-      fpsWindowHeight = 32.0f;
+      topWindowHeight = 32.0f;
+    }
+    if (appPointer->GetGraphicsSettingsModified()) {
+      topWindowHeight += 32.0f;
     }
 
     int detailsContentNum = 1;
@@ -868,10 +958,10 @@ void BaseEditor::EditorDrawObjectInspector() {
     float objectInspectorPosX = (detailsContentNum - 1) * objectInspectorWidth;
 
     ImVec2 windowPos =
-        ImVec2(objectInspectorPosX, menuBarHeight + fpsWindowHeight);
+        ImVec2(objectInspectorPosX, menuBarHeight + topWindowHeight);
     ImVec2 windowSize = ImVec2(objectInspectorWidth,
                                ImGui::GetIO().DisplaySize.y - menuBarHeight -
-                                   fpsWindowHeight - buttonWindowHeight);
+                                   topWindowHeight - buttonWindowHeight);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
