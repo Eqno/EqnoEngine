@@ -11,10 +11,10 @@ void Vulkan::CreateWindow(const std::string& title) {
   int width = JSON_CONFIG(Int, "DefaultWindowWidth");
   int height = JSON_CONFIG(Int, "DefaultWindowHeight");
 
-  width = width == 0 ? VulkanConfig::DEFAULT_WINDOW_WIDTH : width;
-  height = height == 0 ? VulkanConfig::DEFAULT_WINDOW_HEIGHT : height;
+  windowWidth = width == 0 ? VulkanConfig::DEFAULT_WINDOW_WIDTH : width;
+  windowHeight = height == 0 ? VulkanConfig::DEFAULT_WINDOW_HEIGHT : height;
 
-  window.CreateWindow(width, height, title);
+  window.CreateVkWindow(windowWidth, windowHeight, title);
 }
 
 void Vulkan::InitConfig() {
@@ -285,4 +285,19 @@ std::weak_ptr<LightChannel> Vulkan::GetLightChannelByName(
 bool Vulkan::GetEnableEditor() {
   GetAppPointer();
   return appPointer->GetEnableEditor();
+}
+
+GLFWwindow* Vulkan::GetParentWindow() {
+  GetAppPointer();
+  return appPointer->GetParentWindow();
+}
+
+GLFWwindow* Vulkan::GetEditorWindow() {
+  GetAppPointer();
+  return appPointer->GetEditorWindow();
+}
+
+bool Vulkan::GetLaunchSceneInEditor() {
+  GetAppPointer();
+  return appPointer->GetLaunchSceneInEditor();
 }

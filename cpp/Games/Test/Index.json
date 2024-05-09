@@ -1,5 +1,4 @@
 {
-    "ApplicationName": "Eqno Engine Test",
     "ApplicationConfig": "Configs/Application",
     "EditorConfig": "Configs/Editor",
     "GraphicsConfig": "Configs/Graphics",

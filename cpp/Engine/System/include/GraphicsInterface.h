@@ -31,6 +31,9 @@ class GraphicsInterface : public BaseObject {
   virtual GLFWwindow* GetWindow() const = 0;
   virtual float GetViewportAspect() = 0;
 
+  virtual int GetWindowWidth() = 0;
+  virtual int GetWindowHeight() = 0;
+
   virtual bool GetRenderLoopEnd() { return renderLoopEnd; }
   virtual void SetRenderLoopEnd(bool inEnd) { renderLoopEnd = inEnd; }
 

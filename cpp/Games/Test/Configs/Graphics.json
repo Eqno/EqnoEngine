@@ -3,8 +3,8 @@
     
     "RenderHardwareInterface": "Vulkan",
 
-    "DefaultWindowWidth": 1280,
-    "DefaultWindowHeight": 720,
+    "DefaultWindowWidth": 1000,
+    "DefaultWindowHeight": 800,
     
     "SwapChainSurfaceImageFormat": "RGBA_UNORM",
     "SwapChainSurfaceColorSpace": "SRGB_LINEAR",

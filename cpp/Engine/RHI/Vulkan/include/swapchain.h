@@ -15,7 +15,7 @@ using PresentModes = std::vector<VkPresentModeKHR>;
 using SurfaceFormats = std::vector<VkSurfaceFormatKHR>;
 
 class Draw;
-class Window;
+class VkWindow;
 class Device;
 class Render;
 
@@ -76,7 +76,7 @@ class SwapChain : public Base {
       const PresentModes& availablePresentModes);
 
   static VkExtent2D ChooseSwapExtent(
-      const VkSurfaceCapabilitiesKHR& capabilities, const Window& window);
+      const VkSurfaceCapabilitiesKHR& capabilities, const VkWindow& window);
 
   const VkSwapchainKHR& Get() const { return chain; }
   const VkExtent2D& GetExtent() const { return extent; }
@@ -118,18 +118,18 @@ class SwapChain : public Base {
     return gBufferImageViews[index];
   }
 
-  void CreateSwapChain(const Device& device, const Window& window);
+  void CreateSwapChain(const Device& device, const VkWindow& window);
   void CreateImageViews(const VkDevice& device);
   void CreateColorFrameBuffers(const Device& device);
   void CreateZPrePassFrameBuffer(const VkDevice& device);
   void CreateShadowMapFrameBuffers(const VkDevice& device);
 
-  void RecreateSwapChain(const Device& device, const Window& window,
+  void RecreateSwapChain(const Device& device, const VkWindow& window,
                          std::unordered_map<std::string, Draw*>& draws);
 
-  void CreateRenderTarget(const Device& device, const Window& window);
+  void CreateRenderTarget(const Device& device, const VkWindow& window);
   void CreateRenderTarget(const std::string& format, const std::string& space,
-                          const Device& device, const Window& window);
+                          const Device& device, const VkWindow& window);
   void CleanupRenderTarget(const Device& device) const;
   void DestroyColorResource(const Device& device);
   void DestroyDepthResource(const VkDevice& device) {

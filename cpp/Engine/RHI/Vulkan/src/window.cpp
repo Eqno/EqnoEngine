@@ -4,6 +4,9 @@
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/Utility/include/TypeUtils.h>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 #include <stdexcept>
 
 #include "../include/config.h"
@@ -12,24 +15,24 @@ using namespace Input;
 void FrameBufferResizeCallback([[maybe_unused]] GLFWwindow* window,
                                [[maybe_unused]] int width,
                                [[maybe_unused]] int height) {
-  static_cast<Window*>(glfwGetWindowUserPointer(window))
+  static_cast<VkWindow*>(glfwGetWindowUserPointer(window))
       ->SetFrameBufferResized(true);
 }
 
-std::pair<int, int> Window::GetFrameBufferSize() const {
+std::pair<int, int> VkWindow::GetFrameBufferSize() const {
   auto width = 0, height = 0;
   glfwGetFramebufferSize(window, &width, &height);
   return std::make_pair(width, height);
 }
 
-std::pair<const char**, uint32_t> Window::GetRequiredExtensions() {
+std::pair<const char**, uint32_t> VkWindow::GetRequiredExtensions() {
   uint32_t glfwExtensionCount = 0;
   auto glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
   return std::make_pair(glfwExtensions, glfwExtensionCount);
 }
 
-void Window::CreateWindow(const int width, const int height,
-                          const std::string& title) {
+void VkWindow::CreateVkWindow(const int width, const int height,
+                              const std::string& title) {
   if (static_cast<Vulkan*>(owner)->GetEnableEditor() == false) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -39,31 +42,45 @@ void Window::CreateWindow(const int width, const int height,
   glfwSetWindowUserPointer(window, this);
   glfwSetFramebufferSizeCallback(window, FrameBufferResizeCallback);
 
+  if (static_cast<Vulkan*>(owner)->GetEnableEditor() &&
+      static_cast<Vulkan*>(owner)->GetLaunchSceneInEditor()) {
+    HWND graphicsWindowHWND = glfwGetWin32Window(window);
+    HWND parentWindowHWND =
+        glfwGetWin32Window(static_cast<Vulkan*>(owner)->GetParentWindow());
+
+    SetWindowLong(graphicsWindowHWND, GWL_STYLE, WS_VISIBLE);
+    MoveWindow(graphicsWindowHWND, 0, 0, width, height, TRUE);
+    SetParent(graphicsWindowHWND, parentWindowHWND);
+  }
+
   glfwSetKeyCallback(window, Key::ButtonCallback);
   glfwSetScrollCallback(window, Mouse::ScrollCallback);
   glfwSetCursorPosCallback(window, Mouse::PositionCallback);
   glfwSetMouseButtonCallback(window, Mouse::ButtonCallback);
 }
 
-void Window::CreateSurface(const VkInstance& instance) {
+void VkWindow::CreateSurface(const VkInstance& instance) {
   if (glfwCreateWindowSurface(instance, window, nullptr, &surface) !=
       VK_SUCCESS) {
     PRINT_AND_THROW_ERROR("Failed to create window surface!");
   }
 }
 
-void Window::DestroySurface(const VkInstance& instance) const {
+void VkWindow::DestroySurface(const VkInstance& instance) const {
   vkDestroySurfaceKHR(instance, surface, nullptr);
 }
 
-void Window::DestroyWindow() const {
-  glfwDestroyWindow(window);
+void VkWindow::DestroyWindow() const {
+  if (static_cast<Vulkan*>(owner)->GetEnableEditor() == false ||
+      static_cast<Vulkan*>(owner)->GetLaunchSceneInEditor() == false) {
+    glfwDestroyWindow(window);
+  }
   if (static_cast<Vulkan*>(owner)->GetEnableEditor() == false) {
     glfwTerminate();
   }
 }
 
-void Window::OnRecreateSwapChain() const {
+void VkWindow::OnRecreateSwapChain() const {
   auto width = 0, height = 0;
   glfwGetFramebufferSize(window, &width, &height);
 

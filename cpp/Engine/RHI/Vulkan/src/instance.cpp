@@ -8,7 +8,7 @@
 
 std::vector<const char*> GetRequiredExtensions(const Validation& validation) {
   const auto& [glfwExtensions, glfwExtensionCount] =
-      Window::GetRequiredExtensions();
+      VkWindow::GetRequiredExtensions();
   std::vector extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
   if (validation.GetEnabled()) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

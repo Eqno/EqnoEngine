@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -11,7 +12,7 @@
 
 struct GLFWwindow;
 
-class Window : public Base {
+class VkWindow : public Base {
   VkSurfaceKHR surface;
   GLFWwindow* window = nullptr;
   bool frameBufferResized = false;
@@ -28,7 +29,7 @@ class Window : public Base {
     frameBufferResized = resized;
   }
 
-  void CreateWindow(int width, int height, const std::string& title);
+  void CreateVkWindow(int width, int height, const std::string& title);
 
   void CreateSurface(const VkInstance& instance);
   void DestroySurface(const VkInstance& instance) const;

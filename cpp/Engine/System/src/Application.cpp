@@ -28,7 +28,10 @@ void Application::CreateGraphics() {
 }
 
 void Application::CreateWindow() const {
-  graphics->CreateWindow(JSON_CONFIG(String, "ApplicationName"));
+  const std::string configPath = JSON_CONFIG(String, "ApplicationConfig");
+  std::string appName =
+      JsonUtils::ReadStringFromFile(GetRoot() + configPath, "ApplicationName");
+  graphics->CreateWindow(appName);
   graphics->InitGraphics();
 }
 
@@ -75,7 +78,7 @@ void Application::RunApplication() {
 
   if (GetEnableEditor()) {
     CreateEditor();
-    editor->UpdateImgui();
+    editor->LoopImgui();
     TerminateScene();
     DestroyEditor();
   } else {
@@ -141,4 +144,9 @@ void Application::UpdateEditor() { editor->UpdateImgui(); }
 void Application::DestroyEditor() {
   std::cout << "Destroy Editor GUI\n";
   editor->DestroyImgui();
+}
+
+int Application::GetGraphicsWindowWidth() { return graphics->GetWindowWidth(); }
+int Application::GetGraphicsWindowHeight() {
+  return graphics->GetWindowHeight();
 }

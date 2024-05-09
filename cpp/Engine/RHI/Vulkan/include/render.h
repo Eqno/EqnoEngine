@@ -89,7 +89,7 @@ class Render : public Base {
 
  public:
   virtual void TriggerRegisterMember() override { RegisterMember(swapChain); }
-  void CreateRenderResources(const Device& device, const Window& window,
+  void CreateRenderResources(const Device& device, const VkWindow& window,
                              const std::string& imageFormat,
                              const std::string& colorSpace) {
     swapChain.CreateRenderTarget(imageFormat, colorSpace, device, window);
@@ -134,7 +134,7 @@ class Render : public Base {
   void DrawFrame(const Device& device,
                  std::unordered_map<std::string, Draw*>& draws,
                  std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
-                 Window& window);
+                 VkWindow& window);
 
   void DestroyRenderResources(const Device& device) {
     swapChain.DestroyColorResource(device);

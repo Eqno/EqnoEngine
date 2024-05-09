@@ -61,7 +61,7 @@ VkPresentModeKHR SwapChain::ChoosePresentMode(
 }
 
 VkExtent2D SwapChain::ChooseSwapExtent(
-    const VkSurfaceCapabilitiesKHR& capabilities, const Window& window) {
+    const VkSurfaceCapabilitiesKHR& capabilities, const VkWindow& window) {
   if (capabilities.currentExtent.width !=
       std::numeric_limits<uint32_t>::max()) {
     return capabilities.currentExtent;
@@ -76,7 +76,7 @@ VkExtent2D SwapChain::ChooseSwapExtent(
                      capabilities.maxImageExtent.height)};
 }
 
-void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
+void SwapChain::CreateSwapChain(const Device& device, const VkWindow& window) {
   const auto [capabilities, formats, presentModes] =
       device.QuerySwapChainSupport(window.GetSurface());
   const auto [format, colorSpace] = ChooseSurfaceFormat(formats);
@@ -245,7 +245,7 @@ void SwapChain::CreateShadowMapFrameBuffers(const VkDevice& device) {
 }
 
 void SwapChain::RecreateSwapChain(
-    const Device& device, const Window& window,
+    const Device& device, const VkWindow& window,
     std::unordered_map<std::string, Draw*>& draws) {
   window.OnRecreateSwapChain();
   device.WaitIdle();
@@ -275,14 +275,14 @@ void SwapChain::RecreateSwapChain(
   CreateFrameBuffers(device);
 }
 
-void SwapChain::CreateRenderTarget(const Device& device, const Window& window) {
+void SwapChain::CreateRenderTarget(const Device& device, const VkWindow& window) {
   CreateSwapChain(device, window);
   CreateImageViews(device.GetLogical());
 }
 
 void SwapChain::CreateRenderTarget(const std::string& format,
                                    const std::string& space,
-                                   const Device& device, const Window& window) {
+                                   const Device& device, const VkWindow& window) {
   surfaceFormat = VulkanUtils::ParseImageFormat(format);
   surfaceColorSpace = VulkanUtils::ParseColorSpace(space);
   CreateSwapChain(device, window);

@@ -13,6 +13,7 @@ class Application;
 class BaseEditor : public BaseObject {
  private:
   ImGuiIO* ioPtr = nullptr;
+  GLFWwindow* parentWindow = nullptr;
   GLFWwindow* window = nullptr;
   ImGui_ImplVulkanH_Window* wd = nullptr;
 
@@ -20,6 +21,13 @@ class BaseEditor : public BaseObject {
   bool show_demo_window = true;
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+  float editorWindowWidth = 1280;
+  float editorWindowHeight = 720;
+
+  float graphicsWindowWidth = 1280;
+  float graphicsWindowHeight = 720;
+  std::string windowTitle = "Unset";
 
  public:
   template <typename... Args>
@@ -31,8 +39,24 @@ class BaseEditor : public BaseObject {
   void GetAppPointer();
 
   void LoadImgui();
+  void LoopImgui();
   void UpdateImgui();
   void DestroyImgui();
 
+  GLFWwindow* GetParentWindow() const { return parentWindow; }
   GLFWwindow* GetWindow() const { return window; }
+  void ParentWindowResizeCallback(int parentWidth, int parentHeight);
+
+  int GetGraphicsWindowWidth() const { return graphicsWindowWidth; }
+  int GetGraphicsWindowHeight() const { return graphicsWindowWidth; }
+
+  int GetEditorWindowWidth() const { return editorWindowWidth; }
+  int GetEditorWindowHeight() const { return editorWindowHeight; }
+
+ private:
+  void InitConfig();
+  bool LaunchSceneInEditor = false;
+
+ public:
+  bool GetLaunchSceneInEditor() const { return LaunchSceneInEditor; }
 };

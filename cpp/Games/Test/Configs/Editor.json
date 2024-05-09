@@ -1,3 +1,8 @@
 {
-    "Name": "GameEditor"
+    "Name": "GameEditor",
+
+    "EditorName": "Eqno Engine Editor",
+    "LaunchSceneInEditor": true,
+    "DefaultWindowWidth": 400,
+    "DefaultWindowHeight": 800
 }

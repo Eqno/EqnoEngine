@@ -6,6 +6,7 @@
 #include <assimp/vector3.h>
 #include <stb_image.h>
 
+#include <algorithm>
 #include <chrono>
 #include <functional>
 #include <glm/glm.hpp>
@@ -17,6 +18,13 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+inline std::wstring stringToWString(const std::string& str) {
+  std::wstring wstr(str.length(), L' ');
+  std::transform(str.begin(), str.end(), wstr.begin(),
+                 [](char c) { return (wchar_t)c; });
+  return wstr;
+}
 
 #define PRINT_AND_THROW_ERROR(errorMsg) \
   std::cout << (errorMsg) << std::endl; \

@@ -854,7 +854,7 @@ void Render::ResetFences(
 void Render::DrawFrame(
     const Device& device, std::unordered_map<std::string, Draw*>& draws,
     std::unordered_map<int, std::weak_ptr<BaseLight>>& lightsById,
-    Window& window) {
+    VkWindow& window) {
   WaitFences(device, lightsById);
   uint32_t imageIndex;
   auto result = vkAcquireNextImageKHR(

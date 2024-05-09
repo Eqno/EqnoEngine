@@ -19,10 +19,13 @@
 class Vulkan final : public GraphicsInterface, public Base {
   // Members
   Device device;
-  Window window;
   Render render;
+  VkWindow window;
   Instance instance;
   Validation validation;
+
+  int windowWidth = 1280;
+  int windowHeight = 720;
 
   BufferManager bufferManager;
   Application* appPointer = nullptr;
@@ -55,6 +58,9 @@ class Vulkan final : public GraphicsInterface, public Base {
 
   void ShowGameFrameCount();
   void ShowRenderFrameCount();
+
+  int GetWindowWidth() override { return windowWidth; }
+  int GetWindowHeight() override { return windowHeight; }
 
   BufferManager& GetBufferManager() { return bufferManager; }
   float GetViewportAspect() override;
@@ -122,4 +128,7 @@ class Vulkan final : public GraphicsInterface, public Base {
   std::weak_ptr<LightChannel> GetLightChannelByName(const std::string& name);
 
   bool GetEnableEditor();
+  GLFWwindow* GetParentWindow();
+  GLFWwindow* GetEditorWindow();
+  bool GetLaunchSceneInEditor();
 };

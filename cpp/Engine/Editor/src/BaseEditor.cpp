@@ -4,6 +4,9 @@
 #include <stdio.h>   // printf, fprintf
 #include <stdlib.h>  // abort
 
+#include <algorithm>
+#include <cmath>
+
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to
 // maximize ease of testing and compatibility with old VS compilers. To link
 // with VS2010-era libraries, VS2015+ requires linking with
@@ -259,9 +262,8 @@ static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd,
   }
 
   // Select Surface Format
-  const VkFormat requestSurfaceImageFormat[] = {
-      VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM,
-      VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM};
+  const VkFormat requestSurfaceImageFormat[] = {VK_FORMAT_B8G8R8A8_UNORM,
+                                                VK_FORMAT_R8G8B8A8_UNORM};
   const VkColorSpaceKHR requestSurfaceColorSpace =
       VK_COLORSPACE_SRGB_NONLINEAR_KHR;
   wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(
@@ -410,16 +412,58 @@ void BaseEditor::GetAppPointer() {
   }
 }
 
+void BaseEditor::InitConfig() {
+  LaunchSceneInEditor = JSON_CONFIG(Bool, "LaunchSceneInEditor");
+  editorWindowWidth = JSON_CONFIG(Int, "DefaultWindowWidth");
+  editorWindowHeight = JSON_CONFIG(Int, "DefaultWindowHeight");
+
+  if (appPointer->GetLaunchSceneInEditor()) {
+    std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
+        appPointer->GetRoot() + appPointer->GetFile(), "GraphicsConfig");
+    std::string appConfigPath = JsonUtils::ReadStringFromFile(
+        appPointer->GetRoot() + appPointer->GetFile(), "ApplicationConfig");
+    windowTitle = JsonUtils::ReadStringFromFile(
+        appPointer->GetRoot() + appConfigPath, "ApplicationName");
+    graphicsWindowWidth = JsonUtils::ReadFloatFromFile(
+        appPointer->GetRoot() + graphicsConfigPath, "DefaultWindowWidth");
+    graphicsWindowHeight = JsonUtils::ReadFloatFromFile(
+        appPointer->GetRoot() + graphicsConfigPath, "DefaultWindowHeight");
+  } else {
+    windowTitle = JSON_CONFIG(String, "EditorName");
+  }
+}
+
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 // Main code
 void BaseEditor::LoadImgui() {
   GetAppPointer();
+  InitConfig();
+
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) return;
 
   // Create window with Vulkan context
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example",
-                            nullptr, nullptr);
+  window = glfwCreateWindow(editorWindowWidth, editorWindowHeight,
+                            windowTitle.c_str(), nullptr, nullptr);
+
+  if (appPointer->GetLaunchSceneInEditor()) {
+    parentWindow =
+        glfwCreateWindow(editorWindowWidth + graphicsWindowWidth,
+                         max(editorWindowHeight, graphicsWindowHeight),
+                         windowTitle.c_str(), nullptr, nullptr);
+    glfwSetWindowAttrib(parentWindow, GLFW_RESIZABLE, GLFW_FALSE);
+
+    HWND editorWindowHWND = glfwGetWin32Window(window);
+    HWND parentWindowHWND = glfwGetWin32Window(parentWindow);
+
+    SetWindowLong(editorWindowHWND, GWL_STYLE, WS_VISIBLE);
+    MoveWindow(editorWindowHWND, graphicsWindowWidth, 0, editorWindowWidth,
+               editorWindowHeight, TRUE);
+    SetParent(editorWindowHWND, parentWindowHWND);
+  }
 
   if (!glfwVulkanSupported()) {
     printf("GLFW: Vulkan Not Supported\n");
@@ -451,6 +495,7 @@ void BaseEditor::LoadImgui() {
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
   (void)io;
+
   ioPtr = &io;
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
@@ -480,127 +525,112 @@ void BaseEditor::LoadImgui() {
   init_info.CheckVkResultFn = check_vk_result;
   ImGui_ImplVulkan_Init(&init_info);
 
-  // Load Fonts
-  // - If no fonts are loaded, dear imgui will use the default font. You can
-  // also load multiple fonts and use ImGui::PushFont()/PopFont() to select
-  // them.
-  // - AddFontFromFileTTF() will return the ImFont* so you can store it if you
-  // need to select the font among multiple.
-  // - If the file cannot be loaded, the function will return a nullptr. Please
-  // handle those errors in your application (e.g. use an assertion, or display
-  // an error and quit).
-  // - The fonts will be rasterized at a given size (w/ oversampling) and stored
-  // into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which
-  // ImGui_ImplXXXX_NewFrame below will call.
-  // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype
-  // for higher quality font rendering.
-  // - Read 'docs/FONTS.md' for more instructions and details.
-  // - Remember that in C/C++ if you want to include a backslash \ in a string
-  // literal you need to write a double backslash \\ !
-  // io.Fonts->AddFontDefault();
-  // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-  // ImFont* font =
-  // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
-  // nullptr, io.Fonts->GetGlyphRangesJapanese()); IM_ASSERT(font != nullptr);
+  if (appPointer->GetLaunchSceneInEditor()) {
+    appPointer->LaunchScene();
+  }
 }
 
 void BaseEditor::UpdateImgui() {
-  while (!glfwWindowShouldClose(window)) {
-    glfwPollEvents();
-
-    // Resize swap chain?
-    if (g_SwapChainRebuild) {
-      int width, height;
-      glfwGetFramebufferSize(window, &width, &height);
-      if (width > 0 && height > 0) {
-        ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-        ImGui_ImplVulkanH_CreateOrResizeWindow(
-            g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData,
-            g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
-        g_MainWindowData.FrameIndex = 0;
-        g_SwapChainRebuild = false;
-      }
+  // Resize swap chain?
+  if (g_SwapChainRebuild) {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    if (width > 0 && height > 0) {
+      ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
+      ImGui_ImplVulkanH_CreateOrResizeWindow(
+          g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData,
+          g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
+      g_MainWindowData.FrameIndex = 0;
+      g_SwapChainRebuild = false;
     }
+  }
 
-    // Start the Dear ImGui frame
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+  // Start the Dear ImGui frame
+  ImGui_ImplVulkan_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
 
-    // 1. Show the big demo window (Most of the sample code is in
-    // ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear
-    // ImGui!).
-    if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
+  // 1. Show the big demo window (Most of the sample code is in
+  // ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear
+  // ImGui!).
+  if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair
-    // to create a named window.
-    {
-      static float f = 0.0f;
-      static int counter = 0;
+  // 2. Show a simple window that we create ourselves. We use a Begin/End pair
+  // to create a named window.
+  {
+    static float f = 0.0f;
+    static int counter = 0;
+    ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
+                                    // and append into it.
 
-      ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
-                                      // and append into it.
+    ImGui::Text("This is some useful text.");  // Display some text (you can
+                                               // use a format strings too)
+    ImGui::Checkbox(
+        "Demo Window",
+        &show_demo_window);  // Edit bools storing our window open/close state
+    ImGui::Checkbox("Another Window", &show_another_window);
 
-      ImGui::Text("This is some useful text.");  // Display some text (you can
-                                                 // use a format strings too)
-      ImGui::Checkbox(
-          "Demo Window",
-          &show_demo_window);  // Edit bools storing our window open/close state
-      ImGui::Checkbox("Another Window", &show_another_window);
+    ImGui::SliderFloat("float", &f, 0.0f,
+                       1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3(
+        "clear color",
+        (float*)&clear_color);  // Edit 3 floats representing a color
 
-      ImGui::SliderFloat(
-          "float", &f, 0.0f,
-          1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
-      ImGui::ColorEdit3(
-          "clear color",
-          (float*)&clear_color);  // Edit 3 floats representing a color
+    if (ImGui::Button("Button"))  // Buttons return true when clicked (most
+                                  // widgets return true when edited/activated)
+      counter++;
+    ImGui::SameLine();
+    ImGui::Text("counter = %d", counter);
 
-      if (ImGui::Button(
-              "Button"))  // Buttons return true when clicked (most
-                          // widgets return true when edited/activated)
-        counter++;
-      ImGui::SameLine();
-      ImGui::Text("counter = %d", counter);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                1000.0f / ioPtr->Framerate, ioPtr->Framerate);
 
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                  1000.0f / ioPtr->Framerate, ioPtr->Framerate);
-
-      if (ImGui::Button("Launch Scene")) {
-        appPointer->LaunchScene();
-      }
-      if (ImGui::Button("Terminate Scene")) {
-        appPointer->TerminateScene();
-      }
-      ImGui::End();
+    if (ImGui::Button("Launch Scene")) {
+      appPointer->LaunchScene();
     }
-
-    // 3. Show another simple window.
-    if (show_another_window) {
-      ImGui::Begin(
-          "Another Window",
-          &show_another_window);  // Pass a pointer to our bool variable (the
-                                  // window will have a closing button that will
-                                  // clear the bool when clicked)
-      ImGui::Text("Hello from another window!");
-      if (ImGui::Button("Close Me")) show_another_window = false;
-      ImGui::End();
+    if (ImGui::Button("Terminate Scene")) {
+      appPointer->TerminateScene();
     }
+    ImGui::End();
+  }
 
-    // Rendering
-    ImGui::Render();
-    ImDrawData* draw_data = ImGui::GetDrawData();
-    const bool is_minimized =
-        (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
-    if (!is_minimized) {
-      wd->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
-      wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
-      wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
-      wd->ClearValue.color.float32[3] = clear_color.w;
-      FrameRender(wd, draw_data);
-      FramePresent(wd);
+  // 3. Show another simple window.
+  if (show_another_window) {
+    ImGui::Begin(
+        "Another Window",
+        &show_another_window);  // Pass a pointer to our bool variable (the
+                                // window will have a closing button that will
+                                // clear the bool when clicked)
+    ImGui::Text("Hello from another window!");
+    if (ImGui::Button("Close Me")) show_another_window = false;
+    ImGui::End();
+  }
+
+  // Rendering
+  ImGui::Render();
+  ImDrawData* draw_data = ImGui::GetDrawData();
+  const bool is_minimized =
+      (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
+  if (!is_minimized) {
+    wd->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
+    wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
+    wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
+    wd->ClearValue.color.float32[3] = clear_color.w;
+    FrameRender(wd, draw_data);
+    FramePresent(wd);
+  }
+}
+
+void BaseEditor::LoopImgui() {
+  if (appPointer->GetLaunchSceneInEditor()) {
+    while (!glfwWindowShouldClose(parentWindow)) {
+      glfwPollEvents();
+      UpdateImgui();
+    }
+  } else {
+    while (!glfwWindowShouldClose(window)) {
+      glfwPollEvents();
+      UpdateImgui();
     }
   }
 }
@@ -617,5 +647,8 @@ void BaseEditor::DestroyImgui() {
   CleanupVulkan();
 
   glfwDestroyWindow(window);
+  if (appPointer->GetLaunchSceneInEditor()) {
+    glfwDestroyWindow(parentWindow);
+  }
   glfwTerminate();
 }

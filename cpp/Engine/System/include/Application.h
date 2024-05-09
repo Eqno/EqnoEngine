@@ -52,11 +52,15 @@ class Application final : public BaseObject {
   void StartRenderLoop();
   void TerminateScene();
 
+  GLFWwindow* GetParentWindow() const { return editor->GetParentWindow(); }
   GLFWwindow* GetEditorWindow() const { return editor->GetWindow(); }
+  int GetGraphicsWindowWidth();
+  int GetGraphicsWindowHeight();
 
  private:
   bool EnableEditor = false;
 
  public:
   bool GetEnableEditor() { return EnableEditor; }
+  bool GetLaunchSceneInEditor() { return editor->GetLaunchSceneInEditor(); }
 };
