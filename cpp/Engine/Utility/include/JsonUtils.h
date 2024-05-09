@@ -14,6 +14,8 @@ class GraphicsInterface;
 
 struct MaterialData;
 
+#define FILESUFFIX ".json"
+
 #define JSON_CONFIG(type, key) \
   JsonUtils::Read##type##FromFile(GetRoot() + GetFile(), key)
 

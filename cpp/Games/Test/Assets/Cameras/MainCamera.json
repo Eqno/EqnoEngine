@@ -5,7 +5,7 @@
     "Aspect": "Auto",
     "_Aspect": "16:9",
     "Near": 0.1,
-    "Far": 50,
+    "Far": 1000,
 
     "MaxFov": 80,
     "MinFov": 5,

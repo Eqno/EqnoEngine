@@ -24,7 +24,7 @@ Document* GetJsonDocFromFile(const std::string& filePath) {
   } else {
     doc = new Document;
     doc->SetObject();
-    doc->Parse(FileUtils::ReadFileAsString(filePath).c_str());
+    doc->Parse(FileUtils::ReadFileAsString(filePath + FILESUFFIX).c_str());
     docCache[filePath] = doc;
   }
   return doc;

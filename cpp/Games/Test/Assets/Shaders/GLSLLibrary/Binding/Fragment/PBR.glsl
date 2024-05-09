@@ -11,5 +11,3 @@ layout(binding = 6) uniform sampler2D metallicSampler;
 layout(binding = 7) uniform sampler2D normalSampler;
 layout(binding = 8) uniform sampler2D AOSampler;
 #endif
-
-layout(location = 4) in vec3 fragTangent;

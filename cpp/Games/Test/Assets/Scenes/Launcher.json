@@ -31,21 +31,35 @@
             "Type": "SpotLight",
             "Path": "Assets/Lights/SpotLight",
             "Transform": {
-                "Position": "0,40,-25",
+                "Position": "0,20,-25",
                 "Rotation": "90,0,0",
                 "Scale": "1,1,1"
             }
         }, {
-            "Name": "Sponza",
+            "Name": "CornellBox",
             "Type": "BaseModel",
-            "Path": "Assets/Models/Sponza/Sponza",
+            "Path": "Assets/Models/CornellBox/CornellBox",
             "Camera": "MainCamera",
             "LightChannel": "All",
             "Transform": {
-                "Position": "0,-10,-40",
+                "Position": "0,-10,-30",
                 "Rotation": "0,0,0",
                 "Scale": "1,1,1"
-            }
+            },
+            "Sons": [
+                {
+                    "Name": "MasterSword",
+                    "Type": "BaseModel",
+                    "Path": "Assets/Models/hylian_shield_and_master_sword/SM_Weapon",
+                    "Camera": "MainCamera",
+                    "LightChannel": "All",
+                    "Transform": {
+                        "Position": "5,20,0",
+                        "Rotation": "0,0,0",
+                        "Scale": "1,1,1"
+                    }
+                }
+            ]
         }
     ]
 }
