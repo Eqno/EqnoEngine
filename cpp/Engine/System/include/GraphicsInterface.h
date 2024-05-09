@@ -41,4 +41,10 @@ class GraphicsInterface : public BaseObject {
   virtual void SetRenderLoopShouldEnd(bool inEnd) {
     renderLoopShouldEnd = inEnd;
   }
+
+  virtual bool& GetShowRenderFrame() = 0;
+  virtual bool& GetShowGameFrame() = 0;
+
+  virtual uint32_t GetRenderFrameCount() const = 0;
+  virtual uint32_t GetGameFrameCount() const = 0;
 };

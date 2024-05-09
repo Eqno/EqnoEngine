@@ -550,61 +550,12 @@ void BaseEditor::UpdateImgui() {
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  // 1. Show the big demo window (Most of the sample code is in
-  // ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear
-  // ImGui!).
-  if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
-
-  // 2. Show a simple window that we create ourselves. We use a Begin/End pair
-  // to create a named window.
-  {
-    static float f = 0.0f;
-    static int counter = 0;
-    ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
-                                    // and append into it.
-
-    ImGui::Text("This is some useful text.");  // Display some text (you can
-                                               // use a format strings too)
-    ImGui::Checkbox(
-        "Demo Window",
-        &show_demo_window);  // Edit bools storing our window open/close state
-    ImGui::Checkbox("Another Window", &show_another_window);
-
-    ImGui::SliderFloat("float", &f, 0.0f,
-                       1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3(
-        "clear color",
-        (float*)&clear_color);  // Edit 3 floats representing a color
-
-    if (ImGui::Button("Button"))  // Buttons return true when clicked (most
-                                  // widgets return true when edited/activated)
-      counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                1000.0f / ioPtr->Framerate, ioPtr->Framerate);
-
-    if (ImGui::Button("Launch Scene")) {
-      appPointer->LaunchScene();
-    }
-    if (ImGui::Button("Terminate Scene")) {
-      appPointer->TerminateScene();
-    }
-    ImGui::End();
-  }
-
-  // 3. Show another simple window.
-  if (show_another_window) {
-    ImGui::Begin(
-        "Another Window",
-        &show_another_window);  // Pass a pointer to our bool variable (the
-                                // window will have a closing button that will
-                                // clear the bool when clicked)
-    ImGui::Text("Hello from another window!");
-    if (ImGui::Button("Close Me")) show_another_window = false;
-    ImGui::End();
-  }
+  EditorDrawMenuBar();
+  EditorDrawFrameCount();
+  EditorDrawLaunchCommand();
+  EditorDrawFileExplorer();
+  EditorDrawSceneHierarchy();
+  EditorDrawObjectInspector();
 
   // Rendering
   ImGui::Render();
@@ -651,4 +602,293 @@ void BaseEditor::DestroyImgui() {
     glfwDestroyWindow(parentWindow);
   }
   glfwTerminate();
+}
+
+void BaseEditor::EditorDrawMenuBar() {
+  if (ImGui::BeginMainMenuBar()) {
+    float menuWidth = ImGui::CalcTextSize("Graphics Settings").x +
+                      ImGui::CalcTextSize("Status Display").x +
+                      ImGui::CalcTextSize("Details Content").x +
+                      ImGui::GetStyle().ItemSpacing.x * 8;
+    float offset = (ImGui::GetWindowWidth() - menuWidth) * 0.5f;
+    ImGui::SetCursorPosX(offset);
+    if (ImGui::BeginMenu("Graphics Settings")) {
+      ImGui::Checkbox("Enable MSAA", &enableMSAA);
+      ImGui::Checkbox("Enable Mipmap", &enableMipmap);
+      ImGui::Checkbox("Enable Z-PrePass", &enableZPrePass);
+      ImGui::Checkbox("Enable ShadowMap", &enableShadowMap);
+      ImGui::Checkbox("Enable Deferred", &enableDeferredRendering);
+      ImGui::EndMenu();
+    }
+    ImGui::SameLine();
+    ImGui::Text("|");
+    ImGui::SameLine();
+    if (ImGui::BeginMenu("Status Display")) {
+      if (appPointer->GetGraphics().lock()) {
+        if (ImGui::Checkbox("Show Render FPS",
+                            &appPointer->GetShowRenderFrame())) {
+        }
+        if (ImGui::Checkbox("Show Logic FPS",
+                            &appPointer->GetShowGameFrame())) {
+        }
+      } else {
+        bool showRenderFrame = false, showGameFrame = false;
+        ImGui::BeginDisabled(true);
+        ImGui::Checkbox("Show Render FPS", &showRenderFrame);
+        ImGui::Checkbox("Show Logic FPS", &showGameFrame);
+        ImGui::EndDisabled();
+      }
+      ImGui::EndMenu();
+    }
+    ImGui::SameLine();
+    ImGui::Text("|");
+    ImGui::SameLine();
+    if (ImGui::BeginMenu("Details Content")) {
+      ImGui::Checkbox("Show File Explorer", &showFileExplorer);
+      ImGui::Checkbox("Show Scene Hierarchy", &showSceneHierarchy);
+      ImGui::Checkbox("Show Object Inspector", &showObjectInspector);
+      ImGui::EndMenu();
+    }
+    ImGui::EndMainMenuBar();
+  }
+}
+
+void BaseEditor::EditorDrawFrameCount() {
+  if (appPointer->GetGraphics().lock() &&
+      (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
+    float fpsWindowHeight = 20.0f;
+    ImGui::SetNextWindowPos(ImVec2(0, ImGui::GetFrameHeight()));
+    ImGui::SetNextWindowSize(
+        ImVec2(ImGui::GetIO().DisplaySize.x, fpsWindowHeight));
+    if (ImGui::Begin("FPS Display", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      std::string fpsText;
+      if (appPointer->GetShowRenderFrame()) {
+        fpsText +=
+            "Render FPS: " + std::to_string(appPointer->GetRenderFrameCount());
+      }
+      if (appPointer->GetShowRenderFrame() && appPointer->GetShowGameFrame()) {
+        fpsText += " | ";
+      }
+      if (appPointer->GetShowGameFrame()) {
+        fpsText +=
+            "Logic FPS: " + std::to_string(appPointer->GetGameFrameCount());
+      }
+      ImVec2 textSize = ImGui::CalcTextSize(fpsText.c_str());
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", fpsText.c_str());
+      ImGui::End();
+    }
+  }
+}
+
+void BaseEditor::EditorDrawLaunchCommand() {
+  ImGui::SetNextWindowPos(ImVec2(0, ImGui::GetIO().DisplaySize.y - 30));
+  ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, 30));
+  if (ImGui::Begin("Scene Control", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+                       ImGuiWindowFlags_NoSavedSettings)) {
+    if (appPointer->GetLaunchSceneInEditor()) {
+      float buttonWidth = 150.0f;
+      float buttonHeight = 30.0f;
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - buttonWidth) * 0.5f);
+      ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
+      if (ImGui::Button("Restart Scene", ImVec2(buttonWidth, buttonHeight))) {
+        appPointer->TerminateScene();
+        while (appPointer->GetSceneLaunched() == true)
+          ;
+        appPointer->LaunchScene();
+      }
+    } else {
+      float buttonWidth = 150.0f;
+      float buttonHeight = 30.0f;
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 150);
+      ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
+      if (ImGui::Button("Launch Scene", ImVec2(buttonWidth, buttonHeight))) {
+        appPointer->LaunchScene();
+      }
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 25);
+      ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
+      if (ImGui::Button("Terminate Scene", ImVec2(buttonWidth, buttonHeight))) {
+        appPointer->TerminateScene();
+      }
+    }
+    ImGui::End();
+  }
+}
+
+void BaseEditor::EditorDrawFileExplorer() {
+  if (showFileExplorer) {
+    std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
+                                      "Document.txt", "Video.mp4"};
+    float fpsWindowHeight = 0;
+    float buttonWindowHeight = 30.0f;
+    float menuBarHeight = ImGui::GetFrameHeight();
+
+    if (appPointer->GetGraphics().lock() &&
+        (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
+      fpsWindowHeight = 32.0f;
+    }
+
+    int detailsContentNum = 1;
+    if (showSceneHierarchy) {
+      detailsContentNum++;
+    }
+    if (showObjectInspector) {
+      detailsContentNum++;
+    }
+    float fileExplorerWidth = ImGui::GetIO().DisplaySize.x / detailsContentNum;
+
+    ImVec2 windowPos = ImVec2(0, menuBarHeight + fpsWindowHeight);
+    ImVec2 windowSize =
+        ImVec2(fileExplorerWidth, ImGui::GetIO().DisplaySize.y - menuBarHeight -
+                                      fpsWindowHeight - buttonWindowHeight);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("File Explorer", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      const char* title = "File Explorer";
+      ImVec2 textSize = ImGui::CalcTextSize(title);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", title);
+      ImGui::Separator();
+
+      ImVec2 listBoxSize = ImGui::GetContentRegionAvail();
+      if (ImGui::BeginListBox("##files", listBoxSize)) {
+        for (int i = 0; i < files.size(); i++) {
+          const bool isSelected = false;
+          if (ImGui::Selectable(files[i].c_str(), isSelected)) {
+          }
+        }
+        ImGui::EndListBox();
+      }
+      ImGui::End();
+    }
+  }
+}
+
+void BaseEditor::EditorDrawSceneHierarchy() {
+  if (showSceneHierarchy) {
+    std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
+                                      "Document.txt", "Video.mp4"};
+    float fpsWindowHeight = 0;
+    float buttonWindowHeight = 30.0f;
+    float menuBarHeight = ImGui::GetFrameHeight();
+
+    if (appPointer->GetGraphics().lock() &&
+        (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
+      fpsWindowHeight = 32.0f;
+    }
+
+    int detailsContentNum = 1;
+    if (showFileExplorer) {
+      detailsContentNum++;
+    }
+    if (showObjectInspector) {
+      detailsContentNum++;
+    }
+    float sceneHierarchyWidth =
+        ImGui::GetIO().DisplaySize.x / detailsContentNum;
+
+    float sceneHierarchyPosX = 0;
+    if (detailsContentNum == 2 && showFileExplorer || detailsContentNum == 3) {
+      sceneHierarchyPosX = sceneHierarchyWidth;
+    }
+
+    ImVec2 windowPos =
+        ImVec2(sceneHierarchyPosX, menuBarHeight + fpsWindowHeight);
+    ImVec2 windowSize = ImVec2(sceneHierarchyWidth,
+                               ImGui::GetIO().DisplaySize.y - menuBarHeight -
+                                   fpsWindowHeight - buttonWindowHeight);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("Scene Hierarchy", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      const char* title = "Scene Hierarchy";
+      ImVec2 textSize = ImGui::CalcTextSize(title);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", title);
+      ImGui::Separator();
+
+      ImVec2 listBoxSize = ImGui::GetContentRegionAvail();
+      if (ImGui::BeginListBox("##files", listBoxSize)) {
+        for (int i = 0; i < files.size(); i++) {
+          const bool isSelected = false;
+          if (ImGui::Selectable(files[i].c_str(), isSelected)) {
+          }
+        }
+        ImGui::EndListBox();
+      }
+      ImGui::End();
+    }
+  }
+}
+
+void BaseEditor::EditorDrawObjectInspector() {
+  if (showObjectInspector) {
+    std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
+                                      "Document.txt", "Video.mp4"};
+    float fpsWindowHeight = 0;
+    float buttonWindowHeight = 30.0f;
+    float menuBarHeight = ImGui::GetFrameHeight();
+
+    if (appPointer->GetGraphics().lock() &&
+        (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
+      fpsWindowHeight = 32.0f;
+    }
+
+    int detailsContentNum = 1;
+    if (showFileExplorer) {
+      detailsContentNum++;
+    }
+    if (showSceneHierarchy) {
+      detailsContentNum++;
+    }
+    float objectInspectorWidth =
+        ImGui::GetIO().DisplaySize.x / detailsContentNum;
+    float objectInspectorPosX = (detailsContentNum - 1) * objectInspectorWidth;
+
+    ImVec2 windowPos =
+        ImVec2(objectInspectorPosX, menuBarHeight + fpsWindowHeight);
+    ImVec2 windowSize = ImVec2(objectInspectorWidth,
+                               ImGui::GetIO().DisplaySize.y - menuBarHeight -
+                                   fpsWindowHeight - buttonWindowHeight);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("Object Inspector", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      const char* title = "Object Inspector";
+      ImVec2 textSize = ImGui::CalcTextSize(title);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", title);
+      ImGui::Separator();
+
+      ImGui::End();
+    }
+  }
 }

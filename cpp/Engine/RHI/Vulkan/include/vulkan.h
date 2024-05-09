@@ -90,6 +90,9 @@ class Vulkan final : public GraphicsInterface, public Base {
   bool showRenderFrameCount = false;
   bool showGameFrameCount = false;
 
+  uint32_t renderFrameCount = 0;
+  uint32_t gameFrameCount = 0;
+
   bool enableMipmap = false;
   bool enableZPrePass = false;
   bool enableShadowMap = false;
@@ -131,4 +134,10 @@ class Vulkan final : public GraphicsInterface, public Base {
   GLFWwindow* GetParentWindow();
   GLFWwindow* GetEditorWindow();
   bool GetLaunchSceneInEditor();
+
+  bool& GetShowRenderFrame() override { return showRenderFrameCount; }
+  bool& GetShowGameFrame() override { return showGameFrameCount; }
+
+  uint32_t GetRenderFrameCount() const { return renderFrameCount; }
+  uint32_t GetGameFrameCount() const { return gameFrameCount; }
 };

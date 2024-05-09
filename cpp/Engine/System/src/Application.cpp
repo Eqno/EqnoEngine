@@ -57,12 +57,15 @@ void Application::StartRenderLoop() {
   CreateLauncherScene();
   graphics->RenderLoop();
 
-  sceneLaunched = false;
   scene->Destroy();
   graphics->CleanupGraphics();
 
   passiveObjects.clear();
   activeObjects.clear();
+
+  graphics.reset();
+  scene.reset();
+  sceneLaunched = false;
 }
 
 void Application::TerminateScene() {
@@ -149,4 +152,16 @@ void Application::DestroyEditor() {
 int Application::GetGraphicsWindowWidth() { return graphics->GetWindowWidth(); }
 int Application::GetGraphicsWindowHeight() {
   return graphics->GetWindowHeight();
+}
+
+bool& Application::GetShowRenderFrame() {
+  return graphics->GetShowRenderFrame();
+}
+bool& Application::GetShowGameFrame() { return graphics->GetShowGameFrame(); }
+
+uint32_t Application::GetRenderFrameCount() const {
+  return graphics->GetRenderFrameCount();
+}
+uint32_t Application::GetGameFrameCount() const {
+  return graphics->GetGameFrameCount();
 }

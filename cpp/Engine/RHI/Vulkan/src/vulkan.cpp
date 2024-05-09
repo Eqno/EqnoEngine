@@ -130,7 +130,8 @@ void Vulkan::ShowGameFrameCount() {
   accumulateTime += GameDeltaTime;
 
   if (accumulateTime >= oneSecondTime) {
-    std::cout << "Current game frame count: " << frameCounter << "\n";
+    // std::cout << "Current game frame count: " << frameCounter << "\n";
+    gameFrameCount = frameCounter;
     accumulateTime -= oneSecondTime;
     frameCounter = 0;
   }
@@ -144,7 +145,9 @@ void Vulkan::ShowRenderFrameCount() {
   accumulateTime += RenderDeltaTime;
 
   if (accumulateTime >= oneSecondTime) {
-    std::cout << "Current render frame count: " << frameCounter << "\n";
+    // std::cout << "Current render frame count: " << frameCounter <<
+    // "\n";
+    renderFrameCount = frameCounter;
     accumulateTime -= oneSecondTime;
     frameCounter = 0;
   }

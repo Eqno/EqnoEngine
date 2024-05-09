@@ -31,6 +31,7 @@ class Application final : public BaseObject {
                    std::shared_ptr<BaseObject>(nullptr)) {}
   ~Application() override = default;
   std::unordered_map<int, std::weak_ptr<BaseLight>>& GetLightsById();
+  std::weak_ptr<GraphicsInterface> GetGraphics() const { return graphics; }
 
   void TriggerOnUpdate();
   void RunApplication();
@@ -57,10 +58,18 @@ class Application final : public BaseObject {
   int GetGraphicsWindowWidth();
   int GetGraphicsWindowHeight();
 
+  bool GetSceneLaunched() const { return sceneLaunched; };
+
  private:
   bool EnableEditor = false;
 
  public:
   bool GetEnableEditor() { return EnableEditor; }
   bool GetLaunchSceneInEditor() { return editor->GetLaunchSceneInEditor(); }
+
+  bool& GetShowRenderFrame();
+  bool& GetShowGameFrame();
+
+  uint32_t GetRenderFrameCount() const;
+  uint32_t GetGameFrameCount() const;
 };
