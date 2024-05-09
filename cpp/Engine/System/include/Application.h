@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Editor/include/BaseEditor.h>
 #include <Engine/System/include/BaseObject.h>
 #include <Engine/Utility/include/JsonUtils.h>
 
@@ -15,15 +16,13 @@ class Application final : public BaseObject {
   std::list<std::shared_ptr<BaseObject>> activeObjects;
 
   std::shared_ptr<BaseScene> scene;
+  std::shared_ptr<BaseEditor> editor;
   std::shared_ptr<GraphicsInterface> graphics;
 
+  bool sceneLaunched = false;
   void CreateGraphics();
-  void CreateEditor();
-  void CreateLauncherScene();
-
   void CreateWindow() const;
-  void LaunchScene();
-  void TerminateScene() const;
+  void CreateLauncherScene();
 
  public:
   template <typename... Args>
@@ -44,4 +43,20 @@ class Application final : public BaseObject {
 
   std::weak_ptr<LightChannel> GetLightChannelByName(
       const std::string& name) const;
+
+  void CreateEditor();
+  void UpdateEditor();
+  void DestroyEditor();
+
+  void LaunchScene();
+  void StartRenderLoop();
+  void TerminateScene();
+
+  GLFWwindow* GetEditorWindow() const { return editor->GetWindow(); }
+
+ private:
+  bool EnableEditor = false;
+
+ public:
+  bool GetEnableEditor() { return EnableEditor; }
 };

@@ -31,6 +31,8 @@ class Device : public Base {
   VkDevice logicalDevice;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
+  uint32_t graphicsFamily;
+  uint32_t presentFamily;
   VkQueue graphicsQueue;
   VkQueue presentQueue;
 
@@ -40,6 +42,9 @@ class Device : public Base {
  public:
   uint32_t GetMultiSampleNum() const;
   VkSampleCountFlagBits GetMaxUsableSampleCount(int msaaMaxSamples);
+
+  uint32_t GetGraphicsFamily() const { return graphicsFamily; }
+  uint32_t GetPresentFamily() const { return presentFamily; }
 
   /** Behaviors And Logic **/
   /**

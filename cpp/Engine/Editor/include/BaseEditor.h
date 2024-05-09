@@ -1,7 +1,38 @@
 #pragma once
 
-void LoadImgui();
+#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
+#include <Engine/System/include/BaseObject.h>
+#include <GLFW/glfw3.h>
 
-class BaseEditor {
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
 
+class Application;
+class BaseEditor : public BaseObject {
+ private:
+  ImGuiIO* ioPtr = nullptr;
+  GLFWwindow* window = nullptr;
+  ImGui_ImplVulkanH_Window* wd = nullptr;
+
+  // Our state
+  bool show_demo_window = true;
+  bool show_another_window = false;
+  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+ public:
+  template <typename... Args>
+  explicit BaseEditor(Args&&... args)
+      : BaseObject(std::forward<Args>(args)...) {}
+  ~BaseEditor() override = default;
+
+  Application* appPointer = nullptr;
+  void GetAppPointer();
+
+  void LoadImgui();
+  void UpdateImgui();
+  void DestroyImgui();
+
+  GLFWwindow* GetWindow() const { return window; }
 };

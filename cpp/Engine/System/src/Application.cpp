@@ -6,9 +6,11 @@
 #include <Engine/RHI/Vulkan/include/vulkan.h>
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Scene/include/StartScene.h>
+#include <Engine/System/include/BaseInput.h>
 #include <Engine/System/include/GraphicsInterface.h>
 
 #include <ranges>
+#include <thread>
 
 void Application::CreateGraphics() {
   const std::string apiPath = JSON_CONFIG(String, "GraphicsConfig");
@@ -25,32 +27,60 @@ void Application::CreateGraphics() {
   }
 }
 
-void Application::CreateEditor() { LoadImgui(); }
+void Application::CreateWindow() const {
+  graphics->CreateWindow(JSON_CONFIG(String, "ApplicationName"));
+  graphics->InitGraphics();
+}
 
 void Application::CreateLauncherScene() {
   const std::string scenePath = JSON_CONFIG(String, "LauncherScene");
   scene = Create<BaseScene>(graphics, GetRoot(), scenePath);
 }
 
-void Application::CreateWindow() const {
-  graphics->CreateWindow(JSON_CONFIG(String, "ApplicationName"));
-  graphics->InitGraphics();
+void Application::LaunchScene() {
+  if (sceneLaunched == false) {
+    sceneLaunched = true;
+    if (GetEnableEditor()) {
+      std::thread(&Application::StartRenderLoop, this).detach();
+    } else {
+      StartRenderLoop();
+    }
+  }
 }
 
-void Application::LaunchScene() {
+void Application::StartRenderLoop() {
+  CreateGraphics();
+  CreateWindow();
   CreateLauncherScene();
   graphics->RenderLoop();
-}
 
-void Application::TerminateScene() const {
+  sceneLaunched = false;
   scene->Destroy();
   graphics->CleanupGraphics();
+
+  passiveObjects.clear();
+  activeObjects.clear();
+}
+
+void Application::TerminateScene() {
+  if (sceneLaunched == true) {
+    graphics->SetRenderLoopShouldEnd(true);
+  }
 }
 
 void Application::RunApplication() {
-  CreateWindow();
-  LaunchScene();
-  TerminateScene();
+  const std::string configPath = JSON_CONFIG(String, "ApplicationConfig");
+  EnableEditor =
+      JsonUtils::ReadBoolFromFile(GetRoot() + configPath, "EnableEditor");
+
+  if (GetEnableEditor()) {
+    CreateEditor();
+    editor->UpdateImgui();
+    TerminateScene();
+    DestroyEditor();
+  } else {
+    LaunchScene();
+  }
 }
 
 void Application::TriggerOnUpdate() {
@@ -80,11 +110,7 @@ void Application::TriggerOnUpdate() {
   }
 }
 
-void Application::OnCreate() {
-  BaseObject::OnCreate();
-  CreateGraphics();
-  CreateEditor();
-}
+void Application::OnCreate() { BaseObject::OnCreate(); }
 void Application::OnStart() { BaseObject::OnStart(); }
 void Application::OnUpdate() { BaseObject::OnUpdate(); }
 void Application::OnStop() { BaseObject::OnStop(); }
@@ -102,4 +128,17 @@ Application::GetLightsById() {
 std::weak_ptr<LightChannel> Application::GetLightChannelByName(
     const std::string& name) const {
   return scene->GetLightChannelByName(name);
+}
+
+void Application::CreateEditor() {
+  std::cout << "Load Editor GUI\n";
+  editor = Create<BaseEditor>(GetRoot(), JSON_CONFIG(String, "EditorConfig"));
+  editor->LoadImgui();
+}
+
+void Application::UpdateEditor() { editor->UpdateImgui(); }
+
+void Application::DestroyEditor() {
+  std::cout << "Destroy Editor GUI\n";
+  editor->DestroyImgui();
 }

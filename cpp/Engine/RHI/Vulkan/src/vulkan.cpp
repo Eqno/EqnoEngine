@@ -38,6 +38,8 @@ void Vulkan::InitConfig() {
 
 void Vulkan::InitGraphics() {
   InitConfig();
+  GetAppPointer();
+
   instance.CreateInstance(validation);
   validation.SetupMessenger(instance.GetVkInstance());
   window.CreateSurface(instance.GetVkInstance());
@@ -84,7 +86,8 @@ void Vulkan::TriggerOnUpdate(
 }
 
 void Vulkan::GetAppPointer() {
-  if (auto ownerPtr = _owner.lock()) {
+  if (appPointer == nullptr) {
+    auto ownerPtr = _owner.lock();
     appPointer = static_pointer_cast<Application>(ownerPtr).get();
   }
 }
@@ -153,7 +156,6 @@ void Vulkan::GameLoop() {
     if (showGameFrameCount == true) {
       ShowGameFrameCount();
     }
-
     Input::RecordDownUpFlags();
     appPointer->TriggerOnUpdate();
     Input::ResetDownUpFlags();
@@ -161,13 +163,13 @@ void Vulkan::GameLoop() {
 }
 
 void Vulkan::RenderLoop() {
-  GetAppPointer();
-  if (appPointer == nullptr) {
-    return;
-  }
   SetRenderLoopEnd(false);
   std::thread(&Vulkan::GameLoop, this).detach();
-  while (!glfwWindowShouldClose(window.window)) {
+
+  while (!GetRenderLoopShouldEnd() &&
+         !glfwWindowShouldClose(window.GetWindow())) {
+    glfwPollEvents();
+
     if (showRenderFrameCount == true) {
       UpdateRenderDeltaTime();
       ShowRenderFrameCount();
@@ -176,7 +178,6 @@ void Vulkan::RenderLoop() {
     TriggerOnUpdate(appPointer->GetLightsById());
     ReleaseBufferLocks();
 
-    glfwPollEvents();
     render.DrawFrame(device, drawsByShader, appPointer->GetLightsById(),
                      window);
     device.WaitIdle();
@@ -279,4 +280,9 @@ std::weak_ptr<LightChannel> Vulkan::GetLightChannelByName(
     const std::string& name) {
   GetAppPointer();
   return appPointer->GetLightChannelByName(name);
+}
+
+bool Vulkan::GetEnableEditor() {
+  GetAppPointer();
+  return appPointer->GetEnableEditor();
 }

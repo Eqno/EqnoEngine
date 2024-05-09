@@ -129,6 +129,7 @@ void SwapChain::CreateSwapChain(const Device& device, const Window& window) {
                           swapChainImages.data());
 
   imageFormat = format;
+  imageColorSpace = colorSpace;
   extent = newExtent;
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine/System/include/GraphicsInterface.h>
+#include <GLFW/glfw3.h>
 
 #include <atomic>
 #include <mutex>
@@ -74,6 +75,7 @@ class Vulkan final : public GraphicsInterface, public Base {
     drawsByShader.erase(shader);
   }
   void RemoveDrawByPipeline(const int id) { drawsByPipeline.erase(id); }
+  GLFWwindow* GetWindow() const override { return window.GetWindow(); }
 
  private:
   const float oneSecondTime = 1;
@@ -118,4 +120,6 @@ class Vulkan final : public GraphicsInterface, public Base {
   float GetDepthBiasSlopeFactor() const { return depthBiasSlopeFactor; }
   float GetDepthBiasConstantFactor() const { return depthBiasConstantFactor; }
   std::weak_ptr<LightChannel> GetLightChannelByName(const std::string& name);
+
+  bool GetEnableEditor();
 };

@@ -1,5 +1,6 @@
 #include "../include/window.h"
 
+#include <Engine/RHI/Vulkan/include/vulkan.h>
 #include <Engine/System/include/BaseInput.h>
 #include <Engine/Utility/include/TypeUtils.h>
 
@@ -29,8 +30,10 @@ std::pair<const char**, uint32_t> Window::GetRequiredExtensions() {
 
 void Window::CreateWindow(const int width, const int height,
                           const std::string& title) {
-  glfwInit();
-  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  if (static_cast<Vulkan*>(owner)->GetEnableEditor() == false) {
+    glfwInit();
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  }
 
   window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
   glfwSetWindowUserPointer(window, this);
@@ -55,7 +58,9 @@ void Window::DestroySurface(const VkInstance& instance) const {
 
 void Window::DestroyWindow() const {
   glfwDestroyWindow(window);
-  glfwTerminate();
+  if (static_cast<Vulkan*>(owner)->GetEnableEditor() == false) {
+    glfwTerminate();
+  }
 }
 
 void Window::OnRecreateSwapChain() const {

@@ -12,22 +12,17 @@
 struct GLFWwindow;
 
 class Window : public Base {
-  VkSurfaceKHR surface{};
+  VkSurfaceKHR surface;
+  GLFWwindow* window = nullptr;
   bool frameBufferResized = false;
 
  public:
-  GLFWwindow* window = nullptr;
+  GLFWwindow* GetWindow() const { return window; }
+  const VkSurfaceKHR& GetSurface() const { return surface; }
 
-  [[nodiscard]] const VkSurfaceKHR& GetSurface() const { return surface; }
-
-  [[nodiscard]] std::pair<int, int> GetFrameBufferSize() const;
-
-  [[nodiscard]] const bool& GetFrameBufferResized() const {
-    return frameBufferResized;
-  }
-
-  [[nodiscard]] static std::pair<const char**, uint32_t>
-  GetRequiredExtensions();
+  std::pair<int, int> GetFrameBufferSize() const;
+  const bool& GetFrameBufferResized() const { return frameBufferResized; }
+  static std::pair<const char**, uint32_t> GetRequiredExtensions();
 
   void SetFrameBufferResized(const bool resized) {
     frameBufferResized = resized;

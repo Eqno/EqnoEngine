@@ -188,11 +188,12 @@ void Device::CreateLogicalDevice(const VkSurfaceKHR& surface,
   constexpr auto queuePriorities = 1.0f;
   DeviceCheck::QueueCreateInfos queueCreateInfos{};
 
-  const auto [graphicsFamily, presentFamily] =
+  const auto [_graphicsFamily, _presentFamily] =
       DeviceCheck::FindQueueFamilies(physicalDevice, surface);
-  for (const std::set uniqueQueueFamilies =
-           {graphicsFamily.has_value() ? graphicsFamily.value() : 0,
-            presentFamily.has_value() ? presentFamily.value() : 0};
+  graphicsFamily = _graphicsFamily.has_value() ? _graphicsFamily.value() : 0;
+  presentFamily = _presentFamily.has_value() ? _presentFamily.value() : 0;
+
+  for (const std::set uniqueQueueFamilies = {graphicsFamily, presentFamily};
        const auto queueFamily : uniqueQueueFamilies) {
     queueCreateInfos.push_back({
         .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -223,10 +224,6 @@ void Device::CreateLogicalDevice(const VkSurfaceKHR& surface,
       VK_SUCCESS) {
     PRINT_AND_THROW_ERROR("failed to create logical logicalDevice!");
   }
-  vkGetDeviceQueue(logicalDevice,
-                   graphicsFamily.has_value() ? graphicsFamily.value() : 0, 0,
-                   &graphicsQueue);
-  vkGetDeviceQueue(logicalDevice,
-                   presentFamily.has_value() ? presentFamily.value() : 0, 0,
-                   &presentQueue);
+  vkGetDeviceQueue(logicalDevice, graphicsFamily, 0, &graphicsQueue);
+  vkGetDeviceQueue(logicalDevice, presentFamily, 0, &presentQueue);
 }

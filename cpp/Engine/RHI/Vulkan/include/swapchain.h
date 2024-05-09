@@ -26,6 +26,7 @@ class SwapChain : public Base {
   VkSwapchainKHR chain;
   VkExtent2D extent;
   VkFormat imageFormat;
+  VkColorSpaceKHR imageColorSpace;
 
   VkFormat surfaceFormat = VK_FORMAT_R8G8B8A8_SRGB;
   VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
@@ -81,6 +82,7 @@ class SwapChain : public Base {
   const VkExtent2D& GetExtent() const { return extent; }
 
   VkFormat GetImageFormat() const { return imageFormat; }
+  VkColorSpaceKHR GetImageColorSpace() const { return imageColorSpace; }
   VkFormat GetZPrePassDepthFormat() const {
     return zPrePassDepth.GetDepthFormat();
   }

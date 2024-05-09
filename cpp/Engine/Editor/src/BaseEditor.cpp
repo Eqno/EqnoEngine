@@ -1,41 +1,8 @@
 #include <Engine/Editor/include/BaseEditor.h>
-
-// Dear ImGui: standalone example application for Glfw + Vulkan
-
-// Learn about Dear ImGui:
-// - FAQ                  https://dearimgui.com/faq
-// - Getting Started      https://dearimgui.com/getting-started
-// - Documentation        https://dearimgui.com/docs (same as your local docs/
-// folder).
-// - Introduction, links and more at the top of imgui.cpp
-
-// Important note to the reader who wish to integrate imgui_impl_vulkan.cpp/.h
-// in their own engine/app.
-// - Common ImGui_ImplVulkan_XXX functions and structures are used to interface
-// with imgui_impl_vulkan.cpp/.h.
-//   You will use those if you want to use this rendering backend in your
-//   engine/app.
-// - Helper ImGui_ImplVulkanH_XXX functions and structures are only used by this
-// example (main.cpp) and by
-//   the backend itself (imgui_impl_vulkan.cpp), but should PROBABLY NOT be used
-//   by your own engine/app code.
-// Read comments in imgui_impl_vulkan.h.
-
+#include <Engine/System/include/Application.h>
+#include <Engine/System/include/BaseInput.h>
 #include <stdio.h>   // printf, fprintf
 #include <stdlib.h>  // abort
-
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
-#define GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-// Volk headers
-#ifdef IMGUI_IMPL_VULKAN_USE_VOLK
-#define VOLK_IMPLEMENTATION
-#include <Volk/volk.h>
-#endif
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to
 // maximize ease of testing and compatibility with old VS compilers. To link
@@ -436,15 +403,24 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd) {
       wd->SemaphoreCount;  // Now we can use the next set of semaphores
 }
 
+void BaseEditor::GetAppPointer() {
+  if (appPointer == nullptr) {
+    auto ownerPtr = _owner.lock();
+    appPointer = static_pointer_cast<Application>(ownerPtr).get();
+  }
+}
+
 // Main code
-void LoadImgui() {
+void BaseEditor::LoadImgui() {
+  GetAppPointer();
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) return;
 
   // Create window with Vulkan context
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  GLFWwindow* window = glfwCreateWindow(
-      1280, 720, "Dear ImGui GLFW+Vulkan example", nullptr, nullptr);
+  window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+Vulkan example",
+                            nullptr, nullptr);
+
   if (!glfwVulkanSupported()) {
     printf("GLFW: Vulkan Not Supported\n");
     return;
@@ -467,7 +443,7 @@ void LoadImgui() {
   // Create Framebuffers
   int w, h;
   glfwGetFramebufferSize(window, &w, &h);
-  ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
+  wd = &g_MainWindowData;
   SetupVulkanWindow(wd, surface, w, h);
 
   // Setup Dear ImGui context
@@ -475,6 +451,7 @@ void LoadImgui() {
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
   (void)io;
+  ioPtr = &io;
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
   io.ConfigFlags |=
@@ -528,23 +505,10 @@ void LoadImgui() {
   // ImFont* font =
   // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
   // nullptr, io.Fonts->GetGlyphRangesJapanese()); IM_ASSERT(font != nullptr);
+}
 
-  // Our state
-  bool show_demo_window = true;
-  bool show_another_window = false;
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-  // Main loop
+void BaseEditor::UpdateImgui() {
   while (!glfwWindowShouldClose(window)) {
-    // Poll and handle events (inputs, window resize, etc.)
-    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to
-    // tell if dear imgui wants to use your inputs.
-    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to
-    // your main application, or clear/overwrite your copy of the mouse data.
-    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input
-    // data to your main application, or clear/overwrite your copy of the
-    // keyboard data. Generally you may always pass all inputs to dear imgui,
-    // and hide them from your application based on those two flags.
     glfwPollEvents();
 
     // Resize swap chain?
@@ -595,14 +559,21 @@ void LoadImgui() {
           (float*)&clear_color);  // Edit 3 floats representing a color
 
       if (ImGui::Button(
-              "Button"))  // Buttons return true when clicked (most widgets
-                          // return true when edited/activated)
+              "Button"))  // Buttons return true when clicked (most
+                          // widgets return true when edited/activated)
         counter++;
       ImGui::SameLine();
       ImGui::Text("counter = %d", counter);
 
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                  1000.0f / io.Framerate, io.Framerate);
+                  1000.0f / ioPtr->Framerate, ioPtr->Framerate);
+
+      if (ImGui::Button("Launch Scene")) {
+        appPointer->LaunchScene();
+      }
+      if (ImGui::Button("Terminate Scene")) {
+        appPointer->TerminateScene();
+      }
       ImGui::End();
     }
 
@@ -632,9 +603,11 @@ void LoadImgui() {
       FramePresent(wd);
     }
   }
+}
 
+void BaseEditor::DestroyImgui() {
   // Cleanup
-  err = vkDeviceWaitIdle(g_Device);
+  VkResult err = vkDeviceWaitIdle(g_Device);
   check_vk_result(err);
   ImGui_ImplVulkan_Shutdown();
   ImGui_ImplGlfw_Shutdown();
