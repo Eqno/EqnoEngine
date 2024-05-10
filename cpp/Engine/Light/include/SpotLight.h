@@ -28,9 +28,9 @@ class SpotLight : public BaseLight {
   }
 
   virtual void UpdateViewMatrix() override {
-    viewMatrix = lookAt(transform.absolutePosition,
-                        transform.absolutePosition + transform.absoluteForward,
-                        transform.absoluteUp);
+    viewMatrix =
+        lookAt(GetAbsolutePosition(),
+               GetAbsolutePosition() + GetAbsoluteForward(), GetAbsoluteUp());
   }
 
   virtual void UpdateProjMatrix() override {

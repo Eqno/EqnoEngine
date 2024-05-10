@@ -58,6 +58,7 @@ class BaseScene final : public BaseObject {
   }
   void AddModelToResourceWaitQueue(std::function<void()> func,
                                    std::shared_ptr<BaseObject> obj);
+  std::weak_ptr<SceneObject> GetRootObject() { return rootObject; }
 
   virtual void OnCreate() override;
   virtual void OnStart() override;

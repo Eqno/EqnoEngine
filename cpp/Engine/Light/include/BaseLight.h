@@ -36,8 +36,8 @@ class BaseLight : public SceneObject {
   virtual float& GetIntensity() { return intensity; }
   virtual glm::vec4& GetColor() { return color; }
 
-  virtual glm::vec3& GetPosition() { return GetAbsolutePosition(); }
-  virtual glm::vec3& GetNormal() { return GetAbsoluteForward(); }
+  virtual const glm::vec3& GetPosition() const { return GetAbsolutePosition(); }
+  virtual const glm::vec3& GetNormal() { return GetAbsoluteForward(); }
 
   virtual void UpdateViewMatrix() = 0;
   virtual void UpdateProjMatrix() = 0;

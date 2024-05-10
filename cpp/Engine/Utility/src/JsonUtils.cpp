@@ -102,8 +102,8 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
           val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
           val["Path"].GetString(), owner);
       if (val.HasMember("Transform")) {
-        std::static_pointer_cast<BaseCamera>(object)->InitRotation(
-            ParseGLMVec3(val["Transform"]["Rotation"].GetString()));
+        std::static_pointer_cast<BaseCamera>(object)->InitRotation(glm::radians(
+            ParseGLMVec3(val["Transform"]["Rotation"].GetString())));
       }
     } else if (strcmp(val["Type"].GetString(), "SpotLight") == 0) {
       object = BaseObject::CreateImmediately<SpotLight>(
@@ -124,7 +124,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
       }
       if (trans.HasMember("Rotation")) {
         object->SetRelativeRotation(
-            ParseGLMVec3(trans["Rotation"].GetString()));
+            glm::radians(ParseGLMVec3(trans["Rotation"].GetString())));
       }
       if (trans.HasMember("Position")) {
         object->SetRelativePosition(

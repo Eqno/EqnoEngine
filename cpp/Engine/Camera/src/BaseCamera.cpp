@@ -5,9 +5,9 @@
 #include <Engine/System/include/GraphicsInterface.h>
 
 void BaseCamera::UpdateViewMatrix() {
-  viewMatrix = lookAt(transform.absolutePosition,
-                      transform.absolutePosition + transform.absoluteForward,
-                      transform.absoluteUp);
+  viewMatrix =
+      lookAt(GetAbsolutePosition(),
+             GetAbsolutePosition() + GetAbsoluteForward(), GetAbsoluteUp());
 }
 
 void BaseCamera::UpdateProjMatrix() {
@@ -72,28 +72,28 @@ void BaseCamera::OnDestroy() {
 
 void BaseCamera::PerformTraslation() {
   if (Input::Key::w) {
-    SetRelativePosition(transform.relativePosition +
-                        transform.relativeForward * moveSpeed * GameDeltaTime);
+    SetRelativePosition(GetRelativePosition() +
+                        GetRelativeForward() * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::a) {
-    SetRelativePosition(transform.relativePosition +
-                        transform.relativeLeft * moveSpeed * GameDeltaTime);
+    SetRelativePosition(GetRelativePosition() +
+                        GetRelativeLeft() * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::s) {
-    SetRelativePosition(transform.relativePosition -
-                        transform.relativeForward * moveSpeed * GameDeltaTime);
+    SetRelativePosition(GetRelativePosition() -
+                        GetRelativeForward() * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::d) {
-    SetRelativePosition(transform.relativePosition -
-                        transform.relativeLeft * moveSpeed * GameDeltaTime);
+    SetRelativePosition(GetRelativePosition() -
+                        GetRelativeLeft() * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::q) {
-    SetRelativePosition(transform.relativePosition -
-                        transform.relativeUp * moveSpeed * GameDeltaTime);
+    SetRelativePosition(GetRelativePosition() -
+                        GetRelativeUp() * moveSpeed * GameDeltaTime);
   }
   if (Input::Key::e) {
-    SetRelativePosition(transform.relativePosition +
-                        transform.relativeUp * moveSpeed * GameDeltaTime);
+    SetRelativePosition(GetRelativePosition() +
+                        GetRelativeUp() * moveSpeed * GameDeltaTime);
   }
   if (Input::Mouse::scrollY > 0) {
     if (Input::Key::leftShift) {

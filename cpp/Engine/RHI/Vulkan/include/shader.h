@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glslc/file_includer.h>
+#include <libshaderc_util/file_finder.h>
 #include <vulkan/vulkan_core.h>
 
 #include <shaderc/shaderc.hpp>
@@ -21,18 +23,46 @@ struct ShaderTypeInfo {
 };
 
 class Shader : public Base {
+  shaderc::Compiler compiler;
+  shaderc::CompileOptions options;
+  shaderc_util::FileFinder fileFinder;
+  std::unordered_map<std::string, ShaderTypeInfo> shaderTypes{
+      // Forward shading
+      {"vert",
+       {PipelineType::Forward, shaderc_glsl_vertex_shader,
+        VK_SHADER_STAGE_VERTEX_BIT, "main"}},
+      {"frag",
+       {PipelineType::Forward, shaderc_glsl_fragment_shader,
+        VK_SHADER_STAGE_FRAGMENT_BIT, "main"}},
+
+      // Deferred shading
+      {"verto",
+       {PipelineType::DeferredOutputGBuffer, shaderc_glsl_vertex_shader,
+        VK_SHADER_STAGE_VERTEX_BIT, "main"}},
+      {"frago",
+       {PipelineType::DeferredOutputGBuffer, shaderc_glsl_fragment_shader,
+        VK_SHADER_STAGE_FRAGMENT_BIT, "main"}},
+
+      {"vertp",
+       {PipelineType::DeferredProcessGBuffer, shaderc_glsl_vertex_shader,
+        VK_SHADER_STAGE_VERTEX_BIT, "main"}},
+      {"fragp",
+       {PipelineType::DeferredProcessGBuffer, shaderc_glsl_fragment_shader,
+        VK_SHADER_STAGE_FRAGMENT_BIT, "main"}},
+  };
+
   std::string shaderPath = "Unset";
   mutable std::vector<VkShaderModule> shaderModules;
-  static const ShaderTypeInfo& GetTypeByName(const std::string& glslPath);
+  const ShaderTypeInfo& GetTypeByName(const std::string& glslPath);
 
-  [[nodiscard]] static UIntegers ReadSPVFileAsBinary(
-      const std::string& spvPath, const std::string& shaderPath);
+  UIntegers ReadSPVFileAsBinary(const std::string& spvPath,
+                                const std::string& shaderPath);
 
-  [[nodiscard]] static UIntegers ReadGLSLFileAsBinary(
-      const std::string& glslPath, const std::string& shaderPath);
+  UIntegers ReadGLSLFileAsBinary(const std::string& glslPath,
+                                 const std::string& shaderPath);
 
-  static void CompileFromGLSLToSPV(const std::string& glslPath,
-                                   const std::string& shaderPath);
+  void CompileFromGLSLToSPV(const std::string& glslPath,
+                            const std::string& shaderPath);
 
   static VkShaderModule CreateModule(const UIntegers& code,
                                      const VkDevice& device);
@@ -47,13 +77,13 @@ class Shader : public Base {
   void SetGenerateDebugInfo(const bool flag);
   void DestroyModules(const VkDevice& device) const;
 
-  [[nodiscard]] ShaderStages AutoCreateStages(
-      const VkDevice& device, const std::string& rootPath,
-      const std::string& shaderPaths) const;
+  [[nodiscard]] ShaderStages AutoCreateStages(const VkDevice& device,
+                                              const std::string& rootPath,
+                                              const std::string& shaderPaths);
 
   [[nodiscard]] std::vector<ShaderStages> AutoCreateStagesSet(
       const VkDevice& device, const std::string& rootPath,
-      const std::vector<std::string>& shaderPath) const;
+      const std::vector<std::string>& shaderPath);
 
   const std::string& GetShaderPath() { return shaderPath; }
   void SetShaderPath(const std::string& shaderPath) {

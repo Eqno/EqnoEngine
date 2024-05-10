@@ -73,6 +73,7 @@ class Application final : public BaseObject {
                                    std::shared_ptr<BaseObject> obj) {
     modelResourceManager.AddToWaitQueue(func, obj);
   }
+  std::weak_ptr<SceneObject> GetSceneRootObject();
 
  private:
   bool EnableEditor = false;

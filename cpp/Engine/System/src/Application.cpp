@@ -116,6 +116,13 @@ void Application::TriggerOnUpdate() {
   }
 }
 
+std::weak_ptr<SceneObject> Application::GetSceneRootObject() {
+  if (scene) {
+    return scene->GetRootObject();
+  }
+  return std::shared_ptr<SceneObject>(nullptr);
+}
+
 void Application::OnCreate() { BaseObject::OnCreate(); }
 void Application::OnStart() { BaseObject::OnStart(); }
 void Application::OnUpdate() { BaseObject::OnUpdate(); }

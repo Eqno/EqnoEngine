@@ -31,9 +31,9 @@ class SunLight : public BaseLight {
   virtual void OnUpdate() { BaseLight::OnUpdate(); }
 
   virtual void UpdateViewMatrix() override {
-    viewMatrix = lookAt(transform.absolutePosition,
-                        transform.absolutePosition + transform.absoluteForward,
-                        transform.absoluteUp);
+    viewMatrix =
+        lookAt(GetAbsolutePosition(),
+               GetAbsolutePosition() + GetAbsoluteForward(), GetAbsoluteUp());
   }
 
   virtual void UpdateProjMatrix() override {

@@ -1,4 +1,6 @@
+#include <Engine/Camera/include/BaseCamera.h>
 #include <Engine/Editor/include/BaseEditor.h>
+#include <Engine/Scene/include/SceneObject.h>
 #include <Engine/System/include/Application.h>
 #include <Engine/System/include/BaseInput.h>
 #include <stdio.h>   // printf, fprintf
@@ -530,10 +532,6 @@ void BaseEditor::LoadImgui() {
   init_info.Allocator = g_Allocator;
   init_info.CheckVkResultFn = check_vk_result;
   ImGui_ImplVulkan_Init(&init_info);
-
-  if (appPointer->GetLaunchSceneInEditor()) {
-    appPointer->LaunchScene();
-  }
 }
 
 void BaseEditor::UpdateImgui() {
@@ -777,33 +775,23 @@ void BaseEditor::EditorDrawLaunchCommand() {
                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
                        ImGuiWindowFlags_NoSavedSettings)) {
-    if (appPointer->GetLaunchSceneInEditor()) {
-      float buttonWidth = 150.0f;
-      float buttonHeight = 30.0f;
-      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - buttonWidth) * 0.5f);
-      ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
-      if (ImGui::Button("Restart Scene", ImVec2(buttonWidth, buttonHeight))) {
-        appPointer->TerminateScene();
-        while (appPointer->GetSceneLaunched() == true)
-          ;
-        appPointer->LaunchScene();
-      }
-    } else {
-      float buttonWidth = 150.0f;
-      float buttonHeight = 30.0f;
-      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 161);
-      ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
-      if (ImGui::Button("Launch Scene", ImVec2(buttonWidth, buttonHeight))) {
-        appPointer->LaunchScene();
-      }
-      ImGui::SameLine();
-      ImGui::Text("|");
-      ImGui::SameLine();
-      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 13);
-      ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
-      if (ImGui::Button("Terminate Scene", ImVec2(buttonWidth, buttonHeight))) {
-        appPointer->TerminateScene();
-      }
+    float buttonWidth = 150.0f;
+    float buttonHeight = 30.0f;
+    ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 161);
+    ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
+    if (ImGui::Button("Launch Scene", ImVec2(buttonWidth, buttonHeight))) {
+      appPointer->LaunchScene();
+      showSceneHierarchy = true;
+      expandAllObjects = true;
+    }
+    ImGui::SameLine();
+    ImGui::Text("|");
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 13);
+    ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
+    if (ImGui::Button("Terminate Scene", ImVec2(buttonWidth, buttonHeight))) {
+      appPointer->TerminateScene();
+      showSceneHierarchy = false;
     }
     ImGui::End();
   }
@@ -827,19 +815,32 @@ Document* BaseEditor::LoadJsonFile(const fs::path& path) {
   return doc;
 }
 
-void BaseEditor::DisplayJson(Value& value) {
+void BaseEditor::DisplayJson(Value& value, bool& modifiedValue) {
+  if (modifiedValue) {
+    return;
+  }
   if (value.IsObject()) {
     for (auto it = value.MemberBegin(); it != value.MemberEnd(); ++it) {
+      if (expandAllProperties) {
+        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+      } else if (collapseAllProperties) {
+        ImGui::SetNextItemOpen(false, ImGuiCond_Always);
+      }
       if (ImGui::TreeNode(it->name.GetString())) {
-        DisplayJson(it->value);
+        DisplayJson(it->value, modifiedValue);
         ImGui::TreePop();
       }
     }
   } else if (value.IsArray()) {
     int index = 0;
     for (auto& item : value.GetArray()) {
+      if (expandAllProperties) {
+        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+      } else if (collapseAllProperties) {
+        ImGui::SetNextItemOpen(false, ImGuiCond_Always);
+      }
       if (ImGui::TreeNode(("Index " + std::to_string(index++)).c_str())) {
-        DisplayJson(item);
+        DisplayJson(item, modifiedValue);
         ImGui::TreePop();
       }
     }
@@ -847,6 +848,7 @@ void BaseEditor::DisplayJson(Value& value) {
     bool val = value.GetBool();
     if (ImGui::Checkbox("##Value", &val)) {
       value.SetBool(val);
+      modifiedValue = true;
       JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
                                      false);
     }
@@ -855,6 +857,7 @@ void BaseEditor::DisplayJson(Value& value) {
     if (ImGui::InputInt("##Value", &val, 0, 0,
                         ImGuiInputTextFlags_EnterReturnsTrue)) {
       value.SetInt(val);
+      modifiedValue = true;
       JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
                                      false);
     }
@@ -863,27 +866,27 @@ void BaseEditor::DisplayJson(Value& value) {
     if (ImGui::InputDouble("##Value", &val, 0, 0, "%.4f",
                            ImGuiInputTextFlags_EnterReturnsTrue)) {
       value.SetDouble(val);
+      modifiedValue = true;
       JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
                                      false);
     }
   } else if (value.IsString()) {
     std::string val = value.GetString();
 
-    static char buf[256]{};
-    static bool firstRead = true;
-    if (firstRead) {
-      firstRead = false;
-      strncpy_s(buf, sizeof(buf), val.c_str(), _TRUNCATE);
-    }
+    char buf[256];
+    strncpy_s(buf, sizeof(buf), val.c_str(), sizeof(buf));
+    buf[val.size()] = 0;
 
     if (ImGui::InputText("##Value", buf, sizeof(buf),
                          ImGuiInputTextFlags_EnterReturnsTrue)) {
+      auto& allocator = selectedFile.second->GetAllocator();
+
       std::string bufStr(buf);
-      value.SetString(bufStr.data(), bufStr.size());
+      value.SetString(bufStr.data(), bufStr.size(), allocator);
+
+      modifiedValue = true;
       JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
                                      false);
-      val = value.GetString();
-      strncpy_s(buf, sizeof(buf), val.c_str(), _TRUNCATE);
     }
   }
 }
@@ -891,9 +894,9 @@ void BaseEditor::DisplayJson(Value& value) {
 void BaseEditor::DisplayDirectory(const fs::path& path) {
   for (const auto& entry : fs::directory_iterator(path)) {
     if (entry.is_directory()) {
-      if (expandAll) {
+      if (expandAllFiles) {
         ImGui::SetNextItemOpen(true, ImGuiCond_Always);
-      } else if (collapseAll) {
+      } else if (collapseAllFiles) {
         ImGui::SetNextItemOpen(false, ImGuiCond_Always);
       }
       if (ImGui::TreeNode(entry.path().filename().string().c_str())) {
@@ -909,6 +912,8 @@ void BaseEditor::DisplayDirectory(const fs::path& path) {
                 selected)) {
           selectedFile.first = entry.path().string();
           selectedFile.second = LoadJsonFile(selectedFile.first);
+          lastSelectType = LastSelectType::File;
+          expandAllProperties = true;
         }
       } else if (onlyShowEngineFiles == false) {
         ImGui::BulletText("%s", entry.path().filename().string().c_str());
@@ -964,7 +969,7 @@ void BaseEditor::EditorDrawFileExplorer() {
     windowSize =
         ImVec2(fileExplorerWidth, ImGui::GetIO().DisplaySize.y - menuBarHeight -
                                       topWindowHeight - titleWindowSizeY -
-                                      buttonWindowHeight - 35.0f);
+                                      buttonWindowHeight - 70.0f);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -977,6 +982,28 @@ void BaseEditor::EditorDrawFileExplorer() {
                          ImGuiWindowFlags_NoSavedSettings)) {
       DisplayDirectory(fs::current_path().string() + "/" +
                        appPointer->GetRoot());
+      expandAllFiles = false;
+      collapseAllFiles = false;
+      ImGui::End();
+    }
+
+    windowPos = ImVec2(0, ImGui::GetIO().DisplaySize.y - 100.0f);
+    windowSize = ImVec2(fileExplorerWidth, 35.0f);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("File Explorer CheckBox", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      ImGui::SetCursorPosX(
+          (ImGui::GetWindowSize().x -
+           ImGui::CalcTextSize("Only show engine/game files").x) *
+          0.5f);
+      ImGui::Checkbox("Only show engine/game files", &onlyShowEngineFiles);
       ImGui::End();
     }
 
@@ -992,43 +1019,80 @@ void BaseEditor::EditorDrawFileExplorer() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      expandAll = false;
-      collapseAll = false;
-
-      float buttonWidth = 90.0f;
+      float buttonWidth = 120.0f;
       float buttonHeight = 20.0f;
-      float leftPosition = 45.0f;
 
-      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - leftPosition -
-                           150);
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 202.0f);
       if (ImGui::Button("Expand All", ImVec2(buttonWidth, buttonHeight))) {
-        expandAll = true;
+        expandAllFiles = true;
       }
 
       ImGui::SameLine();
       ImGui::Text("|");
       ImGui::SameLine();
 
-      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - leftPosition - 37);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - buttonWidth) * 0.5f);
       if (ImGui::Button("Collapse All", ImVec2(buttonWidth, buttonHeight))) {
-        collapseAll = true;
+        collapseAllFiles = true;
       }
 
       ImGui::SameLine();
       ImGui::Text("|");
       ImGui::SameLine();
 
-      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - leftPosition + 76);
-      ImGui::Checkbox("Only show game files", &onlyShowEngineFiles);
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 82.0f);
+      if (ImGui::Button("Add To Scene", ImVec2(buttonWidth, buttonHeight))) {
+      }
       ImGui::End();
     }
   }
 }
 
+void BaseEditor::DisplayHierarchy(std::weak_ptr<SceneObject> root,
+                                  std::string path) {
+  if (auto rootPtr = root.lock()) {
+    path += "/" + rootPtr->GetName();
+    if (rootPtr->GetSons().empty() == false) {
+      if (expandAllObjects) {
+        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+      } else if (collapseAllObjects) {
+        ImGui::SetNextItemOpen(false, ImGuiCond_Always);
+      }
+      if (ImGui::TreeNode(rootPtr->GetName().c_str())) {
+        bool selected = (path == selectedObject.first);
+        if (ImGui::Selectable((" * " + rootPtr->GetName() + " (Self)").c_str(),
+                              selected)) {
+          selectedObject.first = path;
+          selectedObject.second = root;
+          lastSelectType = LastSelectType::Object;
+          expandAllProperties = true;
+        }
+        for (std::weak_ptr<SceneObject> son : rootPtr->GetSons()) {
+          DisplayHierarchy(son, path);
+        }
+        ImGui::TreePop();
+      }
+    } else {
+      bool selected = (path == selectedObject.first);
+      if (ImGui::Selectable((" * " + rootPtr->GetName()).c_str(), selected)) {
+        selectedObject.first = path;
+        selectedObject.second = root;
+        lastSelectType = LastSelectType::Object;
+        expandAllProperties = true;
+      }
+    }
+  }
+}
+
 void BaseEditor::EditorDrawSceneHierarchy() {
+  static bool lastShowSceneHierarchy = showSceneHierarchy;
+  if (lastShowSceneHierarchy != showSceneHierarchy) {
+    if (showSceneHierarchy) {
+      expandAllObjects = true;
+    }
+    lastShowSceneHierarchy = showSceneHierarchy;
+  }
   if (showSceneHierarchy) {
-    std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
-                                      "Document.txt", "Video.mp4"};
     float topWindowHeight = 0;
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
@@ -1080,9 +1144,9 @@ void BaseEditor::EditorDrawSceneHierarchy() {
     windowPos = ImVec2(sceneHierarchyPosX,
                        menuBarHeight + topWindowHeight + titleWindowSizeY);
     windowSize =
-        ImVec2(sceneHierarchyWidth, ImGui::GetIO().DisplaySize.y -
-                                        menuBarHeight - topWindowHeight -
-                                        titleWindowSizeY - buttonWindowHeight);
+        ImVec2(sceneHierarchyWidth,
+               ImGui::GetIO().DisplaySize.y - menuBarHeight - topWindowHeight -
+                   titleWindowSizeY - buttonWindowHeight - 35.0f);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -1093,21 +1157,120 @@ void BaseEditor::EditorDrawSceneHierarchy() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      ImVec2 listBoxSize = ImGui::GetContentRegionAvail();
-      if (ImGui::BeginListBox("##files", listBoxSize)) {
-        for (int i = 0; i < files.size(); i++) {
-          const bool isSelected = false;
-          if (ImGui::Selectable(files[i].c_str(), isSelected)) {
-          }
-        }
-        ImGui::EndListBox();
+      DisplayHierarchy(appPointer->GetSceneRootObject(), "");
+      expandAllObjects = false;
+      collapseAllObjects = false;
+      ImGui::End();
+    }
+
+    windowPos =
+        ImVec2(sceneHierarchyPosX, ImGui::GetIO().DisplaySize.y - 65.0f);
+    windowSize = ImVec2(sceneHierarchyWidth, 35.0f);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("Scene Hierarchy Command", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      float buttonWidth = 120.0f;
+      float buttonHeight = 20.0f;
+
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 202.0f);
+      if (ImGui::Button("Expand All", ImVec2(buttonWidth, buttonHeight))) {
+        expandAllObjects = true;
+      }
+
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - buttonWidth) * 0.5f);
+      if (ImGui::Button("Collapse All", ImVec2(buttonWidth, buttonHeight))) {
+        collapseAllObjects = true;
+      }
+
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 82.0f);
+      if (ImGui::Button("Remove Object", ImVec2(buttonWidth, buttonHeight))) {
       }
       ImGui::End();
     }
   }
 }
 
+#define ProcessExpandOrCollapse                        \
+  {                                                    \
+    if (expandAllProperties) {                         \
+      ImGui::SetNextItemOpen(true, ImGuiCond_Always);  \
+    } else if (collapseAllProperties) {                \
+      ImGui::SetNextItemOpen(false, ImGuiCond_Always); \
+    }                                                  \
+  }
+void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
+  if (auto objPtr = object.lock()) {
+    ProcessExpandOrCollapse;
+    if (ImGui::TreeNode("Transform")) {
+      ProcessExpandOrCollapse;
+      if (ImGui::TreeNode("Relative")) {
+        glm::vec3 pos = objPtr->GetRelativePosition();
+        float posBuf[3]{pos.x, pos.y, pos.z};
+        ImGui::InputFloat3("Position", posBuf);
+        objPtr->SetRelativePosition(glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
+
+        glm::vec3 rot = glm::degrees(objPtr->GetRelativeRotation());
+        float rotBuf[3]{rot.x, rot.y, rot.z};
+        ImGui::InputFloat3("Rotation", rotBuf);
+        objPtr->SetRelativeRotation(
+            glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+
+        glm::vec3 sca = objPtr->GetRelativeScale();
+        float scaBuf[3]{sca.x, sca.y, sca.z};
+        ImGui::InputFloat3("Scale", scaBuf);
+        objPtr->SetRelativeScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
+        ImGui::TreePop();
+      }
+      ProcessExpandOrCollapse;
+      if (ImGui::TreeNode("Absolute")) {
+        glm::vec3 pos = objPtr->GetAbsolutePosition();
+        float posBuf[3]{pos.x, pos.y, pos.z};
+        ImGui::InputFloat3("Position", posBuf);
+        objPtr->SetAbsolutePosition(glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
+
+        glm::vec3 rot = glm::degrees(objPtr->GetAbsoluteRotation());
+        float rotBuf[3]{rot.x, rot.y, rot.z};
+        ImGui::InputFloat3("Rotation", rotBuf);
+        objPtr->SetAbsoluteRotation(
+            glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+
+        glm::vec3 sca = objPtr->GetAbsoluteScale();
+        float scaBuf[3]{sca.x, sca.y, sca.z};
+        ImGui::InputFloat3("Scale", scaBuf);
+        objPtr->SetAbsoluteScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
+        ImGui::TreePop();
+      }
+      ImGui::TreePop();
+    }
+    if (auto cameraPtr = dynamic_pointer_cast<BaseCamera>(objPtr)) {
+    }
+  }
+}
+#undef ProcessExpandOrCollapse
+
 void BaseEditor::EditorDrawObjectInspector() {
+  static bool lastShowObjectInspector = showObjectInspector;
+  if (lastShowObjectInspector != showObjectInspector) {
+    if (showObjectInspector) {
+      expandAllProperties = true;
+    }
+    lastShowObjectInspector = showObjectInspector;
+  }
   if (showObjectInspector) {
     float topWindowHeight = 0;
     float buttonWindowHeight = 30.0f;
@@ -1169,8 +1332,57 @@ void BaseEditor::EditorDrawObjectInspector() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      if (selectedFile.second != nullptr && selectedFile.second->IsObject()) {
-        DisplayJson(*selectedFile.second);
+      if (lastSelectType == LastSelectType::File &&
+          selectedFile.second != nullptr && selectedFile.second->IsObject()) {
+        bool valueModified = false;
+        DisplayJson(*selectedFile.second, valueModified);
+        expandAllProperties = false;
+        collapseAllProperties = false;
+      } else if (lastSelectType == LastSelectType::Object &&
+                 selectedObject.second.lock()) {
+        DisplayProperties(selectedObject.second);
+        expandAllProperties = false;
+        collapseAllProperties = false;
+      }
+      ImGui::End();
+    }
+
+    windowPos =
+        ImVec2(objectInspectorPosX, ImGui::GetIO().DisplaySize.y - 65.0f);
+    windowSize = ImVec2(objectInspectorWidth, 35.0f);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("Object Inspector Command", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      float buttonWidth = 120.0f;
+      float buttonHeight = 20.0f;
+
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 202.0f);
+      if (ImGui::Button("Expand All", ImVec2(buttonWidth, buttonHeight))) {
+        expandAllProperties = true;
+      }
+
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - buttonWidth) * 0.5f);
+      if (ImGui::Button("Collapse All", ImVec2(buttonWidth, buttonHeight))) {
+        collapseAllProperties = true;
+      }
+
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 82.0f);
+      if (ImGui::Button("XXX", ImVec2(buttonWidth, buttonHeight))) {
       }
       ImGui::End();
     }

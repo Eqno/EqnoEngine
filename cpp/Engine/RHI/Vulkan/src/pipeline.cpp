@@ -78,7 +78,7 @@ void Pipeline::CreatePipelineLayout(const VkDevice& device,
 }
 
 void Pipeline::CreateColorGraphicsPipeline(
-    const Device& device, Render& render, const Shader& shader,
+    const Device& device, Render& render, Shader& shader,
     const std::string& rootPath, const std::vector<std::string>& shaderPaths,
     const VkRenderPass& renderPass) {
   // Forward shading or deferred output pipeline
@@ -232,7 +232,7 @@ void Pipeline::CreateColorGraphicsPipeline(
 }
 
 void Pipeline::CreateZPrePassGraphicsPipeline(
-    const Device& device, const Shader& shader, const std::string& rootPath,
+    const Device& device, Shader& shader, const std::string& rootPath,
     const std::string& depthShaderPath, const VkRenderPass& renderPass) {
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -300,7 +300,7 @@ void Pipeline::CreateZPrePassGraphicsPipeline(
 }
 
 void Pipeline::CreateShadowMapGraphicsPipeline(
-    const VkDevice& device, Render& render, const Shader& shader,
+    const VkDevice& device, Render& render, Shader& shader,
     const std::string& rootPath, const std::string& depthShaderPath) {
   auto bindingDescription = Vertex::GetBindingDescription();
   auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -529,7 +529,7 @@ void Pipeline::CreateShadowMapDescriptorSetLayout(const VkDevice& device) {
 }
 
 void Pipeline::CreatePipeline(const Device& device, Render& render,
-                              const Shader& shader, int texCount,
+                              Shader& shader, int texCount,
                               const std::string& rootPath,
                               const std::vector<std::string>& shaderPaths,
                               const std::string& zPrePassShaderPath,

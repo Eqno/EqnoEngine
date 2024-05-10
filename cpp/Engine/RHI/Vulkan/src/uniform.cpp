@@ -413,7 +413,7 @@ void TransformBuffer::UpdateUniformBuffer(const uint32_t currentImage) {
       TransformData* buffer =
           reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
 
-      glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
+      const glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
       buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
 
       camera->GetMatrixLock().lock();
@@ -430,7 +430,7 @@ void ShadowMapBuffer::UpdateUniformBuffer(const uint32_t currentImage,
     TransformData* buffer =
         reinterpret_cast<TransformData*>(uniformBuffersMapped[currentImage]);
 
-    glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
+    const glm::mat4x4* modelMatrix = bridgePtr->uniform.modelMatrix;
     buffer->modelMatrix = modelMatrix ? *modelMatrix : Mat4x4Zero;
 
     shadowMapLight->GetMatrixLock().lock();

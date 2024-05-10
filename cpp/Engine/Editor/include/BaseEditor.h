@@ -18,6 +18,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 
+enum class LastSelectType { None, File, Object };
 class Application;
 class BaseEditor : public BaseObject {
  private:
@@ -25,7 +26,11 @@ class BaseEditor : public BaseObject {
   GLFWwindow* parentWindow = nullptr;
   GLFWwindow* window = nullptr;
   ImGui_ImplVulkanH_Window* wd = nullptr;
+
+  LastSelectType lastSelectType = LastSelectType::None;
   std::pair<std::string, rapidjson::Document*> selectedFile{"Unset", nullptr};
+  std::pair<std::string, std::weak_ptr<SceneObject>> selectedObject{
+      "Unset", std::shared_ptr<SceneObject>(nullptr)};
   std::unordered_map<std::filesystem::path, rapidjson::Document*> documentCache;
 
   // Our state
@@ -58,13 +63,21 @@ class BaseEditor : public BaseObject {
   void EditorDrawSceneHierarchy();
   void EditorDrawObjectInspector();
 
-  bool expandAll = false;
-  bool collapseAll = false;
+  bool expandAllFiles = false;
+  bool collapseAllFiles = false;
   bool onlyShowEngineFiles = true;
 
+  bool expandAllObjects = true;
+  bool collapseAllObjects = false;
+
+  bool expandAllProperties = true;
+  bool collapseAllProperties = false;
+
   rapidjson::Document* LoadJsonFile(const std::filesystem::path& path);
-  void DisplayJson(rapidjson::Value& value);
+  void DisplayJson(rapidjson::Value& value, bool& modifiedValue);
   void DisplayDirectory(const std::filesystem::path& path);
+  void DisplayHierarchy(std::weak_ptr<SceneObject> root, std::string path);
+  void DisplayProperties(std::weak_ptr<SceneObject> object);
 
  public:
   template <typename... Args>

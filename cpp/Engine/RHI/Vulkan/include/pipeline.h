@@ -47,17 +47,15 @@ class Pipeline : public Base {
                             const VkDescriptorSetLayout& dstLayout,
                             VkPipelineLayout& pipelineLayout);
   void CreateColorGraphicsPipeline(const Device& device, Render& render,
-                                   const Shader& shader,
-                                   const std::string& rootPath,
+                                   Shader& shader, const std::string& rootPath,
                                    const std::vector<std::string>& shaderPaths,
                                    const VkRenderPass& renderPass);
-  void CreateZPrePassGraphicsPipeline(const Device& device,
-                                      const Shader& shader,
+  void CreateZPrePassGraphicsPipeline(const Device& device, Shader& shader,
                                       const std::string& rootPath,
                                       const std::string& depthShaderPath,
                                       const VkRenderPass& renderPass);
   void CreateShadowMapGraphicsPipeline(const VkDevice& device, Render& render,
-                                       const Shader& shader,
+                                       Shader& shader,
                                        const std::string& rootPath,
                                        const std::string& depthShaderPath);
 
@@ -74,9 +72,8 @@ class Pipeline : public Base {
   DEFINE_GET_PIPELINE_AND_DSL(zPrePass, ZPrePass)
   DEFINE_GET_PIPELINE_AND_DSL(shadowMap, ShadowMap)
 
-  void CreatePipeline(const Device& device, Render& render,
-                      const Shader& shader, int texCount,
-                      const std::string& rootPath,
+  void CreatePipeline(const Device& device, Render& render, Shader& shader,
+                      int texCount, const std::string& rootPath,
                       const std::vector<std::string>& shaderPaths,
                       const std::string& zPrePassShaderPath,
                       const std::string& shadowMapShaderPath);
