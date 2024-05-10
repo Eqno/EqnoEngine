@@ -38,10 +38,14 @@ class Device : public Base {
 
   uint32_t msaaSamplesNum = 1;
   VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+  uint32_t minUBOOffsetAlignment = 0;
+
+  VkSampleCountFlagBits GetMaxUsableSampleCount(int msaaMaxSamples);
+  uint32_t GetMinUniformBufferOffsetAlignment();
 
  public:
   uint32_t GetMultiSampleNum() const;
-  VkSampleCountFlagBits GetMaxUsableSampleCount(int msaaMaxSamples);
+  uint32_t GetMinUBOOffsetAlignment() const;
 
   uint32_t GetGraphicsFamily() const { return graphicsFamily; }
   uint32_t GetPresentFamily() const { return presentFamily; }

@@ -153,7 +153,16 @@ VkSampleCountFlagBits Device::GetMaxUsableSampleCount(int msaaMaxSamples) {
   return VK_SAMPLE_COUNT_1_BIT;
 }
 
+uint32_t Device::GetMinUniformBufferOffsetAlignment() {
+  VkPhysicalDeviceProperties properties;
+  vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+  return properties.limits.minUniformBufferOffsetAlignment;
+}
+
 uint32_t Device::GetMultiSampleNum() const { return msaaSamplesNum; }
+uint32_t Device::GetMinUBOOffsetAlignment() const {
+  return minUBOOffsetAlignment;
+}
 
 void Device::PickPhysicalDevice(const VkInstance& instance,
                                 const VkSurfaceKHR& surface) {
@@ -171,6 +180,7 @@ void Device::PickPhysicalDevice(const VkInstance& instance,
       physicalDevice = device;
       msaaSamples = GetMaxUsableSampleCount(
           static_cast<Vulkan*>(owner)->GetMSAASamples());
+      minUBOOffsetAlignment = GetMinUniformBufferOffsetAlignment();
       break;
     }
   }

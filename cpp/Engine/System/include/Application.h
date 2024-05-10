@@ -2,8 +2,10 @@
 
 #include <Engine/Editor/include/BaseEditor.h>
 #include <Engine/System/include/BaseObject.h>
+#include <Engine/System/include/BaseResource.h>
 #include <Engine/Utility/include/JsonUtils.h>
 
+#include <memory>
 #include <ranges>
 
 class BaseScene;
@@ -11,6 +13,7 @@ class GraphicsInterface;
 
 class Application final : public BaseObject {
   friend class BaseObject;
+  BaseResource modelResourceManager;
 
   std::list<std::shared_ptr<BaseObject>> passiveObjects;
   std::list<std::shared_ptr<BaseObject>> activeObjects;
@@ -65,6 +68,10 @@ class Application final : public BaseObject {
   }
   virtual void SetGraphicsSettingsModified(bool modified) {
     graphicsSettingsModified = modified;
+  }
+  void AddModelToResourceWaitQueue(std::function<void()> func,
+                                   std::shared_ptr<BaseObject> obj) {
+    modelResourceManager.AddToWaitQueue(func, obj);
   }
 
  private:

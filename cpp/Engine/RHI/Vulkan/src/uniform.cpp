@@ -121,11 +121,12 @@ void Descriptor::CreateShadowMapDescriptorPool(
 
 /////////////////////////// DSETS ///////////////////////////
 
-#define AddDescriptorWrite(member, type, buf)                         \
+#define AddDescriptorWrite(_index, member, type, buf)                 \
   {                                                                   \
-    VkDescriptorBufferInfo bufferInfo{                                \
+    uint32_t minOffset = device.GetMinUBOOffsetAlignment();           \
+    uniformBufferInfos[_index] = {                                    \
         .buffer = (buf)->GetUniformBufferByIndex(i),                  \
-        .offset = 0,                                                  \
+        .offset = (minOffset - 1) & ~(minOffset - 1),                 \
         .range = sizeof(type),                                        \
     };                                                                \
     descriptorWrites.push_back({                                      \
@@ -135,12 +136,12 @@ void Descriptor::CreateShadowMapDescriptorPool(
         .dstArrayElement = 0,                                         \
         .descriptorCount = 1,                                         \
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,          \
-        .pBufferInfo = &bufferInfo,                                   \
+        .pBufferInfo = &uniformBufferInfos[_index],                   \
     });                                                               \
   }
 
 void Descriptor::CreateColorDescriptorSets(
-    const VkDevice& device, Render& render,
+    const Device& device, Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout,
     const std::vector<Texture>& textures) {
   const std::vector layouts(render.GetMaxFramesInFlight(), descriptorSetLayout);
@@ -156,19 +157,20 @@ void Descriptor::CreateColorDescriptorSets(
     };
 
     colorDescriptorSets.resize(render.GetMaxFramesInFlight());
-    if (vkAllocateDescriptorSets(device, &allocInfo,
+    if (vkAllocateDescriptorSets(device.GetLogical(), &allocInfo,
                                  colorDescriptorSets.data()) != VK_SUCCESS) {
       PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
     }
 
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
       std::vector<VkWriteDescriptorSet> descriptorWrites;
+      std::array<VkDescriptorBufferInfo, 4> uniformBufferInfos;
 
-      AddDescriptorWrite(color, PipelineData,
+      AddDescriptorWrite(0, color, PipelineData,
                          static_cast<Mesh*>(owner)->GetPipelineBuffer());
-      AddDescriptorWrite(color, CameraData, cameraBuffer);
-      AddDescriptorWrite(color, MaterialData, materialBuffer);
-      AddDescriptorWrite(color, TransformData, &transformBuffer);
+      AddDescriptorWrite(1, color, CameraData, cameraBuffer);
+      AddDescriptorWrite(2, color, MaterialData, materialBuffer);
+      AddDescriptorWrite(3, color, TransformData, &transformBuffer);
 
       //  Do not merge the loops because `push_back` would move the memory to
       //  another location
@@ -191,7 +193,7 @@ void Descriptor::CreateColorDescriptorSets(
             .pImageInfo = &imageInfos[j],
         });
       }
-      vkUpdateDescriptorSets(device,
+      vkUpdateDescriptorSets(device.GetLogical(),
                              static_cast<uint32_t>(descriptorWrites.size()),
                              descriptorWrites.data(), 0, nullptr);
     }
@@ -208,18 +210,19 @@ void Descriptor::CreateColorDescriptorSets(
     };
 
     colorDescriptorSets.resize(render.GetMaxFramesInFlight());
-    if (vkAllocateDescriptorSets(device, &allocInfo,
+    if (vkAllocateDescriptorSets(device.GetLogical(), &allocInfo,
                                  colorDescriptorSets.data()) != VK_SUCCESS) {
       PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
     }
 
     for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
       std::vector<VkWriteDescriptorSet> descriptorWrites;
+      std::array<VkDescriptorBufferInfo, 4> uniformBufferInfos;
 
-      AddDescriptorWrite(color, CameraData, cameraBuffer);
-      AddDescriptorWrite(color, MaterialData, materialBuffer);
-      AddDescriptorWrite(color, TransformData, &transformBuffer);
-      AddDescriptorWrite(color, LightChannelData, lightChannelBuffer);
+      AddDescriptorWrite(0, color, CameraData, cameraBuffer);
+      AddDescriptorWrite(1, color, MaterialData, materialBuffer);
+      AddDescriptorWrite(2, color, TransformData, &transformBuffer);
+      AddDescriptorWrite(3, color, LightChannelData, lightChannelBuffer);
 
       // Put the codes outside if enable shadow map or it will be destructed
       uint32_t shadowMapDepthNum = render.GetShadowMapDepthNum();
@@ -265,7 +268,7 @@ void Descriptor::CreateColorDescriptorSets(
             .pImageInfo = &imageInfos[j],
         });
       }
-      vkUpdateDescriptorSets(device,
+      vkUpdateDescriptorSets(device.GetLogical(),
                              static_cast<uint32_t>(descriptorWrites.size()),
                              descriptorWrites.data(), 0, nullptr);
     }
@@ -273,7 +276,7 @@ void Descriptor::CreateColorDescriptorSets(
 }
 
 void Descriptor::CreateZPrePassDescriptorSets(
-    const VkDevice& device, const Render& render,
+    const Device& device, const Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout) {
   const std::vector layouts(render.GetMaxFramesInFlight(), descriptorSetLayout);
 
@@ -286,23 +289,24 @@ void Descriptor::CreateZPrePassDescriptorSets(
   };
 
   zPrePassDescriptorSets.resize(render.GetMaxFramesInFlight());
-  if (vkAllocateDescriptorSets(device, &allocInfo,
+  if (vkAllocateDescriptorSets(device.GetLogical(), &allocInfo,
                                zPrePassDescriptorSets.data()) != VK_SUCCESS) {
     PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     std::vector<VkWriteDescriptorSet> descriptorWrites;
-    AddDescriptorWrite(zPrePass, TransformData, &transformBuffer);
+    std::array<VkDescriptorBufferInfo, 1> uniformBufferInfos;
+    AddDescriptorWrite(0, zPrePass, TransformData, &transformBuffer);
 
-    vkUpdateDescriptorSets(device,
+    vkUpdateDescriptorSets(device.GetLogical(),
                            static_cast<uint32_t>(descriptorWrites.size()),
                            descriptorWrites.data(), 0, nullptr);
   }
 }
 
 void Descriptor::CreateShadowMapDescriptorSets(
-    const VkDevice& device, const Render& render,
+    const Device& device, const Render& render,
     const VkDescriptorSetLayout& descriptorSetLayout,
     const VkDescriptorPool& descriptorPool,
     const ShadowMapBuffer& shadowMapBuffer, DescriptorSets& descriptorSets) {
@@ -317,15 +321,16 @@ void Descriptor::CreateShadowMapDescriptorSets(
   };
 
   descriptorSets.resize(render.GetMaxFramesInFlight());
-  if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) !=
-      VK_SUCCESS) {
+  if (vkAllocateDescriptorSets(device.GetLogical(), &allocInfo,
+                               descriptorSets.data()) != VK_SUCCESS) {
     PRINT_AND_THROW_ERROR("Failed to allocate descriptor sets!");
   }
 
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
+    uint32_t minOffset = device.GetMinUBOOffsetAlignment();
     VkDescriptorBufferInfo bufferInfo{
         .buffer = shadowMapBuffer.GetUniformBufferByIndex(i),
-        .offset = 0,
+        .offset = (minOffset - 1) & ~(minOffset - 1),
         .range = sizeof(TransformData),
     };
     VkWriteDescriptorSet descriptorWrite{
@@ -337,7 +342,8 @@ void Descriptor::CreateShadowMapDescriptorSets(
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         .pBufferInfo = &bufferInfo,
     };
-    vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+    vkUpdateDescriptorSets(device.GetLogical(), 1, &descriptorWrite, 0,
+                           nullptr);
   }
 }
 
@@ -500,13 +506,11 @@ void Descriptor::CreateDescriptor(
     const VkDescriptorSetLayout& shadowMapDescriptorSetLayout) {
   CreateUniformBuffer(device, render);
   CreateColorDescriptorPool(device.GetLogical(), render, textures.size());
-  CreateColorDescriptorSets(device.GetLogical(), render,
-                            colorDescriptorSetLayout, textures);
+  CreateColorDescriptorSets(device, render, colorDescriptorSetLayout, textures);
 
   if (render.GetEnableZPrePass()) {
     CreateZPrePassDescriptorPool(device.GetLogical(), render);
-    CreateZPrePassDescriptorSets(device.GetLogical(), render,
-                                 zPrePassDescriptorSetLayout);
+    CreateZPrePassDescriptorSets(device, render, zPrePassDescriptorSetLayout);
   }
 
   if (render.GetEnableShadowMap()) {
@@ -581,7 +585,7 @@ const DescriptorSets& Descriptor::CreateShadowMapDescriptorSetsByIndex(
     const Device& device, const Render& render, const uint32_t lightId) {
   if (shadowMapDescriptorSets.contains(lightId) == false) {
     CreateShadowMapDescriptorSets(
-        device.GetLogical(), render, shadowMapDescriptorSetLayout,
+        device, render, shadowMapDescriptorSetLayout,
         CreateShadowMapDescriptorPoolByIndex(device.GetLogical(), render,
                                              lightId),
         CreateShadowMapUniformBufferByIndex(device, render, lightId),

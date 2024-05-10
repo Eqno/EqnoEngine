@@ -316,7 +316,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./Engine/RHI/Vulkan/deps/gmock/lib;./Engine/RHI/Vulkan/deps/glslc/lib;./Engine/RHI/Vulkan/deps/gtest/lib;./Engine/RHI/Vulkan/deps/assimp-5.3.1/libraries;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/libshaderc_util/lib;%VULKAN_SDK%/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./Engine/RHI/Vulkan/deps/gmock/lib;./Engine/RHI/Vulkan/deps/glslc/lib/Debug;./Engine/RHI/Vulkan/deps/gtest/lib;./Engine/RHI/Vulkan/deps/assimp-5.3.1/libraries;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/libshaderc_util/lib/Debug;%VULKAN_SDK%/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3_mt.lib;shaderc_shared.lib;assimp-vc143-mt.lib;shaderc_util.lib;gmock.lib;gtest.lib;glslc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -334,17 +334,18 @@
       <AdditionalIncludeDirectories>./Engine/RHI/Vulkan/deps/stb;./Engine/RHI/Vulkan/deps/glm;./Engine/RHI/Vulkan/deps/glfw/include;./Engine/RHI/Vulkan/deps/assimp-5.3.1/include;./Engine/Editor/deps/imgui/backends;./Engine/Editor/deps/imgui;./Engine/System/deps/rapidjson/include;./Engine/RHI/Vulkan/deps/libshaderc_util/include;./Engine/RHI/Vulkan/deps/glslc/include;./Engine/RHI/Vulkan/deps/gtest/include;./Engine/RHI/Vulkan/deps/gmock/include;%VULKAN_SDK%/Include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./Engine/RHI/Vulkan/deps/gmock/lib;./Engine/RHI/Vulkan/deps/glslc/lib;./Engine/RHI/Vulkan/deps/gtest/lib;./Engine/RHI/Vulkan/deps/assimp-5.3.1/libraries;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/libshaderc_util/lib;%VULKAN_SDK%/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./Engine/RHI/Vulkan/deps/gmock/lib;./Engine/RHI/Vulkan/deps/glslc/lib/Release;./Engine/RHI/Vulkan/deps/gtest/lib;./Engine/RHI/Vulkan/deps/assimp-5.3.1/libraries;./Engine/RHI/Vulkan/deps/glfw/lib-vc2022;./Engine/RHI/Vulkan/deps/libshaderc_util/lib/Release;%VULKAN_SDK%/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3_mt.lib;shaderc_shared.lib;assimp-vc143-mt.lib;shaderc_util.lib;gmock.lib;gtest.lib;glslc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)Engine\RHI\Vulkan\deps\assimp-5.3.1\bin\Release\" "$(OutDir)" /a /F /I /Y /C</Command>
+      <Command>xcopy "$(SolutionDir)Engine\RHI\Vulkan\deps\assimp-5.3.1\binaries\" "$(OutDir)" /a /F /I /Y /C</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

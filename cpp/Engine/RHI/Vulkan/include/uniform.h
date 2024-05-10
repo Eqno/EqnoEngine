@@ -70,14 +70,14 @@ class Descriptor : public Base {
                                      VkDescriptorPool& descriptorPool);
 
   void CreateColorDescriptorSets(
-      const VkDevice& device, Render& render,
+      const Device& device, Render& render,
       const VkDescriptorSetLayout& colorDescriptorSetLayout,
       const std::vector<Texture>& textures);
   void CreateZPrePassDescriptorSets(
-      const VkDevice& device, const Render& render,
+      const Device& device, const Render& render,
       const VkDescriptorSetLayout& zPrePassDescriptorSetLayout);
   void CreateShadowMapDescriptorSets(
-      const VkDevice& device, const Render& render,
+      const Device& device, const Render& render,
       const VkDescriptorSetLayout& descriptorSetLayout,
       const VkDescriptorPool& descriptorPool,
       const ShadowMapBuffer& shadowMapBuffer, DescriptorSets& descriptorSets);

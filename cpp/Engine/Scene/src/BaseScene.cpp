@@ -5,6 +5,7 @@
 #include <Engine/Light/include/LightChannel.h>
 #include <Engine/Model/include/BaseMaterial.h>
 #include <Engine/Scene/include/SceneObject.h>
+#include <Engine/System/include/Application.h>
 #include <Engine/System/include/BaseObject.h>
 #include <assimp/types.h>
 
@@ -118,5 +119,9 @@ void BaseScene::UnregisterLightChannel(const std::string& name) {
 
 void BaseScene::AddModelToResourceWaitQueue(std::function<void()> func,
                                             std::shared_ptr<BaseObject> obj) {
-  modelResourceManager.AddToWaitQueue(func, obj);
+  if (auto ownerPtr = _owner.lock()) {
+    if (auto appPtr = static_pointer_cast<Application>(ownerPtr)) {
+      appPtr->AddModelToResourceWaitQueue(func, obj);
+    }
+  }
 }

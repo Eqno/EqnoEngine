@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Engine/System/include/BaseObject.h>
-#include <Engine/System/include/BaseResource.h>
 
 class BaseLight;
 class BaseModel;
@@ -14,8 +13,6 @@ class GraphicsInterface;
 struct aiMaterial;
 
 class BaseScene final : public BaseObject {
-  BaseResource modelResourceManager;
-
   std::shared_ptr<SceneObject> rootObject;
   std::weak_ptr<GraphicsInterface> graphics;
   std::unordered_map<int, std::weak_ptr<BaseLight>> lightsById;
