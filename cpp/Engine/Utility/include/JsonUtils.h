@@ -2,6 +2,9 @@
 #pragma once
 
 #include <Engine/Utility/include/TypeUtils.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 
 #include <glm/glm.hpp>
 #include <string>
@@ -71,6 +74,9 @@ void WriteStringsToFile(const std::string& filePath, const std::string& key,
                         const std::vector<std::string>& values);
 void WriteBoolToFile(const std::string& filePath, const std::string& key,
                      bool value);
+void WriteDocumentToFile(const std::string& filePath,
+                         const rapidjson::Document* doc,
+                         bool withSuffix = true);
 void AppendStringToFile(const std::string& filePath, const std::string& key,
                         const std::string& value);
 void ModifyBoolOfFile(const std::string& filePath, const std::string& key,

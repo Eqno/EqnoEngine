@@ -7,9 +7,6 @@
 #include <Engine/Scene/include/BaseScene.h>
 #include <Engine/Scene/include/SceneObject.h>
 #include <Engine/Utility/include/FileUtils.h>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
 
 #include <ranges>
 #include <unordered_map>
@@ -332,6 +329,16 @@ void JsonUtils::WriteBoolToFile(const std::string& filePath,
 
   doc->Accept(writer);
   FileUtils::WriteFileAsString(filePath + FILESUFFIX, strBuf.GetString());
+}
+
+void JsonUtils::WriteDocumentToFile(const std::string& filePath,
+                                    const Document* doc, bool withSuffix) {
+  StringBuffer strBuf;
+  Writer writer(strBuf);
+
+  doc->Accept(writer);
+  FileUtils::WriteFileAsString(filePath + (withSuffix ? FILESUFFIX : ""),
+                               strBuf.GetString());
 }
 
 void JsonUtils::AppendStringToFile(const std::string& filePath,

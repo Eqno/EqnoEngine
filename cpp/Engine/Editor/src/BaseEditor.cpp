@@ -603,6 +603,9 @@ void BaseEditor::DestroyImgui() {
 
   CleanupVulkanWindow();
   CleanupVulkan();
+  for (auto cache : documentCache) {
+    delete cache.second;
+  }
   documentCache.clear();
 
   glfwDestroyWindow(window);
@@ -824,7 +827,7 @@ Document* BaseEditor::LoadJsonFile(const fs::path& path) {
   return doc;
 }
 
-void BaseEditor::DisplayJson(const Value& value) {
+void BaseEditor::DisplayJson(Value& value) {
   if (value.IsObject()) {
     for (auto it = value.MemberBegin(); it != value.MemberEnd(); ++it) {
       if (ImGui::TreeNode(it->name.GetString())) {
@@ -842,24 +845,50 @@ void BaseEditor::DisplayJson(const Value& value) {
     }
   } else if (value.IsBool()) {
     bool val = value.GetBool();
-    ImGui::Checkbox("##Value", &val);
+    if (ImGui::Checkbox("##Value", &val)) {
+      value.SetBool(val);
+      JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
+                                     false);
+    }
   } else if (value.IsInt()) {
     int val = value.GetInt();
-    ImGui::InputInt("##Value", &val);
+    if (ImGui::InputInt("##Value", &val, 0, 0,
+                        ImGuiInputTextFlags_EnterReturnsTrue)) {
+      value.SetInt(val);
+      JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
+                                     false);
+    }
   } else if (value.IsDouble()) {
     double val = value.GetDouble();
-    ImGui::InputDouble("##Value", &val);
+    if (ImGui::InputDouble("##Value", &val, 0, 0, "%.4f",
+                           ImGuiInputTextFlags_EnterReturnsTrue)) {
+      value.SetDouble(val);
+      JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
+                                     false);
+    }
   } else if (value.IsString()) {
     std::string val = value.GetString();
-    char buf[256];
-    strncpy_s(buf, sizeof(buf), val.c_str(), _TRUNCATE);
-    buf[sizeof(buf) - 1] = 0;
-    ImGui::InputText("##Value", buf, sizeof(buf));
+
+    static char buf[256]{};
+    static bool firstRead = true;
+    if (firstRead) {
+      firstRead = false;
+      strncpy_s(buf, sizeof(buf), val.c_str(), _TRUNCATE);
+    }
+
+    if (ImGui::InputText("##Value", buf, sizeof(buf),
+                         ImGuiInputTextFlags_EnterReturnsTrue)) {
+      std::string bufStr(buf);
+      value.SetString(bufStr.data(), bufStr.size());
+      JsonUtils::WriteDocumentToFile(selectedFile.first, selectedFile.second,
+                                     false);
+      val = value.GetString();
+      strncpy_s(buf, sizeof(buf), val.c_str(), _TRUNCATE);
+    }
   }
 }
 
 void BaseEditor::DisplayDirectory(const fs::path& path) {
-  static std::string selectedFilePath = "Unset";
   for (const auto& entry : fs::directory_iterator(path)) {
     if (entry.is_directory()) {
       if (expandAll) {
@@ -873,13 +902,13 @@ void BaseEditor::DisplayDirectory(const fs::path& path) {
       }
     } else {
       if (entry.path().extension() == ".json") {
-        bool selected = (entry.path().string() == selectedFilePath);
+        bool selected = (entry.path().string() == selectedFile.first);
         if (ImGui::Selectable(
                 (" * " + entry.path().filename().replace_extension().string())
                     .c_str(),
                 selected)) {
-          selectedFilePath = entry.path().string();
-          selectedJson = LoadJsonFile(selectedFilePath);
+          selectedFile.first = entry.path().string();
+          selectedFile.second = LoadJsonFile(selectedFile.first);
         }
       } else if (onlyShowEngineFiles == false) {
         ImGui::BulletText("%s", entry.path().filename().string().c_str());
@@ -935,7 +964,7 @@ void BaseEditor::EditorDrawFileExplorer() {
     windowSize =
         ImVec2(fileExplorerWidth, ImGui::GetIO().DisplaySize.y - menuBarHeight -
                                       topWindowHeight - titleWindowSizeY -
-                                      buttonWindowHeight);
+                                      buttonWindowHeight - 35.0f);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -951,7 +980,7 @@ void BaseEditor::EditorDrawFileExplorer() {
       ImGui::End();
     }
 
-    windowPos = ImVec2(0, ImGui::GetIO().DisplaySize.y - 62.0f);
+    windowPos = ImVec2(0, ImGui::GetIO().DisplaySize.y - 65.0f);
     windowSize = ImVec2(fileExplorerWidth, 35.0f);
 
     ImGui::SetNextWindowPos(windowPos);
@@ -1080,8 +1109,6 @@ void BaseEditor::EditorDrawSceneHierarchy() {
 
 void BaseEditor::EditorDrawObjectInspector() {
   if (showObjectInspector) {
-    std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
-                                      "Document.txt", "Video.mp4"};
     float topWindowHeight = 0;
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
@@ -1142,8 +1169,8 @@ void BaseEditor::EditorDrawObjectInspector() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      if (selectedJson != nullptr && selectedJson->IsObject()) {
-        DisplayJson(*selectedJson);
+      if (selectedFile.second != nullptr && selectedFile.second->IsObject()) {
+        DisplayJson(*selectedFile.second);
       }
       ImGui::End();
     }

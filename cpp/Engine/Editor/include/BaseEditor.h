@@ -25,7 +25,7 @@ class BaseEditor : public BaseObject {
   GLFWwindow* parentWindow = nullptr;
   GLFWwindow* window = nullptr;
   ImGui_ImplVulkanH_Window* wd = nullptr;
-  rapidjson::Document* selectedJson = nullptr;
+  std::pair<std::string, rapidjson::Document*> selectedFile{"Unset", nullptr};
   std::unordered_map<std::filesystem::path, rapidjson::Document*> documentCache;
 
   // Our state
@@ -63,7 +63,7 @@ class BaseEditor : public BaseObject {
   bool onlyShowEngineFiles = true;
 
   rapidjson::Document* LoadJsonFile(const std::filesystem::path& path);
-  void DisplayJson(const rapidjson::Value& value);
+  void DisplayJson(rapidjson::Value& value);
   void DisplayDirectory(const std::filesystem::path& path);
 
  public:
