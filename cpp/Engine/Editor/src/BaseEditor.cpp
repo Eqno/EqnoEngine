@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <cmath>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to
 // maximize ease of testing and compatibility with old VS compilers. To link
 // with VS2010-era libraries, VS2015+ requires linking with
@@ -439,9 +442,6 @@ void BaseEditor::InitConfig() {
   enableDeferredRendering = appPointer->GetEnableDeferred();
 }
 
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-
 // Main code
 void BaseEditor::LoadImgui() {
   GetAppPointer();
@@ -603,6 +603,7 @@ void BaseEditor::DestroyImgui() {
 
   CleanupVulkanWindow();
   CleanupVulkan();
+  documentCache.clear();
 
   glfwDestroyWindow(window);
   if (appPointer->GetLaunchSceneInEditor()) {
@@ -805,10 +806,90 @@ void BaseEditor::EditorDrawLaunchCommand() {
   }
 }
 
+namespace fs = std::filesystem;
+using namespace rapidjson;
+
+Document* BaseEditor::LoadJsonFile(const fs::path& path) {
+  if (documentCache.contains(path)) {
+    return documentCache[path];
+  }
+  Document* doc = new Document;
+  documentCache[path] = doc;
+  std::ifstream file(path);
+  if (!file.is_open()) {
+    return doc;
+  }
+  IStreamWrapper isw(file);
+  doc->ParseStream(isw);
+  return doc;
+}
+
+void BaseEditor::DisplayJson(const Value& value) {
+  if (value.IsObject()) {
+    for (auto it = value.MemberBegin(); it != value.MemberEnd(); ++it) {
+      if (ImGui::TreeNode(it->name.GetString())) {
+        DisplayJson(it->value);
+        ImGui::TreePop();
+      }
+    }
+  } else if (value.IsArray()) {
+    int index = 0;
+    for (auto& item : value.GetArray()) {
+      if (ImGui::TreeNode(("Index " + std::to_string(index++)).c_str())) {
+        DisplayJson(item);
+        ImGui::TreePop();
+      }
+    }
+  } else if (value.IsBool()) {
+    bool val = value.GetBool();
+    ImGui::Checkbox("##Value", &val);
+  } else if (value.IsInt()) {
+    int val = value.GetInt();
+    ImGui::InputInt("##Value", &val);
+  } else if (value.IsDouble()) {
+    double val = value.GetDouble();
+    ImGui::InputDouble("##Value", &val);
+  } else if (value.IsString()) {
+    std::string val = value.GetString();
+    char buf[256];
+    strncpy_s(buf, sizeof(buf), val.c_str(), _TRUNCATE);
+    buf[sizeof(buf) - 1] = 0;
+    ImGui::InputText("##Value", buf, sizeof(buf));
+  }
+}
+
+void BaseEditor::DisplayDirectory(const fs::path& path) {
+  static std::string selectedFilePath = "Unset";
+  for (const auto& entry : fs::directory_iterator(path)) {
+    if (entry.is_directory()) {
+      if (expandAll) {
+        ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+      } else if (collapseAll) {
+        ImGui::SetNextItemOpen(false, ImGuiCond_Always);
+      }
+      if (ImGui::TreeNode(entry.path().filename().string().c_str())) {
+        DisplayDirectory(entry.path());
+        ImGui::TreePop();
+      }
+    } else {
+      if (entry.path().extension() == ".json") {
+        bool selected = (entry.path().string() == selectedFilePath);
+        if (ImGui::Selectable(
+                (" * " + entry.path().filename().replace_extension().string())
+                    .c_str(),
+                selected)) {
+          selectedFilePath = entry.path().string();
+          selectedJson = LoadJsonFile(selectedFilePath);
+        }
+      } else if (onlyShowEngineFiles == false) {
+        ImGui::BulletText("%s", entry.path().filename().string().c_str());
+      }
+    }
+  }
+}
+
 void BaseEditor::EditorDrawFileExplorer() {
   if (showFileExplorer) {
-    std::vector<std::string> files = {"Folder1/", "Folder2/", "Image.png",
-                                      "Document.txt", "Video.mp4"};
     float topWindowHeight = 0;
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
@@ -830,10 +911,31 @@ void BaseEditor::EditorDrawFileExplorer() {
     }
     float fileExplorerWidth = ImGui::GetIO().DisplaySize.x / detailsContentNum;
 
+    float titleWindowSizeY = 32.0f;
     ImVec2 windowPos = ImVec2(0, menuBarHeight + topWindowHeight);
-    ImVec2 windowSize =
+    ImVec2 windowSize = ImVec2(fileExplorerWidth, titleWindowSizeY);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("File Explorer Title", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      const char* title = "File Explorer";
+      ImVec2 textSize = ImGui::CalcTextSize(title);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", title);
+      ImGui::End();
+    }
+
+    windowPos = ImVec2(0, menuBarHeight + topWindowHeight + titleWindowSizeY);
+    windowSize =
         ImVec2(fileExplorerWidth, ImGui::GetIO().DisplaySize.y - menuBarHeight -
-                                      topWindowHeight - buttonWindowHeight);
+                                      topWindowHeight - titleWindowSizeY -
+                                      buttonWindowHeight);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -844,21 +946,51 @@ void BaseEditor::EditorDrawFileExplorer() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      const char* title = "File Explorer";
-      ImVec2 textSize = ImGui::CalcTextSize(title);
-      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
-      ImGui::Text("%s", title);
-      ImGui::Separator();
+      DisplayDirectory(fs::current_path().string() + "/" +
+                       appPointer->GetRoot());
+      ImGui::End();
+    }
 
-      ImVec2 listBoxSize = ImGui::GetContentRegionAvail();
-      if (ImGui::BeginListBox("##files", listBoxSize)) {
-        for (int i = 0; i < files.size(); i++) {
-          const bool isSelected = false;
-          if (ImGui::Selectable(files[i].c_str(), isSelected)) {
-          }
-        }
-        ImGui::EndListBox();
+    windowPos = ImVec2(0, ImGui::GetIO().DisplaySize.y - 62.0f);
+    windowSize = ImVec2(fileExplorerWidth, 35.0f);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("File Explorer Command", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      expandAll = false;
+      collapseAll = false;
+
+      float buttonWidth = 90.0f;
+      float buttonHeight = 20.0f;
+      float leftPosition = 45.0f;
+
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - leftPosition -
+                           150);
+      if (ImGui::Button("Expand All", ImVec2(buttonWidth, buttonHeight))) {
+        expandAll = true;
       }
+
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - leftPosition - 37);
+      if (ImGui::Button("Collapse All", ImVec2(buttonWidth, buttonHeight))) {
+        collapseAll = true;
+      }
+
+      ImGui::SameLine();
+      ImGui::Text("|");
+      ImGui::SameLine();
+
+      ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - leftPosition + 76);
+      ImGui::Checkbox("Only show game files", &onlyShowEngineFiles);
       ImGui::End();
     }
   }
@@ -895,11 +1027,33 @@ void BaseEditor::EditorDrawSceneHierarchy() {
       sceneHierarchyPosX = sceneHierarchyWidth;
     }
 
+    float titleWindowSizeY = 32.0f;
     ImVec2 windowPos =
         ImVec2(sceneHierarchyPosX, menuBarHeight + topWindowHeight);
-    ImVec2 windowSize = ImVec2(sceneHierarchyWidth,
-                               ImGui::GetIO().DisplaySize.y - menuBarHeight -
-                                   topWindowHeight - buttonWindowHeight);
+    ImVec2 windowSize = ImVec2(sceneHierarchyWidth, titleWindowSizeY);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("Scene Hierarchy Title", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      const char* title = "Scene Hierarchy";
+      ImVec2 textSize = ImGui::CalcTextSize(title);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", title);
+      ImGui::End();
+    }
+
+    windowPos = ImVec2(sceneHierarchyPosX,
+                       menuBarHeight + topWindowHeight + titleWindowSizeY);
+    windowSize =
+        ImVec2(sceneHierarchyWidth, ImGui::GetIO().DisplaySize.y -
+                                        menuBarHeight - topWindowHeight -
+                                        titleWindowSizeY - buttonWindowHeight);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -910,12 +1064,6 @@ void BaseEditor::EditorDrawSceneHierarchy() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      const char* title = "Scene Hierarchy";
-      ImVec2 textSize = ImGui::CalcTextSize(title);
-      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
-      ImGui::Text("%s", title);
-      ImGui::Separator();
-
       ImVec2 listBoxSize = ImGui::GetContentRegionAvail();
       if (ImGui::BeginListBox("##files", listBoxSize)) {
         for (int i = 0; i < files.size(); i++) {
@@ -957,11 +1105,33 @@ void BaseEditor::EditorDrawObjectInspector() {
         ImGui::GetIO().DisplaySize.x / detailsContentNum;
     float objectInspectorPosX = (detailsContentNum - 1) * objectInspectorWidth;
 
+    float titleWindowSizeY = 32.0f;
     ImVec2 windowPos =
         ImVec2(objectInspectorPosX, menuBarHeight + topWindowHeight);
-    ImVec2 windowSize = ImVec2(objectInspectorWidth,
-                               ImGui::GetIO().DisplaySize.y - menuBarHeight -
-                                   topWindowHeight - buttonWindowHeight);
+    ImVec2 windowSize = ImVec2(objectInspectorWidth, titleWindowSizeY);
+
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(windowSize);
+    ImGui::SetNextWindowBgAlpha(1.0f);
+
+    if (ImGui::Begin("Object Inspector Title", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoScrollbar |
+                         ImGuiWindowFlags_NoSavedSettings)) {
+      const char* title = "Object Inspector";
+      ImVec2 textSize = ImGui::CalcTextSize(title);
+      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
+      ImGui::Text("%s", title);
+      ImGui::End();
+    }
+
+    windowPos = ImVec2(objectInspectorPosX,
+                       menuBarHeight + topWindowHeight + titleWindowSizeY);
+    windowSize =
+        ImVec2(objectInspectorWidth, ImGui::GetIO().DisplaySize.y -
+                                         menuBarHeight - topWindowHeight -
+                                         titleWindowSizeY - buttonWindowHeight);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);
@@ -972,12 +1142,9 @@ void BaseEditor::EditorDrawObjectInspector() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      const char* title = "Object Inspector";
-      ImVec2 textSize = ImGui::CalcTextSize(title);
-      ImGui::SetCursorPosX((ImGui::GetWindowSize().x - textSize.x) * 0.5f);
-      ImGui::Text("%s", title);
-      ImGui::Separator();
-
+      if (selectedJson != nullptr && selectedJson->IsObject()) {
+        DisplayJson(*selectedJson);
+      }
       ImGui::End();
     }
   }

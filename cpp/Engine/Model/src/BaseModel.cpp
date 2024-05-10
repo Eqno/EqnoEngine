@@ -30,9 +30,6 @@ void BaseModel::ClearTextureCache() {
   }
 }
 
-#define EndProcessByRenderThread \
-  if (graphics == nullptr || graphics->GetRenderLoopEnd()) return;
-
 #define LoadPNGTexture(type, _path, textures)                                  \
   {                                                                            \
     const auto texIter = model->TextureCache.find(_path);                      \
@@ -74,12 +71,17 @@ void BaseModel::ClearTextureCache() {
   }
 
 void ParseFbxTextures(
-    BaseModel* model, aiMaterial* material, std::shared_ptr<MeshData> meshData,
-    const std::string& dataPath,
+    std::weak_ptr<BaseModel> modelPtr, aiMaterial* material,
+    std::shared_ptr<MeshData> meshData, const std::string& dataPath,
     const std::unordered_map<TextureType, std::string>& combineTextures) {
   if (material == nullptr) {
     return;
   }
+  auto model = modelPtr.lock();
+  if (!model) {
+    return;
+  }
+
   if (combineTextures.empty()) {
     ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE,
                         TextureType::BaseColor);
@@ -108,13 +110,9 @@ void ParseFbxTextures(
   }
 }
 
-void ParseFbxData(GraphicsInterface* graphics, const aiMatrix4x4& transform,
-                  const aiMesh* mesh, std::shared_ptr<MeshData> meshData,
-                  float importSize) {
-  EndProcessByRenderThread;
+void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
+                  std::shared_ptr<MeshData> meshData, float importSize) {
   for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-    EndProcessByRenderThread;
-
     aiVector3D pos = transform * mesh->mVertices[i];
     aiVector3D root = transform * aiVector3D(0);
 
@@ -135,7 +133,6 @@ void ParseFbxData(GraphicsInterface* graphics, const aiMatrix4x4& transform,
       texCoord = mesh->mTextureCoords[0][i];
     }
 
-    EndProcessByRenderThread;
     meshData->vertices.emplace_back(
         MathUtils::AiVector3D2GlmVec3(pos * importSize),
         MathUtils::AiColor4D2GlmVec4(color),
@@ -144,9 +141,7 @@ void ParseFbxData(GraphicsInterface* graphics, const aiMatrix4x4& transform,
         MathUtils::AiVector3D2GlmVec3(texCoord));
   }
 
-  EndProcessByRenderThread;
   for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
-    EndProcessByRenderThread;
     const auto& face = mesh->mFaces[i];
     for (size_t j = 0; j < 3; ++j) {
       meshData->indices.emplace_back(face.mIndices[j]);
@@ -155,17 +150,15 @@ void ParseFbxData(GraphicsInterface* graphics, const aiMatrix4x4& transform,
 }
 
 void ParseFbxDatas(
-    BaseModel* model, BaseScene* modelScene, GraphicsInterface* graphics,
-    const std::string& modelType, float importSize,
-    const aiMatrix4x4& transform, const aiNode* node, const aiScene* scene,
-    const std::string& dataPath,
+    std::weak_ptr<BaseModel> modelPtr, std::weak_ptr<BaseScene> modelScenePtr,
+    std::weak_ptr<GraphicsInterface> graphicsPtr, const std::string& modelType,
+    float importSize, const aiMatrix4x4& transform, const aiNode* node,
+    const aiScene* scene, const std::string& dataPath,
     const std::unordered_map<TextureType, std::string>& combineTextures,
     const std::unordered_map<std::string, std::string>& materialMap) {
-  EndProcessByRenderThread;
   const aiMatrix4x4 nodeTransform = transform * node->mTransformation;
 
   for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
-    EndProcessByRenderThread;
     const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
     // Get Material Data
@@ -180,6 +173,10 @@ void ParseFbxDatas(
     }
 
     // Parse Info
+    auto model = modelPtr.lock();
+    if (!model) {
+      return;
+    }
     const auto [matPath, texPaths] = JsonUtils::ParseMeshDataInfos(
         model->GetRoot() + model->GetFile(), mesh->mName.C_Str());
 
@@ -188,13 +185,11 @@ void ParseFbxDatas(
         MeshData({.state = {.alive = true}, .name = mesh->mName.C_Str()}));
 
     // Parse Data
-    EndProcessByRenderThread;
-    ParseFbxData(graphics, nodeTransform, mesh, meshData, importSize);
+    ParseFbxData(nodeTransform, mesh, meshData, importSize);
 
-    EndProcessByRenderThread;
     if (texPaths.empty()) {
       // Parse Textures
-      ParseFbxTextures(model, matData, meshData, dataPath, combineTextures);
+      ParseFbxTextures(modelPtr, matData, meshData, dataPath, combineTextures);
     } else {
       // Parse Textures
       for (const auto& texPath : texPaths) {
@@ -205,7 +200,10 @@ void ParseFbxDatas(
     }
 
     // Parse Material
-    EndProcessByRenderThread;
+    auto modelScene = modelScenePtr.lock();
+    if (!modelScene) {
+      return;
+    }
     meshData->uniform.material =
         modelScene->GetMaterialByPath(matPath, matData);
 
@@ -215,13 +213,16 @@ void ParseFbxDatas(
     meshData->uniform.modelMatrix = &model->GetAbsoluteTransform();
 
     model->GetMeshes().emplace_back(meshData);
+    auto graphics = graphicsPtr.lock();
+    if (!graphics) {
+      return;
+    }
     graphics->ParseMeshData(meshData);
-
     std::cout << "Load mesh name: " << mesh->mName.C_Str() << std::endl;
   }
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-    ParseFbxDatas(model, modelScene, graphics, modelType, importSize,
+    ParseFbxDatas(modelPtr, modelScenePtr, graphicsPtr, modelType, importSize,
                   nodeTransform, node->mChildren[i], scene, dataPath,
                   combineTextures, materialMap);
   }
@@ -231,7 +232,6 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
   if (auto scenePtr = scene.lock()) {
     if (auto graphicsPtr = graphics.lock()) {
       Assimp::Importer importer;
-
       const std::string& dataPath = JSON_CONFIG(String, "File");
       const aiScene* sceneData =
           importer.ReadFile(GetRoot() + dataPath, parserFlags);
@@ -250,10 +250,11 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
           JsonUtils::GetMaterialMap(GetRoot() + GetFile()));
 
       const aiMatrix4x4 identity;
-      ParseFbxDatas(
-          this, scenePtr.get(), graphicsPtr.get(), JSON_CONFIG(String, "Type"),
-          JSON_CONFIG(Float, "ImportSize"), identity, sceneData->mRootNode,
-          sceneData, dataPath, combineTextures, materialMap);
+      ParseFbxDatas(static_pointer_cast<BaseModel>(shared_from_this()),
+                    scenePtr, graphicsPtr, JSON_CONFIG(String, "Type"),
+                    JSON_CONFIG(Float, "ImportSize"), identity,
+                    sceneData->mRootNode, sceneData, dataPath, combineTextures,
+                    materialMap);
 
       std::cout << "All meshes num: " << meshes.size() << std::endl;
     }

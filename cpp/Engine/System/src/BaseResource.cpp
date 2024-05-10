@@ -4,7 +4,9 @@
 void BaseResource::ParseWaitQueue() {
   while (waitQueue.empty() == false) {
     if (updateWaitQueueMutex.try_lock()) {
-      waitQueue.front().first();
+      if (waitQueue.front().second.lock()) {
+        waitQueue.front().first();
+      }
       waitQueue.pop();
       updateWaitQueueMutex.unlock();
     }
@@ -12,7 +14,7 @@ void BaseResource::ParseWaitQueue() {
 }
 
 void BaseResource::AddToWaitQueue(std::function<void()> func,
-                                  std::shared_ptr<BaseObject> obj) {
+                                  std::weak_ptr<BaseObject> obj) {
   updateWaitQueueMutex.lock();
   bool requireThread = waitQueue.empty();
   waitQueue.push(make_pair(func, obj));

@@ -4,12 +4,19 @@
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
+
 #include <Engine/System/include/BaseObject.h>
 #include <GLFW/glfw3.h>
+
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
 
 class Application;
 class BaseEditor : public BaseObject {
@@ -18,6 +25,8 @@ class BaseEditor : public BaseObject {
   GLFWwindow* parentWindow = nullptr;
   GLFWwindow* window = nullptr;
   ImGui_ImplVulkanH_Window* wd = nullptr;
+  rapidjson::Document* selectedJson = nullptr;
+  std::unordered_map<std::filesystem::path, rapidjson::Document*> documentCache;
 
   // Our state
   bool show_demo_window = true;
@@ -48,6 +57,14 @@ class BaseEditor : public BaseObject {
   void EditorDrawFileExplorer();
   void EditorDrawSceneHierarchy();
   void EditorDrawObjectInspector();
+
+  bool expandAll = false;
+  bool collapseAll = false;
+  bool onlyShowEngineFiles = true;
+
+  rapidjson::Document* LoadJsonFile(const std::filesystem::path& path);
+  void DisplayJson(const rapidjson::Value& value);
+  void DisplayDirectory(const std::filesystem::path& path);
 
  public:
   template <typename... Args>
