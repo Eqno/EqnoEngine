@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <cmath>
 
+#define DoubleClickTimeInterval 0.3f
+
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
@@ -914,6 +916,10 @@ void BaseEditor::DisplayDirectory(const fs::path& path) {
           selectedFile.second = LoadJsonFile(selectedFile.first);
           lastSelectType = LastSelectType::File;
           expandAllProperties = true;
+
+          if (CheckDoubleClick()) {
+            showObjectInspector = true;
+          }
         }
       } else if (onlyShowEngineFiles == false) {
         ImGui::BulletText("%s", entry.path().filename().string().c_str());
@@ -1048,6 +1054,18 @@ void BaseEditor::EditorDrawFileExplorer() {
   }
 }
 
+bool BaseEditor::CheckDoubleClick() {
+  static double lastClickTime = 0;
+  double currentTime = ImGui::GetTime();
+  if (currentTime - lastClickTime < DoubleClickTimeInterval) {
+    lastClickTime = currentTime;
+    return true;
+  } else {
+    lastClickTime = currentTime;
+    return false;
+  }
+}
+
 void BaseEditor::DisplayHierarchy(std::weak_ptr<SceneObject> root,
                                   std::string path) {
   if (auto rootPtr = root.lock()) {
@@ -1066,6 +1084,10 @@ void BaseEditor::DisplayHierarchy(std::weak_ptr<SceneObject> root,
           selectedObject.second = root;
           lastSelectType = LastSelectType::Object;
           expandAllProperties = true;
+
+          if (CheckDoubleClick()) {
+            showObjectInspector = true;
+          }
         }
         for (std::weak_ptr<SceneObject> son : rootPtr->GetSons()) {
           DisplayHierarchy(son, path);
@@ -1079,6 +1101,10 @@ void BaseEditor::DisplayHierarchy(std::weak_ptr<SceneObject> root,
         selectedObject.second = root;
         lastSelectType = LastSelectType::Object;
         expandAllProperties = true;
+
+        if (CheckDoubleClick()) {
+          showObjectInspector = true;
+        }
       }
     }
   }

@@ -73,6 +73,7 @@ class BaseEditor : public BaseObject {
   bool expandAllProperties = true;
   bool collapseAllProperties = false;
 
+  bool CheckDoubleClick();
   rapidjson::Document* LoadJsonFile(const std::filesystem::path& path);
   void DisplayJson(rapidjson::Value& value, bool& modifiedValue);
   void DisplayDirectory(const std::filesystem::path& path);
