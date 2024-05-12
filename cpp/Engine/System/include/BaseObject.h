@@ -56,7 +56,7 @@ class BaseObject : public std::enable_shared_from_this<BaseObject> {
 
  public:
   BaseObject() = delete;
-  virtual ~BaseObject() {}
+  virtual ~BaseObject() = default;
 
   template <
       typename T, typename... Args,

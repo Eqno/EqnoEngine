@@ -10,6 +10,7 @@
 
 class BaseScene;
 class GraphicsInterface;
+enum class SceneState { Unset, Launching, Running, Terminating, Terminated };
 
 class Application final : public BaseObject {
   friend class BaseObject;
@@ -23,7 +24,7 @@ class Application final : public BaseObject {
   std::shared_ptr<GraphicsInterface> graphics;
 
   bool graphicsSettingsModified = false;
-  bool sceneLaunched = false;
+  SceneState sceneState = SceneState::Unset;
   void CreateGraphics();
   void CreateWindow() const;
   void CreateLauncherScene();
@@ -33,7 +34,7 @@ class Application final : public BaseObject {
   explicit Application(Args&&... args)
       : BaseObject(std::forward<Args>(args)...,
                    std::shared_ptr<BaseObject>(nullptr)) {}
-  ~Application() override = default;
+  virtual ~Application() = default;
   std::unordered_map<int, std::weak_ptr<BaseLight>>& GetLightsById();
   std::weak_ptr<GraphicsInterface> GetGraphics() const { return graphics; }
 
@@ -62,7 +63,7 @@ class Application final : public BaseObject {
   int GetGraphicsWindowWidth();
   int GetGraphicsWindowHeight();
 
-  bool GetSceneLaunched() const { return sceneLaunched; };
+  SceneState GetSceneState() const { return sceneState; }
   virtual bool GetGraphicsSettingsModified() const {
     return graphicsSettingsModified;
   }

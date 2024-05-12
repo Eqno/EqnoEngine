@@ -781,20 +781,27 @@ void BaseEditor::EditorDrawLaunchCommand() {
     float buttonHeight = 30.0f;
     ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f - 161);
     ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
+
+    ImGui::BeginDisabled(appPointer->GetSceneState() != SceneState::Terminated);
     if (ImGui::Button("Launch Scene", ImVec2(buttonWidth, buttonHeight))) {
       appPointer->LaunchScene();
       showSceneHierarchy = true;
       expandAllObjects = true;
     }
+    ImGui::EndDisabled();
+
     ImGui::SameLine();
     ImGui::Text("|");
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 13);
     ImGui::SetCursorPosY((ImGui::GetWindowSize().y - buttonHeight) * 0.5f);
+
+    ImGui::BeginDisabled(appPointer->GetSceneState() != SceneState::Running);
     if (ImGui::Button("Terminate Scene", ImVec2(buttonWidth, buttonHeight))) {
       appPointer->TerminateScene();
       showSceneHierarchy = false;
     }
+    ImGui::EndDisabled();
     ImGui::End();
   }
 }

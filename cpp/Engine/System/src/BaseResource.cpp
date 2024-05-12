@@ -11,10 +11,12 @@ void BaseResource::ParseWaitQueue() {
       updateWaitQueueMutex.unlock();
     }
   }
+  processFinished = true;
 }
 
 void BaseResource::AddToWaitQueue(std::function<void()> func,
                                   std::weak_ptr<BaseObject> obj) {
+  processFinished = false;
   updateWaitQueueMutex.lock();
   bool requireThread = waitQueue.empty();
   waitQueue.push(make_pair(func, obj));

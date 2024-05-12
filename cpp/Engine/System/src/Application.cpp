@@ -41,8 +41,8 @@ void Application::CreateLauncherScene() {
 }
 
 void Application::LaunchScene() {
-  if (sceneLaunched == false) {
-    sceneLaunched = true;
+  if (sceneState == SceneState::Terminated) {
+    sceneState = SceneState::Launching;
     if (GetEnableEditor()) {
       std::thread(&Application::StartRenderLoop, this).detach();
     } else {
@@ -55,8 +55,11 @@ void Application::StartRenderLoop() {
   CreateGraphics();
   CreateWindow();
   CreateLauncherScene();
+  sceneState = SceneState::Running;
   graphics->RenderLoop();
 
+  while (modelResourceManager.processFinished == false) {
+  }
   scene->Destroy();
   graphics->CleanupGraphics();
 
@@ -65,11 +68,12 @@ void Application::StartRenderLoop() {
 
   graphics.reset();
   scene.reset();
-  sceneLaunched = false;
+  sceneState = SceneState::Terminated;
 }
 
 void Application::TerminateScene() {
-  if (sceneLaunched == true) {
+  if (sceneState == SceneState::Running) {
+    sceneState = SceneState::Terminating;
     graphics->SetRenderLoopShouldEnd(true);
   }
 }
@@ -79,6 +83,7 @@ void Application::RunApplication() {
   EnableEditor =
       JsonUtils::ReadBoolFromFile(GetRoot() + configPath, "EnableEditor");
 
+  sceneState = SceneState::Terminated;
   if (GetEnableEditor()) {
     CreateEditor();
     editor->LoopImgui();

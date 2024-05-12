@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -15,6 +16,7 @@ class BaseResource {
   void ParseWaitQueue();
 
  public:
+  std::atomic<bool> processFinished = true;
   void AddToWaitQueue(std::function<void()> func,
                       std::weak_ptr<BaseObject> obj);
 };
