@@ -1260,8 +1260,8 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 rot = glm::degrees(objPtr->GetRelativeRotation());
         float rotBuf[3]{rot.x, rot.y, rot.z};
         ImGui::InputFloat3("Rotation", rotBuf);
-        objPtr->SetRelativeRotation(
-            glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+        // objPtr->SetRelativeRotation(
+        //     glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
 
         glm::vec3 sca = objPtr->GetRelativeScale();
         float scaBuf[3]{sca.x, sca.y, sca.z};
@@ -1279,8 +1279,8 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 rot = glm::degrees(objPtr->GetAbsoluteRotation());
         float rotBuf[3]{rot.x, rot.y, rot.z};
         ImGui::InputFloat3("Rotation", rotBuf);
-        objPtr->SetAbsoluteRotation(
-            glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+        // objPtr->SetAbsoluteRotation(
+        //     glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
 
         glm::vec3 sca = objPtr->GetAbsoluteScale();
         float scaBuf[3]{sca.x, sca.y, sca.z};

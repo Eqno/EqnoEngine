@@ -62,12 +62,15 @@ void Application::StartRenderLoop() {
   }
   scene->Destroy();
   graphics->CleanupGraphics();
+  graphics->Destroy();
 
   passiveObjects.clear();
   activeObjects.clear();
 
   graphics.reset();
   scene.reset();
+
+  JsonUtils::ClearDocumentCache();
   sceneState = SceneState::Terminated;
 }
 
@@ -132,12 +135,7 @@ void Application::OnCreate() { BaseObject::OnCreate(); }
 void Application::OnStart() { BaseObject::OnStart(); }
 void Application::OnUpdate() { BaseObject::OnUpdate(); }
 void Application::OnStop() { BaseObject::OnStop(); }
-void Application::OnDestroy() {
-  BaseObject::OnDestroy();
-
-  graphics->Destroy();
-  JsonUtils::ClearDocumentCache();
-}
+void Application::OnDestroy() { BaseObject::OnDestroy(); }
 
 std::unordered_map<int, std::weak_ptr<BaseLight>>&
 Application::GetLightsById() {
