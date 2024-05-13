@@ -1,5 +1,14 @@
 {
     "Name": "SpotLight",
+    "Type": [
+        "SpotLight",
+        "SceneObject"
+    ],
+    "DefaultTransform": {
+        "Position": "0,0,0",
+        "Rotation": "0,0,0",
+        "Scale": "1,1,1"
+    },
 
     "Intensity": 0.4,
     "Color": "1,1,1,1",

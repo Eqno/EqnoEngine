@@ -1,5 +1,6 @@
 {
     "Name": "TestScene",
+    "Type": ["BaseScene"],
     
     "LightChannels": {
         "All": [

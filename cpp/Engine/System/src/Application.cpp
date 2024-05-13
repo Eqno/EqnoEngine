@@ -42,6 +42,7 @@ void Application::CreateLauncherScene() {
 
 void Application::LaunchScene() {
   if (sceneState == SceneState::Terminated) {
+    graphicsSettingsModified = false;
     sceneState = SceneState::Launching;
     if (GetEnableEditor()) {
       std::thread(&Application::StartRenderLoop, this).detach();
@@ -71,6 +72,7 @@ void Application::StartRenderLoop() {
   scene.reset();
 
   JsonUtils::ClearDocumentCache();
+  graphicsSettingsModified = false;
   sceneState = SceneState::Terminated;
 }
 

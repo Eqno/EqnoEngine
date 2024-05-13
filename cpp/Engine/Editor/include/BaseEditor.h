@@ -74,6 +74,8 @@ class BaseEditor : public BaseObject {
   bool collapseAllProperties = false;
 
   bool CheckDoubleClick();
+  std::string ParseFilePath(std::string path);
+
   rapidjson::Document* LoadJsonFile(const std::filesystem::path& path);
   void DisplayJson(rapidjson::Value& value, bool& modifiedValue);
   void DisplayDirectory(const std::filesystem::path& path);
@@ -96,6 +98,7 @@ class BaseEditor : public BaseObject {
 
   GLFWwindow* GetParentWindow() const { return parentWindow; }
   GLFWwindow* GetWindow() const { return window; }
+  bool GetShowRestartTip();
 
   int GetGraphicsWindowWidth() const { return graphicsWindowWidth; }
   int GetGraphicsWindowHeight() const { return graphicsWindowWidth; }

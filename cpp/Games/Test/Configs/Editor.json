@@ -1,5 +1,9 @@
 {
     "Name": "GameEditor",
+    "Type": [
+        "BaseEditor",
+        "Config"
+    ],
 
     "EditorName": "Eqno Engine Editor",
     "LaunchSceneInEditor": false,

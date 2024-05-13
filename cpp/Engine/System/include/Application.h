@@ -37,6 +37,7 @@ class Application final : public BaseObject {
   virtual ~Application() = default;
   std::unordered_map<int, std::weak_ptr<BaseLight>>& GetLightsById();
   std::weak_ptr<GraphicsInterface> GetGraphics() const { return graphics; }
+  std::weak_ptr<BaseScene> GetScene() const { return scene; }
 
   void TriggerOnUpdate();
   void RunApplication();

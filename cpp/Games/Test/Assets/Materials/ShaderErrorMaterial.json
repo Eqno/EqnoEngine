@@ -1,3 +1,4 @@
 {
-    "Name": "ShaderErrorMaterial"
+    "Name": "ShaderErrorMaterial",
+    "Type": ["BaseMaterial"]
 }

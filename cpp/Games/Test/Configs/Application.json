@@ -1,5 +1,9 @@
 {
     "Name": "GameApp",
+    "Type": [
+        "Application",
+        "Config"
+    ],
 
     "ApplicationName": "Eqno Engine Test",
     "EnableEditor": true

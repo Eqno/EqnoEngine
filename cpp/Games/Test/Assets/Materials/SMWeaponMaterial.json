@@ -1,6 +1,7 @@
 {
     "Name": "SMWeaponMaterial",
-    
+    "Type": ["BaseMaterial"],
+            
     "Shaders": [
         "Assets/Shaders/DefaultLit/PhysicallyBasedSDF"
     ],

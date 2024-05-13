@@ -1,7 +1,20 @@
 {
     "Name": "ObjModel",
-    "Type": "OBJ",
-    "File": "Assets/Models/viking_room/viking_room.obj",
+    "Type": [
+        "BaseModel",
+        "SceneObject"
+    ],
+
+    "DefaultCamera": "MainCamera",
+    "DefaultLightChannel": "All",
+    "DefaultTransform": {
+        "Position": "0,0,0",
+        "Rotation": "0,0,0",
+        "Scale": "1,1,1"
+    },
+    
+    "ModelType": "OBJ",
+    "ModelFile": "Assets/Models/viking_room/viking_room.obj",
     "Material": "Assets/Materials/VikingRoomMaterial",
     "ImportSize": 1,
     "Meshes": {

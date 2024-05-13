@@ -1,7 +1,20 @@
 {
     "Name": "Kurala_Workshop",
-    "Type": "OBJ",
-    "File": "Assets/Models/Kurala_Workshop/source/Kurala_Workshop_SF.obj",
+    "Type": [
+        "BaseModel",
+        "SceneObject"
+    ],
+
+    "DefaultCamera": "MainCamera",
+    "DefaultLightChannel": "All",
+    "DefaultTransform": {
+        "Position": "0,0,0",
+        "Rotation": "0,0,0",
+        "Scale": "1,1,1"
+    },
+        
+    "ModelType": "OBJ",
+    "ModelFile": "Assets/Models/Kurala_Workshop/source/Kurala_Workshop_SF.obj",
     "ImportSize": 1,
     "Meshes": {
         "Kurala_Workshop": {

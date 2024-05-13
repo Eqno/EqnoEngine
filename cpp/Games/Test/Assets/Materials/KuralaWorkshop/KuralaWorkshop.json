@@ -1,6 +1,7 @@
 {
     "Name": "KuralaWorkshopMaterial",
-    
+    "Type": ["BaseMaterial"],
+        
     "Shaders": [
         "Assets/Shaders/KuralaWorkshop/KuralaWorkshop"
     ],

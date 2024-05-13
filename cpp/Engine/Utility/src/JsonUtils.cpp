@@ -69,7 +69,7 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
       doc->HasMember(key.c_str())) {
     std::vector<std::string> ret;
     const auto& values = (*doc)[key.c_str()];
-    for (unsigned int i = 0; i < values.Size(); ++i) {
+    for (SizeType i = 0; i < values.Size(); ++i) {
       ret.emplace_back(values[i].GetString());
     }
     return ret;
@@ -117,7 +117,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
     } else {
       PRINT_AND_THROW_ERROR("unknown scene object type!");
     }
-    if (val.HasMember("Transform")) {
+    if (object && val.HasMember("Transform")) {
       const auto& trans = val["Transform"];
       if (trans.HasMember("Scale")) {
         object->SetRelativeScale(ParseGLMVec3(trans["Scale"].GetString()));
@@ -133,7 +133,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
     }
     if (val.HasMember("Sons")) {
       const auto& values = val["Sons"];
-      for (unsigned int i = 0; i < values.Size(); ++i) {
+      for (SizeType i = 0; i < values.Size(); ++i) {
         TravelSceneObjectTree(graphics, object, values[i], root, owner);
       }
     }
@@ -150,7 +150,7 @@ void JsonUtils::ParseSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
   if (Document* doc = GetJsonDocFromFile(root + file);
       doc->HasMember("SceneObjects")) {
     const auto& values = (*doc)["SceneObjects"];
-    for (unsigned int i = 0; i < values.Size(); ++i) {
+    for (SizeType i = 0; i < values.Size(); ++i) {
       TravelSceneObjectTree(graphics, parent, values[i], root, owner);
     }
   }
@@ -167,7 +167,7 @@ void JsonUtils::ParseSceneLightChannels(const std::string& root,
       std::shared_ptr<LightChannel> object =
           BaseObject::CreateImmediately<LightChannel>(iter->name.GetString(),
                                                       false, root, file, owner);
-      for (unsigned int i = 0; i < iter->value.Size(); ++i) {
+      for (SizeType i = 0; i < iter->value.Size(); ++i) {
         if (auto ownerPtr = owner.lock()) {
           std::weak_ptr<BaseLight> light =
               ownerPtr->GetLightByName(iter->value[i].GetString());
@@ -217,7 +217,7 @@ void JsonUtils::ParseMaterialShaders(const std::string& filePath,
                                      std::vector<std::string>& shaders) {
   if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Shaders")) {
     const auto& shaderPaths = (*doc)["Shaders"];
-    for (unsigned int i = 0; i < shaderPaths.Size(); ++i) {
+    for (SizeType i = 0; i < shaderPaths.Size(); ++i) {
       shaders.emplace_back(shaderPaths[i].GetString());
     }
   }

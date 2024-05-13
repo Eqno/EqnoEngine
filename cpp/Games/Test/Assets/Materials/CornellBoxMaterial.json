@@ -1,6 +1,7 @@
 {
     "Name": "CornellBoxMaterial",
-    
+    "Type": ["BaseMaterial"],
+            
     "Shaders": [
         "Assets/Shaders/CornellBox"
     ]

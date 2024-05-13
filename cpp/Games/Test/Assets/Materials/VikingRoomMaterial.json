@@ -1,5 +1,7 @@
 {
     "Name": "VikingRoomMaterial",
+    "Type": ["BaseMaterial"],
+            
     "Shaders": [
         "Assets/Shaders/DefaultUnlit"
     ]

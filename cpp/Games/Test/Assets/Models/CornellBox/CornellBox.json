@@ -1,7 +1,20 @@
 {
     "Name": "CornellBox",
-    "Type": "FBX",
-    "File": "Assets/Models/CornellBox/CornellBox.fbx",
+    "Type": [
+        "BaseModel",
+        "SceneObject"
+    ],
+
+    "DefaultCamera": "MainCamera",
+    "DefaultLightChannel": "All",
+    "DefaultTransform": {
+        "Position": "0,0,0",
+        "Rotation": "0,0,0",
+        "Scale": "1,1,1"
+    },
+
+    "ModelType": "FBX",
+    "ModelFile": "Assets/Models/CornellBox/CornellBox.fbx",
     "Material": "Assets/Materials/CornellBoxMaterial",
     "ImportSize": 0.05,
     "Meshes": {

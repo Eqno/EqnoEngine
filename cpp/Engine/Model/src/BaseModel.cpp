@@ -232,7 +232,7 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
   if (auto scenePtr = scene.lock()) {
     if (auto graphicsPtr = graphics.lock()) {
       Assimp::Importer importer;
-      const std::string& dataPath = JSON_CONFIG(String, "File");
+      const std::string& dataPath = JSON_CONFIG(String, "ModelFile");
       const aiScene* sceneData =
           importer.ReadFile(GetRoot() + dataPath, parserFlags);
 
@@ -251,7 +251,7 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
 
       const aiMatrix4x4 identity;
       ParseFbxDatas(static_pointer_cast<BaseModel>(shared_from_this()),
-                    scenePtr, graphicsPtr, JSON_CONFIG(String, "Type"),
+                    scenePtr, graphicsPtr, JSON_CONFIG(String, "ModelType"),
                     JSON_CONFIG(Float, "ImportSize"), identity,
                     sceneData->mRootNode, sceneData, dataPath, combineTextures,
                     materialMap);

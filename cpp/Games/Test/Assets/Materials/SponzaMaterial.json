@@ -1,6 +1,7 @@
 {
     "Name": "SponzaMaterial",
-    
+    "Type": ["BaseMaterial"],
+            
     "Shaders": [
         "Assets/Shaders/Sponza"
     ]

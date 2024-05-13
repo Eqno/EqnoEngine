@@ -97,15 +97,15 @@ class BaseTransform {
     return relativeUp;
   }
   const glm::vec3& GetAbsoluteForward() {
-    absoluteForward = glm::normalize(glm::vec3(-relativeTransform[2]));
+    absoluteForward = glm::normalize(glm::vec3(-absoluteTransform[2]));
     return absoluteForward;
   }
   const glm::vec3& GetAbsoluteLeft() {
-    absoluteLeft = glm::normalize(glm::vec3(-relativeTransform[0]));
+    absoluteLeft = glm::normalize(glm::vec3(-absoluteTransform[0]));
     return absoluteLeft;
   }
   const glm::vec3& GetAbsoluteUp() {
-    absoluteUp = glm::normalize(glm::vec3(relativeTransform[1]));
+    absoluteUp = glm::normalize(glm::vec3(absoluteTransform[1]));
     return absoluteUp;
   }
 
