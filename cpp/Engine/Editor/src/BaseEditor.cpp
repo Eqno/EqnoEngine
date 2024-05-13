@@ -1246,6 +1246,7 @@ void BaseEditor::EditorDrawSceneHierarchy() {
       ImGui::SetNextItemOpen(false, ImGuiCond_Always); \
     }                                                  \
   }
+#define EditorChangeTransformEPS 0.001f
 void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
   if (auto objPtr = object.lock()) {
     ProcessExpandOrCollapse;
@@ -1255,18 +1256,31 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 pos = objPtr->GetRelativePosition();
         float posBuf[3]{pos.x, pos.y, pos.z};
         ImGui::InputFloat3("Position", posBuf);
-        objPtr->SetRelativePosition(glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
+        if (abs(posBuf[0] - pos.x) > EditorChangeTransformEPS ||
+            abs(posBuf[1] - pos.y) > EditorChangeTransformEPS ||
+            abs(posBuf[2] - pos.z) > EditorChangeTransformEPS) {
+          objPtr->SetRelativePosition(
+              glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
+        }
 
         glm::vec3 rot = glm::degrees(objPtr->GetRelativeRotation());
         float rotBuf[3]{rot.x, rot.y, rot.z};
         ImGui::InputFloat3("Rotation", rotBuf);
-        // objPtr->SetRelativeRotation(
-        //     glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+        if (abs(rotBuf[0] - rot.x) > EditorChangeTransformEPS ||
+            abs(rotBuf[1] - rot.y) > EditorChangeTransformEPS ||
+            abs(rotBuf[2] - rot.z) > EditorChangeTransformEPS) {
+          objPtr->SetRelativeRotation(
+              glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+        }
 
         glm::vec3 sca = objPtr->GetRelativeScale();
         float scaBuf[3]{sca.x, sca.y, sca.z};
         ImGui::InputFloat3("Scale", scaBuf);
-        objPtr->SetRelativeScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
+        if (abs(scaBuf[0] - sca.x) > EditorChangeTransformEPS ||
+            abs(scaBuf[1] - sca.y) > EditorChangeTransformEPS ||
+            abs(scaBuf[2] - sca.z) > EditorChangeTransformEPS) {
+          objPtr->SetRelativeScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
+        }
         ImGui::TreePop();
       }
       ProcessExpandOrCollapse;
@@ -1274,18 +1288,31 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 pos = objPtr->GetAbsolutePosition();
         float posBuf[3]{pos.x, pos.y, pos.z};
         ImGui::InputFloat3("Position", posBuf);
-        objPtr->SetAbsolutePosition(glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
+        if (abs(posBuf[0] - pos.x) > EditorChangeTransformEPS ||
+            abs(posBuf[1] - pos.y) > EditorChangeTransformEPS ||
+            abs(posBuf[2] - pos.z) > EditorChangeTransformEPS) {
+          objPtr->SetAbsolutePosition(
+              glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
+        }
 
         glm::vec3 rot = glm::degrees(objPtr->GetAbsoluteRotation());
         float rotBuf[3]{rot.x, rot.y, rot.z};
         ImGui::InputFloat3("Rotation", rotBuf);
-        // objPtr->SetAbsoluteRotation(
-        //     glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+        if (abs(rotBuf[0] - rot.x) > EditorChangeTransformEPS ||
+            abs(rotBuf[1] - rot.y) > EditorChangeTransformEPS ||
+            abs(rotBuf[2] - rot.z) > EditorChangeTransformEPS) {
+          objPtr->SetAbsoluteRotation(
+              glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
+        }
 
         glm::vec3 sca = objPtr->GetAbsoluteScale();
         float scaBuf[3]{sca.x, sca.y, sca.z};
         ImGui::InputFloat3("Scale", scaBuf);
-        objPtr->SetAbsoluteScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
+        if (abs(scaBuf[0] - sca.x) > EditorChangeTransformEPS ||
+            abs(scaBuf[1] - sca.y) > EditorChangeTransformEPS ||
+            abs(scaBuf[2] - sca.z) > EditorChangeTransformEPS) {
+          objPtr->SetAbsoluteScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
+        }
         ImGui::TreePop();
       }
       ImGui::TreePop();
@@ -1294,6 +1321,7 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
     }
   }
 }
+#undef EditorChangeTransformEPS
 #undef ProcessExpandOrCollapse
 
 void BaseEditor::EditorDrawObjectInspector() {
