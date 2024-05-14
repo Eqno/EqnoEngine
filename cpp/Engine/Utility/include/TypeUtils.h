@@ -108,12 +108,18 @@ inline std::unordered_map<std::string, TextureType> TextureTypeMap{
     {"AO", TextureType::AO},
 };
 
+struct TextureDataContent {
+  stbi_uc* content;
+  std::mutex inUse;
+  TextureDataContent(stbi_uc* content) : content(content) {}
+};
+
 struct TextureData {
   TextureType type;
   int width;
   int height;
   int channels;
-  stbi_uc* data;
+  std::weak_ptr<TextureDataContent> data;
 };
 
 enum class LightType {

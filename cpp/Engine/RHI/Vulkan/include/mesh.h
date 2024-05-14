@@ -19,6 +19,7 @@
 class Draw;
 
 class Mesh : public Base {
+  bool createInterrupted = false;
   std::weak_ptr<MeshData> bridge;
 
   Data data;
@@ -36,6 +37,7 @@ class Mesh : public Base {
 
  public:
   BufferManager& GetBufferManager() const;
+  bool GetCreateInterrupted() const { return createInterrupted; }
 
   [[nodiscard]] const VkBuffer& GetIndexBuffer() const {
     return buffer.GetIndexBuffer();

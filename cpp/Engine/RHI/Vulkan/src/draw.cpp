@@ -217,6 +217,11 @@ void Draw::LoadDrawResource(const Device& device, Render& render,
       Create<Mesh>(device, render, data, pipeline.GetColorDescriptorSetLayout(),
                    pipeline.GetZPrePassDescriptorSetLayout(),
                    pipeline.GetShadowMapDescriptorSetLayout());
+  if (mesh->GetCreateInterrupted()) {
+    mesh->DestroyMesh(device.GetLogical(), render);
+    mesh->Destroy();
+    return;
+  }
   meshes.emplace_back(mesh);
 }
 

@@ -14,9 +14,7 @@ class SceneObject : public BaseObject {
 
   std::string name;
   std::list<std::shared_ptr<SceneObject>> sons;
-
   BaseTransform transform;
-  void AddToSons(std::shared_ptr<SceneObject> son) { sons.push_back(son); }
 
  public:
   template <typename... Args>
@@ -29,7 +27,23 @@ class SceneObject : public BaseObject {
   std::list<std::shared_ptr<SceneObject>>& GetSons() { return sons; }
   [[nodiscard]] std::weak_ptr<SceneObject> GetParent() const { return parent; }
   [[nodiscard]] BaseTransform& GetTransform() { return transform; }
+
   virtual void PrintSons();
+  virtual void AddToSons(std::shared_ptr<SceneObject> son) {
+    sons.push_back(son);
+  }
+  virtual void RemoveFromSons(std::weak_ptr<SceneObject> son) {
+    if (auto sonPtr = son.lock()) {
+      auto iter = sons.begin();
+      while (iter != sons.end()) {
+        if (iter->get() == sonPtr.get()) {
+          sons.erase(iter);
+          break;
+        }
+        iter++;
+      }
+    }
+  }
 
   void UpdateRelativeTransform() { transform.UpdateRelativeTransform(); }
   void UpdateAbsoluteTransform() { transform.UpdateAbsoluteTransform(); }

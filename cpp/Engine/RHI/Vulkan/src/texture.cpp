@@ -212,13 +212,18 @@ void Texture::GenerateMipmaps(const Device& device, const Render& render,
 
 void Texture::CreateTextureImage(const Device& device, const Render& render,
                                  const int texWidth, const int texHeight,
-                                 const int texChannels, stbi_uc* pixels) {
+                                 const int texChannels,
+                                 std::weak_ptr<TextureDataContent> pixelsPtr) {
   const VkDeviceSize imageSize =
       static_cast<VkDeviceSize>(texWidth) * texHeight * 4;
 
-  if (!pixels) {
-    PRINT_AND_THROW_ERROR("texture pixels invalid!");
+  auto pixels = pixelsPtr.lock();
+  if (pixels == nullptr) {
+    std::cout << "texture pixels invalid!" << std::endl;
+    createInterrupted = true;
+    return;
   }
+  pixels->inUse.lock();
 
   VkBuffer stagingBuffer;
   VkDeviceMemory stagingBufferMemory;
@@ -231,7 +236,7 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
   vkMapMemory(device.GetLogical(), stagingBufferMemory, 0, imageSize, 0,
               &imageData);
 
-  memcpy(imageData, pixels, imageSize);
+  memcpy(imageData, pixels->content, imageSize);
   vkUnmapMemory(device.GetLogical(), stagingBufferMemory);
 
   auto [image, imageMemory] = CreateImage(
@@ -260,6 +265,7 @@ void Texture::CreateTextureImage(const Device& device, const Render& render,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
+  pixels->inUse.unlock();
 }
 
 void Texture::CreateTextureImageView(const VkDevice& device) {
@@ -393,7 +399,8 @@ void Texture::CopyBufferToImage(const Device& device, const Render& render,
 
 void Texture::CreateTexture(const Device& device, const Render& render,
                             const int width, const int height,
-                            const int channels, stbi_uc* data) {
+                            const int channels,
+                            std::weak_ptr<TextureDataContent> data) {
   if (render.GetEnableMipmap()) {
     mipLevels =
         static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) +
@@ -402,11 +409,17 @@ void Texture::CreateTexture(const Device& device, const Render& render,
     mipLevels = 1;
   }
   CreateTextureImage(device, render, width, height, channels, data);
+  if (createInterrupted) {
+    return;
+  }
   CreateTextureImageView(device.GetLogical());
   CreateTextureSampler(device);
 }
 
 void Texture::DestroyTexture(const VkDevice& device) const {
+  if (createInterrupted) {
+    return;
+  }
   vkDestroySampler(device, textureSampler, nullptr);
   vkDestroyImageView(device, textureImageView, nullptr);
   vkDestroyImage(device, textureImage, nullptr);

@@ -76,9 +76,11 @@ void Vulkan::TriggerOnUpdate(
     }
     if (meshes.empty()) {
       // Destroy the draw if meshes empty
-      drawIter->second->DestroyDrawResource(device.GetLogical(), render);
-      drawIter->second->Destroy();
+      Draw* needToDestroy = drawIter->second;
       drawIter = drawsByShader.erase(drawIter);
+
+      needToDestroy->DestroyDrawResource(device.GetLogical(), render);
+      needToDestroy->Destroy();
     } else {
       drawIter++;
     }
@@ -206,7 +208,7 @@ void Vulkan::CleanupGraphics() {
 }
 
 void Vulkan::ParseMeshData() {
-  if (needToUpdateMeshDatas.exchange(false)) {
+  if (needToUpdateMeshDatas) {
     updateMeshDataMutex.lock();
 
     while (meshDataQueue.empty() == false) {
@@ -267,6 +269,7 @@ void Vulkan::ParseMeshData() {
       }
       meshDataQueue.pop();
     }
+    needToUpdateMeshDatas = false;
     updateMeshDataMutex.unlock();
   }
 }

@@ -674,7 +674,7 @@ void BaseEditor::EditorDrawMenuBar() {
     ImGui::Text("|");
     ImGui::SameLine();
     if (ImGui::BeginMenu("Status Display")) {
-      if (appPointer->GetGraphics().lock()) {
+      if (appPointer->GetSceneState() == SceneState::Running) {
         if (ImGui::Checkbox("Show Render FPS",
                             &appPointer->GetShowRenderFrame())) {
           std::string graphicsConfigPath = JsonUtils::ReadStringFromFile(
@@ -746,7 +746,7 @@ void BaseEditor::EditorDrawRestartTip() {
 }
 
 void BaseEditor::EditorDrawFrameCount() {
-  if (appPointer->GetGraphics().lock() &&
+  if (appPointer->GetSceneState() == SceneState::Running &&
       (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
     float fpsWindowHeight = 20.0f;
     float fpsWindowPosY = ImGui::GetFrameHeight();
@@ -962,7 +962,7 @@ void BaseEditor::EditorDrawFileExplorer() {
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
 
-    if (appPointer->GetGraphics().lock() &&
+    if (appPointer->GetSceneState() == SceneState::Running &&
         (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
       topWindowHeight += 32.0f;
     }
@@ -1090,31 +1090,48 @@ void BaseEditor::EditorDrawFileExplorer() {
 
       ImGui::BeginDisabled(!addToSceneEnable);
       if (ImGui::Button("Add To Scene", ImVec2(buttonWidth, buttonHeight))) {
+        std::string originName =
+            selectedFile.second->HasMember("Name")
+                ? (*selectedFile.second)["Name"].GetString()
+                : "Unset";
+        std::string objectName = originName;
+
+        if (auto parentPtr = parent.lock()) {
+          int nameIndex = 0;
+          while (true) {
+            bool alreadyHasName = false;
+            for (std::shared_ptr<SceneObject> son : parentPtr->GetSons()) {
+              if (objectName == son->GetName()) {
+                nameIndex++;
+                alreadyHasName = true;
+                objectName =
+                    originName + " (" + std::to_string(nameIndex) + ")";
+              }
+            }
+            if (alreadyHasName == false) {
+              break;
+            }
+          }
+        }
+
         auto& value = (*selectedFile.second)["Type"];
+        std::shared_ptr<SceneObject> object;
         for (SizeType i = 0; i < value.Size(); i++) {
-          std::shared_ptr<SceneObject> object;
           if (strcmp(value[i].GetString(), "BaseCamera") == 0) {
             object = BaseObject::CreateImmediately<BaseCamera>(
-                appPointer->GetGraphics(), parent,
-                selectedFile.second->HasMember("Name")
-                    ? (*selectedFile.second)["Name"].GetString()
-                    : "Unset",
-                GetRoot(), ParseFilePath(selectedFile.first),
-                appPointer->GetScene());
+                appPointer->GetGraphics(), parent, objectName, GetRoot(),
+                ParseFilePath(selectedFile.first), appPointer->GetScene());
             if (selectedFile.second->HasMember("DefaultTransform")) {
               std::static_pointer_cast<BaseCamera>(object)->InitRotation(
                   glm::radians(ParseGLMVec3(
                       (*selectedFile.second)["DefaultTransform"]["Rotation"]
                           .GetString())));
             }
+            break;
           } else if (strcmp(value[i].GetString(), "BaseModel") == 0) {
             object = BaseObject::CreateImmediately<BaseModel>(
-                appPointer->GetGraphics(), parent,
-                selectedFile.second->HasMember("Name")
-                    ? (*selectedFile.second)["Name"].GetString()
-                    : "Unset",
-                GetRoot(), ParseFilePath(selectedFile.first),
-                appPointer->GetScene());
+                appPointer->GetGraphics(), parent, objectName, GetRoot(),
+                ParseFilePath(selectedFile.first), appPointer->GetScene());
             if (selectedFile.second->HasMember("DefaultCamera")) {
               std::static_pointer_cast<BaseModel>(object)->SetCamera(
                   (*selectedFile.second)["DefaultCamera"].GetString());
@@ -1123,37 +1140,41 @@ void BaseEditor::EditorDrawFileExplorer() {
               std::static_pointer_cast<BaseModel>(object)->SetLightChannel(
                   (*selectedFile.second)["DefaultLightChannel"].GetString());
             }
+            break;
           } else if (strcmp(value[i].GetString(), "SpotLight") == 0) {
             object = BaseObject::CreateImmediately<SpotLight>(
-                appPointer->GetGraphics(), parent,
-                selectedFile.second->HasMember("Name")
-                    ? (*selectedFile.second)["Name"].GetString()
-                    : "Unset",
-                GetRoot(), ParseFilePath(selectedFile.first),
-                appPointer->GetScene());
+                appPointer->GetGraphics(), parent, objectName, GetRoot(),
+                ParseFilePath(selectedFile.first), appPointer->GetScene());
+            if (auto allLightsChannel =
+                    appPointer->GetLightChannelByName("All").lock()) {
+              allLightsChannel->AddLightToChannel(
+                  static_pointer_cast<BaseLight>(object));
+            }
+            break;
           } else if (strcmp(value[i].GetString(), "SunLight") == 0) {
             object = BaseObject::CreateImmediately<SunLight>(
-                parent,
-                selectedFile.second->HasMember("Name")
-                    ? (*selectedFile.second)["Name"].GetString()
-                    : "Unset",
-                GetRoot(), ParseFilePath(selectedFile.first),
-                appPointer->GetScene());
+                parent, objectName, GetRoot(),
+                ParseFilePath(selectedFile.first), appPointer->GetScene());
+            if (auto allLightsChannel =
+                    appPointer->GetLightChannelByName("All").lock()) {
+              allLightsChannel->AddLightToChannel(
+                  static_pointer_cast<BaseLight>(object));
+            }
+            break;
           }
-          if (object && selectedFile.second->HasMember("DefaultTransform")) {
-            const auto& trans = (*selectedFile.second)["DefaultTransform"];
-            if (trans.HasMember("Scale")) {
-              object->SetRelativeScale(
-                  ParseGLMVec3(trans["Scale"].GetString()));
-            }
-            if (trans.HasMember("Rotation")) {
-              object->SetRelativeRotation(
-                  glm::radians(ParseGLMVec3(trans["Rotation"].GetString())));
-            }
-            if (trans.HasMember("Position")) {
-              object->SetRelativePosition(
-                  ParseGLMVec3(trans["Position"].GetString()));
-            }
+        }
+        if (object && selectedFile.second->HasMember("DefaultTransform")) {
+          const auto& trans = (*selectedFile.second)["DefaultTransform"];
+          if (trans.HasMember("Scale")) {
+            object->SetRelativeScale(ParseGLMVec3(trans["Scale"].GetString()));
+          }
+          if (trans.HasMember("Rotation")) {
+            object->SetRelativeRotation(
+                glm::radians(ParseGLMVec3(trans["Rotation"].GetString())));
+          }
+          if (trans.HasMember("Position")) {
+            object->SetRelativePosition(
+                ParseGLMVec3(trans["Position"].GetString()));
           }
         }
       }
@@ -1232,7 +1253,7 @@ void BaseEditor::EditorDrawSceneHierarchy() {
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
 
-    if (appPointer->GetGraphics().lock() &&
+    if (appPointer->GetSceneState() == SceneState::Running &&
         (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
       topWindowHeight = 32.0f;
     }
@@ -1333,8 +1354,12 @@ void BaseEditor::EditorDrawSceneHierarchy() {
       ImGui::SameLine();
 
       ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 82.0f);
+      auto object = selectedObject.second.lock();
+      ImGui::BeginDisabled(object == nullptr || object->GetAlive() == false);
       if (ImGui::Button("Remove Object", ImVec2(buttonWidth, buttonHeight))) {
+        object->Destroy();
       }
+      ImGui::EndDisabled();
       ImGui::End();
     }
   }
@@ -1439,7 +1464,7 @@ void BaseEditor::EditorDrawObjectInspector() {
     float buttonWindowHeight = 30.0f;
     float menuBarHeight = ImGui::GetFrameHeight();
 
-    if (appPointer->GetGraphics().lock() &&
+    if (appPointer->GetSceneState() == SceneState::Running &&
         (appPointer->GetShowRenderFrame() || appPointer->GetShowGameFrame())) {
       topWindowHeight = 32.0f;
     }

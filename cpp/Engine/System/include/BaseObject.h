@@ -76,6 +76,9 @@ class BaseObject : public std::enable_shared_from_this<BaseObject> {
                                 shared_from_this());
   }
 
+  bool GetAlive() const { return _alive; }
+  bool GetActive() const { return _active; }
+
   void Active();
   void Deactive();
   void Destroy();

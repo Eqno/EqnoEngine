@@ -58,6 +58,7 @@ void Application::StartRenderLoop() {
   CreateLauncherScene();
   sceneState = SceneState::Running;
   graphics->RenderLoop();
+  sceneState = SceneState::Terminating;
 
   while (modelResourceManager.processFinished == false) {
   }
@@ -93,6 +94,9 @@ void Application::RunApplication() {
     CreateEditor();
     editor->LoopImgui();
     TerminateScene();
+    while (sceneState != SceneState::Unset &&
+           sceneState != SceneState::Terminated) {
+    }
     DestroyEditor();
   } else {
     LaunchScene();

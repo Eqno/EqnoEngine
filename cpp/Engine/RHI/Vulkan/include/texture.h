@@ -8,6 +8,7 @@ class Device;
 class Render;
 
 class Texture {
+  bool createInterrupted = false;
   VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
 
   uint32_t mipLevels;
@@ -18,7 +19,7 @@ class Texture {
 
   void CreateTextureImage(const Device& device, const Render& render,
                           int texWidth, int texHeight, int texChannels,
-                          stbi_uc* pixels);
+                          std::weak_ptr<TextureDataContent> pixelsPtr);
   void CreateTextureImageView(const VkDevice& device);
   void CreateTextureSampler(const Device& device);
 
@@ -30,16 +31,19 @@ class Texture {
   Texture() = default;
 
   Texture(const Device& device, const Render& render, const int width,
-          const int height, const int channels, stbi_uc* data) {
+          const int height, const int channels,
+          std::weak_ptr<TextureDataContent> data) {
     CreateTexture(device, render, width, height, channels, data);
   }
 
   Texture(VkFormat imageFormat, const Device& device, const Render& render,
-          const int width, const int height, const int channels, stbi_uc* data)
+          const int width, const int height, const int channels,
+          std::weak_ptr<TextureDataContent> data)
       : imageFormat(imageFormat) {
     CreateTexture(device, render, width, height, channels, data);
   }
 
+  bool GetCreateInterrupted() const { return createInterrupted; }
   [[nodiscard]] const VkImageView& GetTextureImageView() const {
     return textureImageView;
   }
@@ -68,6 +72,7 @@ class Texture {
       VkCommandBuffer commandBuffer = VK_NULL_HANDLE);
 
   void CreateTexture(const Device& device, const Render& render, int width,
-                     int height, int channels, stbi_uc* data);
+                     int height, int channels,
+                     std::weak_ptr<TextureDataContent> data);
   void DestroyTexture(const VkDevice& device) const;
 };

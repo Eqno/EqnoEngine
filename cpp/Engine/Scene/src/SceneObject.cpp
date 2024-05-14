@@ -150,13 +150,7 @@ void SceneObject::OnDestroy() {
     son->Destroy();
   }
   if (auto parentPtr = parent.lock()) {
-    auto iter = parentPtr->GetSons().begin();
-    while (iter != parentPtr->GetSons().end()) {
-      if (iter->get() == this) {
-        parentPtr->GetSons().erase(iter);
-        break;
-      }
-      iter++;
-    }
+    parentPtr->RemoveFromSons(
+        static_pointer_cast<SceneObject>(shared_from_this()));
   }
 }

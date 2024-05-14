@@ -25,8 +25,12 @@
 std ::vector<BaseLight*> LightsEmpty;
 
 void BaseModel::ClearTextureCache() {
-  for (const auto& textureData : TextureCache | std::views::values) {
-    stbi_image_free(textureData.data);
+  auto iter = TextureCache.begin();
+  while (iter != TextureCache.end()) {
+    iter->second.data->inUse.lock();
+    stbi_image_free(iter->second.data->content);
+    iter->second.data->inUse.unlock();
+    iter = TextureCache.erase(iter);
   }
 }
 
@@ -51,8 +55,10 @@ void BaseModel::ClearTextureCache() {
         if (data == nullptr) {                                                 \
           PRINT_AND_THROW_ERROR("failed to resize texture image!");            \
         }                                                                      \
-        (textures).emplace_back(type, width, height, channels, data);          \
-        model->TextureCache[_path] = {type, width, height, channels, data};    \
+        std::shared_ptr<TextureDataContent> dataPtr =                          \
+            std::make_shared<TextureDataContent>(data);                        \
+        (textures).emplace_back(type, width, height, channels, dataPtr);       \
+        model->TextureCache[_path] = {type, width, height, channels, dataPtr}; \
         stbi_image_free(origData);                                             \
       }                                                                        \
     }                                                                          \
@@ -259,11 +265,13 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
       std::cout << "All meshes num: " << meshes.size() << std::endl;
     }
   }
+  loaing = false;
 }
 
 void BaseModel::OnCreate() { SceneObject::OnCreate(); }
 void BaseModel::OnStart() {
   SceneObject::OnStart();
+  loaing = true;
   if (auto scenePtr = scene.lock()) {
     scenePtr->AddModelToResourceWaitQueue(
         std::function<void()>(

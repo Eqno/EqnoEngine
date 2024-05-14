@@ -14,6 +14,9 @@ void Mesh::CreateMesh(
   bridge = inData;
 
   ParseTextures(device, render);
+  if (createInterrupted) {
+    return;
+  }
   ParseVertexAndIndex();
   ParseBufferAndDescriptor(device, render, colorDescriptorSetLayout,
                            zPrePassDescriptorSetLayout,
@@ -21,6 +24,9 @@ void Mesh::CreateMesh(
 }
 
 void Mesh::DestroyMesh(const VkDevice& device, const Render& render) {
+  if (createInterrupted) {
+    return;
+  }
   descriptor.DestroyDesciptor(device, render);
   buffer.DestroyBuffers(device);
   for (const Texture& texture : textures) {
@@ -32,8 +38,13 @@ void Mesh::ParseTextures(const Device& device, const Render& render) {
   if (auto bridgePtr = bridge.lock()) {
     for (const auto& [type, width, height, channels, _data] :
          bridgePtr->textures) {
-      textures.emplace_back(VulkanUtils::TextureFormat[type], device, render,
-                            width, height, channels, _data);
+      Texture texture(VulkanUtils::TextureFormat[type], device, render, width,
+                      height, channels, _data);
+      if (texture.GetCreateInterrupted()) {
+        createInterrupted = true;
+        return;
+      }
+      textures.emplace_back(texture);
     }
   }
 }

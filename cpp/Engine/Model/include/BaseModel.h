@@ -6,7 +6,16 @@
 #include <Engine/System/include/BaseObject.h>
 #include <Engine/Utility/include/TypeUtils.h>
 
+#include <atomic>
+
 class BaseCamera;
+struct TextureCacheData {
+  TextureType type;
+  int width;
+  int height;
+  int channels;
+  std::shared_ptr<TextureDataContent> data;
+};
 
 class BaseModel final : public SceneObject {
   std::vector<std::shared_ptr<MeshData>> meshes;
@@ -17,6 +26,8 @@ class BaseModel final : public SceneObject {
 
   std::string _lightChannelName = "Unset";
   std::weak_ptr<LightChannel> _lightChannel;
+
+  std::atomic<bool> loaing = false;
   virtual void LoadFbxDatas(const unsigned int parserFlags);
 
  public:
@@ -25,7 +36,7 @@ class BaseModel final : public SceneObject {
       : graphics(graphics), SceneObject(std::forward<Args>(args)...) {}
   ~BaseModel() override = default;
 
-  std::unordered_map<std::string, TextureData> TextureCache;
+  std::unordered_map<std::string, TextureCacheData> TextureCache;
   void ClearTextureCache();
 
   virtual void OnCreate() override;
