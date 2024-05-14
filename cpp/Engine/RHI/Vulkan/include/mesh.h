@@ -67,8 +67,9 @@ class Mesh : public Base {
     return descriptor.GetShadowMapDescriptorSetByIndices(lightId, currentFrame);
   }
 
-  void UpdateColorDescriptorSets(const VkDevice& device, Render& render) {
-    descriptor.UpdateColorDescriptorSets(device, render);
+  void UpdateColorShadowMapDescriptorSets(const VkDevice& device,
+                                          Render& render) {
+    descriptor.UpdateColorShadowMapDescriptorSets(device, render);
   }
   void UpdateUniformBuffer(const uint32_t currentImage) {
     descriptor.UpdateUniformBuffer(currentImage);

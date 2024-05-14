@@ -100,7 +100,8 @@ class Descriptor : public Base {
   virtual void TriggerRegisterMember() override {
     RegisterMember(transformBuffer);
   }
-  void UpdateColorDescriptorSets(const VkDevice& device, Render& render);
+  void UpdateColorShadowMapDescriptorSets(const VkDevice& device,
+                                          Render& render);
   void UpdateUniformBuffer(const uint32_t currentImage);
   void UpdateShadowMapUniformBuffers(
       const Device& device, const Render& render, const uint32_t currentImage,

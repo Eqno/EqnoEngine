@@ -38,7 +38,10 @@ class Draw : public Base {
 
  public:
   BufferManager& GetBufferManager() const;
-  void UpdateDeferredDescriptorSets(const VkDevice& device, Render& render);
+  void UpdateDeferredShadowMapDescriptorSets(const VkDevice& device,
+                                             Render& render);
+  void UpdateDeferredGBufferDescriptorSets(const VkDevice& device,
+                                           Render& render);
   const VkDescriptorSet& GetDeferredDescriptorSetByIndex(
       const uint32_t index) const {
     return deferredDescriptorSets[index];

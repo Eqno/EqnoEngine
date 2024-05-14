@@ -259,30 +259,36 @@ void SwapChain::RecreateSwapChain(
   CreateDepthResources(device);
   TransitionDepthImageLayout(device);
 
-  if (GetEnableShadowMap()) {
-    for (Draw* draw : draws | std::views::values) {
+  for (Draw* draw : draws | std::views::values) {
+    if (GetEnableShadowMap()) {
       if (GetEnableDeferred()) {
-        draw->UpdateDeferredDescriptorSets(device.GetLogical(),
-                                           *static_cast<Render*>(owner));
+        draw->UpdateDeferredShadowMapDescriptorSets(
+            device.GetLogical(), *static_cast<Render*>(owner));
       } else {
         for (const auto& mesh : draw->GetMeshes()) {
-          mesh->UpdateColorDescriptorSets(device.GetLogical(),
-                                          *static_cast<Render*>(owner));
+          mesh->UpdateColorShadowMapDescriptorSets(
+              device.GetLogical(), *static_cast<Render*>(owner));
         }
       }
+    }
+    if (GetEnableDeferred()) {
+      draw->UpdateDeferredGBufferDescriptorSets(device.GetLogical(),
+                                                *static_cast<Render*>(owner));
     }
   }
   CreateFrameBuffers(device);
 }
 
-void SwapChain::CreateRenderTarget(const Device& device, const VkWindow& window) {
+void SwapChain::CreateRenderTarget(const Device& device,
+                                   const VkWindow& window) {
   CreateSwapChain(device, window);
   CreateImageViews(device.GetLogical());
 }
 
 void SwapChain::CreateRenderTarget(const std::string& format,
                                    const std::string& space,
-                                   const Device& device, const VkWindow& window) {
+                                   const Device& device,
+                                   const VkWindow& window) {
   surfaceFormat = VulkanUtils::ParseImageFormat(format);
   surfaceColorSpace = VulkanUtils::ParseColorSpace(space);
   CreateSwapChain(device, window);

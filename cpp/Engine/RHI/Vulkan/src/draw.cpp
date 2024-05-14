@@ -141,8 +141,8 @@ void Draw::CreateDeferredDescriptorSets(const Device& device, Render& render) {
   }
 }
 
-void Draw::UpdateDeferredDescriptorSets(const VkDevice& device,
-                                        Render& render) {
+void Draw::UpdateDeferredShadowMapDescriptorSets(const VkDevice& device,
+                                                 Render& render) {
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     VkWriteDescriptorSet descriptorWrite;
 
@@ -166,6 +166,35 @@ void Draw::UpdateDeferredDescriptorSets(const VkDevice& device,
         .pImageInfo = shadowMapImageInfos.data(),
     };
     vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+  }
+}
+
+void Draw::UpdateDeferredGBufferDescriptorSets(const VkDevice& device,
+                                               Render& render) {
+  for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
+    std::vector<VkWriteDescriptorSet> descriptorWrites;
+    std::vector<VkDescriptorImageInfo> gBufferImageInfos;
+    for (uint32_t j = 0; j < GBUFFER_SIZE; j++) {
+      gBufferImageInfos.push_back({
+          .sampler = VK_NULL_HANDLE,
+          .imageView = render.GetGBufferImageViewByIndex(j),
+          .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+      });
+    }
+    for (uint32_t j = 0; j < GBUFFER_SIZE; j++) {
+      descriptorWrites.push_back({
+          .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+          .dstSet = deferredDescriptorSets[i],
+          .dstBinding = 2 + j,
+          .dstArrayElement = 0,
+          .descriptorCount = 1,
+          .descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
+          .pImageInfo = &gBufferImageInfos[j],
+      });
+    }
+    vkUpdateDescriptorSets(device,
+                           static_cast<uint32_t>(descriptorWrites.size()),
+                           descriptorWrites.data(), 0, nullptr);
   }
 }
 

@@ -364,8 +364,8 @@ void Descriptor::UpdateBufferPointers() {
   }
 }
 
-void Descriptor::UpdateColorDescriptorSets(const VkDevice& device,
-                                           Render& render) {
+void Descriptor::UpdateColorShadowMapDescriptorSets(const VkDevice& device,
+                                                    Render& render) {
   for (auto i = 0; i < render.GetMaxFramesInFlight(); i++) {
     VkWriteDescriptorSet descriptorWrite;
 
