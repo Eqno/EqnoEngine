@@ -43,8 +43,8 @@ class SpotLight : public BaseLight {
     projMatrix[1][1] *= -1;
   }
 #pragma region Params
-  float GetFovy() const { return fovy; }
-  void SetFovy(float value) { fovy = value; }
+  float GetFOVy() const { return fovy; }
+  void SetFOVy(float value) { fovy = value; }
 
   float GetAspect() const { return aspect; }
   void SetAspect(float value) { aspect = value; }

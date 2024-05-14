@@ -198,7 +198,7 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
               ParseGLMVec4(params["Color"].GetString()));
         }
         if (params.HasMember("FOVy")) {
-          std::static_pointer_cast<SpotLight>(object)->SetFovy(
+          std::static_pointer_cast<SpotLight>(object)->SetFOVy(
               params["FOVy"].GetFloat());
         }
         if (params.HasMember("Aspect")) {

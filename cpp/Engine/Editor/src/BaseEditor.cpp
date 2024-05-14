@@ -1358,7 +1358,7 @@ void BaseEditor::EditorDrawSceneHierarchy() {
       ImGui::SetNextItemOpen(false, ImGuiCond_Always); \
     }                                                  \
   }
-#define EditorChangeTransformEPS 0.001f
+#define EditorChangeFloatEPS 0.001f
 void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
   if (auto objPtr = object.lock()) {
     ProcessExpandOrCollapse;
@@ -1380,9 +1380,9 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 pos = objPtr->GetRelativePosition();
         float posBuf[3]{pos.x, pos.y, pos.z};
         ImGui::InputFloat3("Position", posBuf);
-        if (abs(posBuf[0] - pos.x) > EditorChangeTransformEPS ||
-            abs(posBuf[1] - pos.y) > EditorChangeTransformEPS ||
-            abs(posBuf[2] - pos.z) > EditorChangeTransformEPS) {
+        if (abs(posBuf[0] - pos.x) > EditorChangeFloatEPS ||
+            abs(posBuf[1] - pos.y) > EditorChangeFloatEPS ||
+            abs(posBuf[2] - pos.z) > EditorChangeFloatEPS) {
           objPtr->SetRelativePosition(
               glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
         }
@@ -1390,9 +1390,9 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 rot = glm::degrees(objPtr->GetRelativeRotation());
         float rotBuf[3]{rot.x, rot.y, rot.z};
         ImGui::InputFloat3("Rotation", rotBuf);
-        if (abs(rotBuf[0] - rot.x) > EditorChangeTransformEPS ||
-            abs(rotBuf[1] - rot.y) > EditorChangeTransformEPS ||
-            abs(rotBuf[2] - rot.z) > EditorChangeTransformEPS) {
+        if (abs(rotBuf[0] - rot.x) > EditorChangeFloatEPS ||
+            abs(rotBuf[1] - rot.y) > EditorChangeFloatEPS ||
+            abs(rotBuf[2] - rot.z) > EditorChangeFloatEPS) {
           objPtr->SetRelativeRotation(
               glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
         }
@@ -1400,9 +1400,9 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 sca = objPtr->GetRelativeScale();
         float scaBuf[3]{sca.x, sca.y, sca.z};
         ImGui::InputFloat3("Scale", scaBuf);
-        if (abs(scaBuf[0] - sca.x) > EditorChangeTransformEPS ||
-            abs(scaBuf[1] - sca.y) > EditorChangeTransformEPS ||
-            abs(scaBuf[2] - sca.z) > EditorChangeTransformEPS) {
+        if (abs(scaBuf[0] - sca.x) > EditorChangeFloatEPS ||
+            abs(scaBuf[1] - sca.y) > EditorChangeFloatEPS ||
+            abs(scaBuf[2] - sca.z) > EditorChangeFloatEPS) {
           objPtr->SetRelativeScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
         }
         ImGui::TreePop();
@@ -1412,9 +1412,9 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 pos = objPtr->GetAbsolutePosition();
         float posBuf[3]{pos.x, pos.y, pos.z};
         ImGui::InputFloat3("Position", posBuf);
-        if (abs(posBuf[0] - pos.x) > EditorChangeTransformEPS ||
-            abs(posBuf[1] - pos.y) > EditorChangeTransformEPS ||
-            abs(posBuf[2] - pos.z) > EditorChangeTransformEPS) {
+        if (abs(posBuf[0] - pos.x) > EditorChangeFloatEPS ||
+            abs(posBuf[1] - pos.y) > EditorChangeFloatEPS ||
+            abs(posBuf[2] - pos.z) > EditorChangeFloatEPS) {
           objPtr->SetAbsolutePosition(
               glm::vec3(posBuf[0], posBuf[1], posBuf[2]));
         }
@@ -1422,9 +1422,9 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 rot = glm::degrees(objPtr->GetAbsoluteRotation());
         float rotBuf[3]{rot.x, rot.y, rot.z};
         ImGui::InputFloat3("Rotation", rotBuf);
-        if (abs(rotBuf[0] - rot.x) > EditorChangeTransformEPS ||
-            abs(rotBuf[1] - rot.y) > EditorChangeTransformEPS ||
-            abs(rotBuf[2] - rot.z) > EditorChangeTransformEPS) {
+        if (abs(rotBuf[0] - rot.x) > EditorChangeFloatEPS ||
+            abs(rotBuf[1] - rot.y) > EditorChangeFloatEPS ||
+            abs(rotBuf[2] - rot.z) > EditorChangeFloatEPS) {
           objPtr->SetAbsoluteRotation(
               glm::radians(glm::vec3(rotBuf[0], rotBuf[1], rotBuf[2])));
         }
@@ -1432,9 +1432,9 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
         glm::vec3 sca = objPtr->GetAbsoluteScale();
         float scaBuf[3]{sca.x, sca.y, sca.z};
         ImGui::InputFloat3("Scale", scaBuf);
-        if (abs(scaBuf[0] - sca.x) > EditorChangeTransformEPS ||
-            abs(scaBuf[1] - sca.y) > EditorChangeTransformEPS ||
-            abs(scaBuf[2] - sca.z) > EditorChangeTransformEPS) {
+        if (abs(scaBuf[0] - sca.x) > EditorChangeFloatEPS ||
+            abs(scaBuf[1] - sca.y) > EditorChangeFloatEPS ||
+            abs(scaBuf[2] - sca.z) > EditorChangeFloatEPS) {
           objPtr->SetAbsoluteScale(glm::vec3(scaBuf[0], scaBuf[1], scaBuf[2]));
         }
         ImGui::TreePop();
@@ -1442,11 +1442,170 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
       ImGui::TreePop();
     }
     if (auto cameraPtr = dynamic_pointer_cast<BaseCamera>(objPtr)) {
-    } else if (auto cameraPtr = dynamic_pointer_cast<BaseCamera>(objPtr)) {
+      ProcessExpandOrCollapse;
+      if (ImGui::TreeNode("Params")) {
+        float aspect = cameraPtr->GetAspect();
+        float fovy = cameraPtr->GetFOVy();
+        float fNear = cameraPtr->GetNear();
+        float fFar = cameraPtr->GetFar();
+        float maxFov = cameraPtr->GetMaxFov();
+        float minFov = cameraPtr->GetMinFov();
+        float sensitivityX = cameraPtr->GetSensitivityX();
+        float sensitivityY = cameraPtr->GetSensitivityY();
+        float sensitivityZ = cameraPtr->GetSensitivityZ();
+        float moveSpeed = cameraPtr->GetMoveSpeed();
+        float speedIncreasingRate = cameraPtr->GetSpeedIncreasingRate();
+        float maxMoveSpeed = cameraPtr->GetMaxMoveSpeed();
+        float minMoveSpeed = cameraPtr->GetMinMoveSpeed();
+
+        ImGui::InputFloat("FOVy", &fovy);
+        if (abs(fovy - cameraPtr->GetFOVy()) > EditorChangeFloatEPS) {
+          cameraPtr->SetFOVy(fovy);
+        }
+        float itemWidth = ImGui::CalcItemWidth();
+        ImGui::InputFloat("Aspect", &aspect);
+        ImGui::SetNextItemWidth(itemWidth);
+        if (ImGui::Button("Set Aspect Auto", ImVec2(itemWidth, 0))) {
+          aspect = -1;
+        }
+        if (abs(aspect - cameraPtr->GetAspect()) > EditorChangeFloatEPS) {
+          cameraPtr->SetAspect(aspect);
+        }
+        ImGui::InputFloat("Near", &fNear);
+        if (abs(fNear - cameraPtr->GetNear()) > EditorChangeFloatEPS) {
+          cameraPtr->SetNear(fNear);
+        }
+        ImGui::InputFloat("Far", &fFar);
+        if (abs(fFar - cameraPtr->GetFar()) > EditorChangeFloatEPS) {
+          cameraPtr->SetFar(fFar);
+        }
+        ImGui::InputFloat("MaxFov", &maxFov);
+        if (abs(maxFov - cameraPtr->GetMaxFov()) > EditorChangeFloatEPS) {
+          cameraPtr->SetMaxFov(maxFov);
+        }
+        ImGui::InputFloat("MinFov", &minFov);
+        if (abs(minFov - cameraPtr->GetMinFov()) > EditorChangeFloatEPS) {
+          cameraPtr->SetMinFov(minFov);
+        }
+        ImGui::InputFloat("SensitivityX", &sensitivityX);
+        if (abs(sensitivityX - cameraPtr->GetSensitivityX()) >
+            EditorChangeFloatEPS) {
+          cameraPtr->SetSensitivityX(sensitivityX);
+        }
+        ImGui::InputFloat("SensitivityY", &sensitivityY);
+        if (abs(sensitivityY - cameraPtr->GetSensitivityY()) >
+            EditorChangeFloatEPS) {
+          cameraPtr->SetSensitivityY(sensitivityY);
+        }
+        ImGui::InputFloat("SensitivityZ", &sensitivityZ);
+        if (abs(sensitivityZ - cameraPtr->GetSensitivityZ()) >
+            EditorChangeFloatEPS) {
+          cameraPtr->SetSensitivityZ(sensitivityZ);
+        }
+        ImGui::InputFloat("MoveSpeed", &moveSpeed);
+        if (abs(moveSpeed - cameraPtr->GetMoveSpeed()) > EditorChangeFloatEPS) {
+          cameraPtr->SetMoveSpeed(moveSpeed);
+        }
+        ImGui::InputFloat("SpeedIncreasingRate", &speedIncreasingRate);
+        if (abs(speedIncreasingRate - cameraPtr->GetSpeedIncreasingRate()) >
+            EditorChangeFloatEPS) {
+          cameraPtr->SetSpeedIncreasingRate(speedIncreasingRate);
+        }
+        ImGui::InputFloat("MaxMoveSpeed", &maxMoveSpeed);
+        if (abs(maxMoveSpeed - cameraPtr->GetMaxMoveSpeed()) >
+            EditorChangeFloatEPS) {
+          cameraPtr->SetMaxMoveSpeed(maxMoveSpeed);
+        }
+        ImGui::InputFloat("MinMoveSpeed", &minMoveSpeed);
+        if (abs(minMoveSpeed - cameraPtr->GetMinMoveSpeed()) >
+            EditorChangeFloatEPS) {
+          cameraPtr->SetMinMoveSpeed(minMoveSpeed);
+        }
+        ImGui::TreePop();
+      }
+    } else if (auto lightPtr = dynamic_pointer_cast<BaseLight>(objPtr)) {
+      ProcessExpandOrCollapse;
+      if (ImGui::TreeNode("Params")) {
+        float intensity = lightPtr->GetIntensity();
+        glm::vec4 color = lightPtr->GetColor();
+        float fNear = lightPtr->GetNear();
+        float fFar = lightPtr->GetFar();
+
+        ImGui::InputFloat("Intensity", &intensity);
+        if (abs(intensity - lightPtr->GetIntensity()) > EditorChangeFloatEPS) {
+          lightPtr->SetIntensity(intensity);
+        }
+
+        float colorBuf[4]{color.r, color.g, color.b, color.a};
+        ImGui::InputFloat4("Color", colorBuf);
+        if (abs(colorBuf[0] - color.r) > EditorChangeFloatEPS ||
+            abs(colorBuf[1] - color.g) > EditorChangeFloatEPS ||
+            abs(colorBuf[2] - color.b) > EditorChangeFloatEPS ||
+            abs(colorBuf[3] - color.a) > EditorChangeFloatEPS) {
+          color.r = colorBuf[0];
+          color.g = colorBuf[1];
+          color.b = colorBuf[2];
+          color.a = colorBuf[3];
+          lightPtr->SetColor(color);
+        }
+        if (auto spotLightPtr = dynamic_pointer_cast<SpotLight>(lightPtr)) {
+          float aspect = spotLightPtr->GetAspect();
+          float fovy = spotLightPtr->GetFOVy();
+
+          ImGui::InputFloat("FOVy", &fovy);
+          if (abs(fovy - spotLightPtr->GetFOVy()) > EditorChangeFloatEPS) {
+            spotLightPtr->SetFOVy(fovy);
+          }
+          float itemWidth = ImGui::CalcItemWidth();
+          ImGui::InputFloat("Aspect", &aspect);
+          ImGui::SetNextItemWidth(itemWidth);
+          if (ImGui::Button("Set Aspect Auto", ImVec2(itemWidth, 0))) {
+            aspect = -1;
+          }
+          if (abs(aspect - spotLightPtr->GetAspect()) > EditorChangeFloatEPS) {
+            spotLightPtr->SetAspect(aspect);
+          }
+        } else if (auto sunLightPtr =
+                       dynamic_pointer_cast<SunLight>(lightPtr)) {
+          float left = sunLightPtr->GetLeft();
+          float right = sunLightPtr->GetRight();
+          float bottom = sunLightPtr->GetBottom();
+          float top = sunLightPtr->GetTop();
+
+          ImGui::InputFloat("Left", &left);
+          if (abs(left - sunLightPtr->GetLeft()) > EditorChangeFloatEPS) {
+            sunLightPtr->SetLeft(left);
+          }
+
+          ImGui::InputFloat("Right", &right);
+          if (abs(right - sunLightPtr->GetRight()) > EditorChangeFloatEPS) {
+            sunLightPtr->SetRight(right);
+          }
+
+          ImGui::InputFloat("Bottom", &bottom);
+          if (abs(bottom - sunLightPtr->GetBottom()) > EditorChangeFloatEPS) {
+            sunLightPtr->SetBottom(bottom);
+          }
+
+          ImGui::InputFloat("Top", &top);
+          if (abs(top - sunLightPtr->GetTop()) > EditorChangeFloatEPS) {
+            sunLightPtr->SetTop(top);
+          }
+        }
+        ImGui::InputFloat("Near", &fNear);
+        if (abs(fNear - lightPtr->GetNear()) > EditorChangeFloatEPS) {
+          lightPtr->SetNear(fNear);
+        }
+        ImGui::InputFloat("Far", &fFar);
+        if (abs(fFar - lightPtr->GetFar()) > EditorChangeFloatEPS) {
+          lightPtr->SetFar(fFar);
+        }
+        ImGui::TreePop();
+      }
     }
   }
 }
-#undef EditorChangeTransformEPS
+#undef EditorChangeFloatEPS
 #undef ProcessExpandOrCollapse
 
 void BaseEditor::EditorDrawObjectInspector() {
