@@ -28,7 +28,8 @@ class BaseEditor : public BaseObject {
   ImGui_ImplVulkanH_Window* wd = nullptr;
 
   LastSelectType lastSelectType = LastSelectType::None;
-  std::pair<std::string, rapidjson::Document*> selectedFile{"Unset", nullptr};
+  std::pair<std::string, std::weak_ptr<rapidjson::Document>> selectedFile{
+      "Unset", std::shared_ptr<rapidjson::Document>(nullptr)};
   std::pair<std::string, std::weak_ptr<SceneObject>> selectedObject{
       "Unset", std::shared_ptr<SceneObject>(nullptr)};
 
@@ -80,7 +81,8 @@ class BaseEditor : public BaseObject {
 
   bool GetAddToSceneEnable();
 
-  rapidjson::Document* LoadJsonFile(const std::filesystem::path& path);
+  std::weak_ptr<rapidjson::Document> LoadJsonFile(
+      const std::filesystem::path& path);
   void DisplayJson(rapidjson::Value& value, bool& modifiedValue);
   void DisplayDirectory(const std::filesystem::path& path);
   void DisplayHierarchy(std::weak_ptr<SceneObject> root, std::string path);

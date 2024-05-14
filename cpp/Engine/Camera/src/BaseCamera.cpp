@@ -43,7 +43,7 @@ void BaseCamera::OnCreate() {
   sensitivityZ = JSON_CONFIG(Float, "SensitivityZ");
 
   moveSpeed = JSON_CONFIG(Float, "MoveSpeed");
-  speedIncreasingRate = JSON_CONFIG(Float, "speedIncreasingRate");
+  speedIncreasingRate = JSON_CONFIG(Float, "SpeedIncreasingRate");
 
   maxMoveSpeed = JSON_CONFIG(Float, "MaxMoveSpeed");
   minMoveSpeed = JSON_CONFIG(Float, "MinMoveSpeed");

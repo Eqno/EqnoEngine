@@ -12,14 +12,15 @@
 #include <unordered_map>
 
 using namespace rapidjson;
-std::unordered_map<std::string, Document*> docCache;
+std::unordered_map<std::string, std::shared_ptr<Document>> docCache;
 
-Document* JsonUtils::GetJsonDocFromFile(const std::string& filePath) {
-  Document* doc;
+std::shared_ptr<Document> JsonUtils::GetJsonDocFromFile(
+    const std::string& filePath) {
+  std::shared_ptr<Document> doc;
   if (const auto docIter = docCache.find(filePath); docIter != docCache.end()) {
     doc = docIter->second;
   } else {
-    doc = new Document;
+    doc = std::make_shared<Document>();
     doc->SetObject();
     doc->Parse(FileUtils::ReadFileAsString(filePath + FILESUFFIX).c_str());
     docCache[filePath] = doc;
@@ -29,7 +30,7 @@ Document* JsonUtils::GetJsonDocFromFile(const std::string& filePath) {
 
 std::string JsonUtils::ReadStringFromFile(const std::string& filePath,
                                           const std::string& key) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember(key.c_str())) {
     return (*doc)[key.c_str()].GetString();
   }
@@ -38,7 +39,7 @@ std::string JsonUtils::ReadStringFromFile(const std::string& filePath,
 
 bool JsonUtils::ReadBoolFromFile(const std::string& filePath,
                                  const std::string& key) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember(key.c_str())) {
     return (*doc)[key.c_str()].GetBool();
   }
@@ -47,7 +48,7 @@ bool JsonUtils::ReadBoolFromFile(const std::string& filePath,
 
 float JsonUtils::ReadFloatFromFile(const std::string& filePath,
                                    const std::string& key) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember(key.c_str())) {
     return (*doc)[key.c_str()].GetFloat();
   }
@@ -56,7 +57,7 @@ float JsonUtils::ReadFloatFromFile(const std::string& filePath,
 
 int JsonUtils::ReadIntFromFile(const std::string& filePath,
                                const std::string& key) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember(key.c_str())) {
     return (*doc)[key.c_str()].GetInt();
   }
@@ -65,7 +66,7 @@ int JsonUtils::ReadIntFromFile(const std::string& filePath,
 
 std::vector<std::string> JsonUtils::ReadStringsFromFile(
     const std::string& filePath, const std::string& key) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember(key.c_str())) {
     std::vector<std::string> ret;
     const auto& values = (*doc)[key.c_str()];
@@ -80,7 +81,7 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
 void JsonUtils::UseDefaultTransform(std ::weak_ptr<SceneObject> objectPtr,
                                     const std::string& filePath) {
   if (auto object = objectPtr.lock()) {
-    if (Document* doc = GetJsonDocFromFile(filePath);
+    if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
         doc->HasMember("DefaultTransform")) {
       const auto& trans = (*doc)["DefaultTransform"];
       if (trans.HasMember("Scale")) {
@@ -126,15 +127,132 @@ void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
         std::static_pointer_cast<BaseCamera>(object)->InitRotation(glm::radians(
             ParseGLMVec3(val["Transform"]["Rotation"].GetString())));
       }
+      if (val.HasMember("Params")) {
+        auto& params = val["Params"];
+        if (params.HasMember("FOVy")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetFOVy(
+              params["FOVy"].GetFloat());
+        }
+        if (params.HasMember("Aspect")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetAspect(
+              BaseCamera::ParseAspect(params["Aspect"].GetString()));
+        }
+        if (params.HasMember("Near")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetNear(
+              params["Near"].GetFloat());
+        }
+        if (params.HasMember("Far")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetFar(
+              params["Far"].GetFloat());
+        }
+        if (params.HasMember("MaxFov")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetMaxFov(
+              params["MaxFov"].GetFloat());
+        }
+        if (params.HasMember("MinFov")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetMinFov(
+              params["MinFov"].GetFloat());
+        }
+        if (params.HasMember("SensitivityX")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetSensitivityX(
+              params["SensitivityX"].GetFloat());
+        }
+        if (params.HasMember("SensitivityY")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetSensitivityY(
+              params["SensitivityY"].GetFloat());
+        }
+        if (params.HasMember("SensitivityZ")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetSensitivityZ(
+              params["SensitivityZ"].GetFloat());
+        }
+        if (params.HasMember("MoveSpeed")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetMoveSpeed(
+              params["MoveSpeed"].GetFloat());
+        }
+        if (params.HasMember("speedIncreasingRate")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetSpeedIncreasingRate(
+              params["SpeedIncreasingRate"].GetFloat());
+        }
+        if (params.HasMember("MaxMoveSpeed")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetMaxMoveSpeed(
+              params["MaxMoveSpeed"].GetFloat());
+        }
+        if (params.HasMember("MinMoveSpeed")) {
+          std::static_pointer_cast<BaseCamera>(object)->SetMinMoveSpeed(
+              params["MinMoveSpeed"].GetFloat());
+        }
+      }
     } else if (strcmp(val["Type"].GetString(), "SpotLight") == 0) {
       object = BaseObject::CreateImmediately<SpotLight>(
           graphics, parent,
           val.HasMember("Name") ? val["Name"].GetString() : "Unset", root,
           val["Path"].GetString(), owner);
+      if (val.HasMember("Params")) {
+        auto& params = val["Params"];
+        if (params.HasMember("Intensity")) {
+          std::static_pointer_cast<SpotLight>(object)->SetIntensity(
+              params["Intensity"].GetFloat());
+        }
+        if (params.HasMember("Color")) {
+          std::static_pointer_cast<SpotLight>(object)->SetColor(
+              ParseGLMVec4(params["Color"].GetString()));
+        }
+        if (params.HasMember("FOVy")) {
+          std::static_pointer_cast<SpotLight>(object)->SetFovy(
+              params["FOVy"].GetFloat());
+        }
+        if (params.HasMember("Aspect")) {
+          std::static_pointer_cast<SpotLight>(object)->SetAspect(
+              BaseCamera::ParseAspect(params["Aspect"].GetString()));
+        }
+        if (params.HasMember("Near")) {
+          std::static_pointer_cast<SpotLight>(object)->SetNear(
+              params["Near"].GetFloat());
+        }
+        if (params.HasMember("Far")) {
+          std::static_pointer_cast<SpotLight>(object)->SetFar(
+              params["Far"].GetFloat());
+        }
+      }
     } else if (strcmp(val["Type"].GetString(), "SunLight") == 0) {
       object = BaseObject::CreateImmediately<SunLight>(
           parent, val.HasMember("Name") ? val["Name"].GetString() : "Unset",
           root, val["Path"].GetString(), owner);
+      if (val.HasMember("Params")) {
+        auto& params = val["Params"];
+        if (params.HasMember("Intensity")) {
+          std::static_pointer_cast<SunLight>(object)->SetIntensity(
+              params["Intensity"].GetFloat());
+        }
+        if (params.HasMember("Color")) {
+          std::static_pointer_cast<SunLight>(object)->SetColor(
+              ParseGLMVec4(params["Color"].GetString()));
+        }
+        if (params.HasMember("Left")) {
+          std::static_pointer_cast<SunLight>(object)->SetLeft(
+              params["Left"].GetFloat());
+        }
+        if (params.HasMember("Right")) {
+          std::static_pointer_cast<SunLight>(object)->SetRight(
+              params["Right"].GetFloat());
+        }
+        if (params.HasMember("Bottom")) {
+          std::static_pointer_cast<SunLight>(object)->SetBottom(
+              params["Bottom"].GetFloat());
+        }
+        if (params.HasMember("Top")) {
+          std::static_pointer_cast<SunLight>(object)->SetTop(
+              params["Top"].GetFloat());
+        }
+        if (params.HasMember("Near")) {
+          std::static_pointer_cast<SunLight>(object)->SetNear(
+              params["Near"].GetFloat());
+        }
+        if (params.HasMember("Far")) {
+          std::static_pointer_cast<SunLight>(object)->SetFar(
+              params["Far"].GetFloat());
+        }
+      }
     } else {
       PRINT_AND_THROW_ERROR("unknown scene object type!");
     }
@@ -168,7 +286,7 @@ void JsonUtils::ParseSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
                                      const std::string& root,
                                      const std::string& file,
                                      std::weak_ptr<BaseObject> owner) {
-  if (Document* doc = GetJsonDocFromFile(root + file);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(root + file);
       doc->HasMember("SceneObjects")) {
     const auto& values = (*doc)["SceneObjects"];
     for (SizeType i = 0; i < values.Size(); ++i) {
@@ -180,7 +298,7 @@ void JsonUtils::ParseSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
 void JsonUtils::ParseSceneLightChannels(const std::string& root,
                                         const std::string& file,
                                         std::weak_ptr<BaseScene> owner) {
-  if (Document* doc = GetJsonDocFromFile(root + file);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(root + file);
       doc->HasMember("LightChannels")) {
     const auto& channels = (*doc)["LightChannels"];
     for (auto iter = channels.MemberBegin(); iter != channels.MemberEnd();
@@ -212,11 +330,12 @@ void JsonUtils::ParseSceneLightChannels(const std::string& root,
 MaterialInfo JsonUtils::ParseMeshDataInfos(const std::string& filePath,
                                            const std::string& meshName) {
   MaterialInfo infos("Assets/Materials/ShaderErrorMaterial", {});
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember("Material")) {
     infos.first = (*doc)["Material"].GetString();
   }
-  if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Meshes")) {
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
+      doc->HasMember("Meshes")) {
     if (const Value& val = (*doc)["Meshes"]; val.HasMember(meshName.c_str())) {
       const Value& info = (*doc)["Meshes"][meshName.c_str()];
       if (info.HasMember("Material")) {
@@ -236,7 +355,8 @@ MaterialInfo JsonUtils::ParseMeshDataInfos(const std::string& filePath,
 
 void JsonUtils::ParseMaterialShaders(const std::string& filePath,
                                      std::vector<std::string>& shaders) {
-  if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Shaders")) {
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
+      doc->HasMember("Shaders")) {
     const auto& shaderPaths = (*doc)["Shaders"];
     for (SizeType i = 0; i < shaderPaths.Size(); ++i) {
       shaders.emplace_back(shaderPaths[i].GetString());
@@ -248,7 +368,8 @@ void JsonUtils::ParseMaterialShaders(const std::string& filePath,
 void JsonUtils::ParseMaterialParams(const std::string& filePath,
                                     glm::vec4& color, float& roughness,
                                     float& metallic) {
-  if (Document* doc = GetJsonDocFromFile(filePath); doc->HasMember("Params")) {
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
+      doc->HasMember("Params")) {
     const auto& values = (*doc)["Params"];
     if (values.HasMember("Color")) {
       color = ParseGLMVec4(values["Color"].GetString());
@@ -265,7 +386,7 @@ void JsonUtils::ParseMaterialParams(const std::string& filePath,
 void JsonUtils::WriteStringToFile(const std::string& filePath,
                                   const std::string& key,
                                   const std::string& value) {
-  auto* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   docCache[filePath] = doc;
 
   doc->SetObject();
@@ -294,7 +415,7 @@ void JsonUtils::WriteStringToFile(const std::string& filePath,
 void JsonUtils::WriteStringsToFile(const std::string& filePath,
                                    const std::string& key,
                                    const std::vector<std::string>& values) {
-  auto* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   docCache[filePath] = doc;
 
   doc->SetObject();
@@ -327,7 +448,7 @@ void JsonUtils::WriteStringsToFile(const std::string& filePath,
 
 void JsonUtils::WriteBoolToFile(const std::string& filePath,
                                 const std::string& key, bool value) {
-  auto* doc = new Document;
+  std::shared_ptr<Document> doc = std::make_shared<Document>();
   docCache[filePath] = doc;
 
   doc->SetObject();
@@ -353,19 +474,22 @@ void JsonUtils::WriteBoolToFile(const std::string& filePath,
 }
 
 void JsonUtils::WriteDocumentToFile(const std::string& filePath,
-                                    const Document* doc, bool withSuffix) {
-  StringBuffer strBuf;
-  Writer writer(strBuf);
+                                    std::weak_ptr<Document> docPtr,
+                                    bool withSuffix) {
+  if (auto doc = docPtr.lock()) {
+    StringBuffer strBuf;
+    Writer writer(strBuf);
 
-  doc->Accept(writer);
-  FileUtils::WriteFileAsString(filePath + (withSuffix ? FILESUFFIX : ""),
-                               strBuf.GetString());
+    doc->Accept(writer);
+    FileUtils::WriteFileAsString(filePath + (withSuffix ? FILESUFFIX : ""),
+                                 strBuf.GetString());
+  }
 }
 
 void JsonUtils::AppendStringToFile(const std::string& filePath,
                                    const std::string& key,
                                    const std::string& value) {
-  Document* doc = GetJsonDocFromFile(filePath);
+  std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
   auto& allocator = doc->GetAllocator();
 
   if (doc->HasMember(key.c_str())) {
@@ -395,7 +519,7 @@ void JsonUtils::AppendStringToFile(const std::string& filePath,
 
 void JsonUtils::ModifyBoolOfFile(const std::string& filePath,
                                  const std::string& key, bool value) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember(key.c_str())) {
     (*doc)[key.c_str()].SetBool(value);
 
@@ -409,7 +533,7 @@ void JsonUtils::ModifyBoolOfFile(const std::string& filePath,
 
 void JsonUtils::ModifyIntOfFile(const std::string& filePath,
                                 const std::string& key, int value) {
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember(key.c_str())) {
     (*doc)[key.c_str()].SetInt(value);
 
@@ -421,17 +545,12 @@ void JsonUtils::ModifyIntOfFile(const std::string& filePath,
   }
 }
 
-void JsonUtils::ClearDocumentCache() {
-  for (const auto val : docCache | std::views::values) {
-    delete val;
-  }
-  docCache.clear();
-}
+void JsonUtils::ClearDocumentCache() { docCache.clear(); }
 
 std::unordered_map<TextureType, std::string> JsonUtils::GetCombineTextures(
     const std::string& filePath) {
   std::unordered_map<TextureType, std::string> res;
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember("CombineTextures")) {
     const auto& combineInfo = (*doc)["CombineTextures"];
     if (combineInfo.HasMember("BaseColor")) {
@@ -456,7 +575,7 @@ std::unordered_map<TextureType, std::string> JsonUtils::GetCombineTextures(
 std::unordered_map<std::string, std::string> JsonUtils::GetMaterialMap(
     const std::string& filePath) {
   std::unordered_map<std::string, std::string> res;
-  if (Document* doc = GetJsonDocFromFile(filePath);
+  if (std::shared_ptr<Document> doc = GetJsonDocFromFile(filePath);
       doc->HasMember("MaterialMap")) {
     const auto& mapInfo = (*doc)["MaterialMap"];
     for (auto iter = mapInfo.MemberBegin(); iter != mapInfo.MemberEnd();

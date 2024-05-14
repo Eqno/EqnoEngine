@@ -11,6 +11,9 @@ class BaseLight : public SceneObject {
   float intensity = 1;
   glm::vec4 color = Vec4One;
 
+  float near = 0.1f;
+  float far = 1000;
+
   std::mutex updateMatrixMutex;
   glm::mat4 viewMatrix = Mat4x4One;
   glm::mat4 projMatrix = Mat4x4One;
@@ -45,4 +48,15 @@ class BaseLight : public SceneObject {
   virtual std::mutex& GetMatrixLock() { return updateMatrixMutex; }
   virtual glm::mat4& GetViewMatrix() { return viewMatrix; }
   virtual glm::mat4& GetProjMatrix() { return projMatrix; }
+
+#pragma region Params
+  void SetIntensity(float value) { intensity = value; }
+  void SetColor(const glm::vec4& value) { color = value; }
+
+  float GetNear() const { return near; }
+  void SetNear(float value) { near = value; }
+
+  float GetFar() const { return far; }
+  void SetFar(float value) { far = value; }
+#pragma endregion
 };

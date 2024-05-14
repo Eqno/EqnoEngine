@@ -66,7 +66,7 @@ class BaseCamera : public SceneObject {
   glm::mat4& GetViewMatrix() { return viewMatrix; }
   glm::mat4& GetProjMatrix() { return projMatrix; }
 
-#pragma region EditorUse
+#pragma region Params
   float GetFOVy() const { return fovy; }
   void SetFOVy(float value) { fovy = value; }
 

@@ -8,8 +8,6 @@ class SunLight : public BaseLight {
   float right = 100;
   float bottom = -100;
   float top = 100;
-  float near = 0.1f;
-  float far = 1000;
 
  public:
   template <typename... Args>
@@ -40,4 +38,18 @@ class SunLight : public BaseLight {
     projMatrix = glm::ortho(left, right, bottom, top, near, far);
     projMatrix[1][1] *= -1;
   }
+
+#pragma region Params
+  float GetLeft() const { return left; }
+  void SetLeft(float value) { left = value; }
+
+  float GetRight() const { return right; }
+  void SetRight(float value) { right = value; }
+
+  float GetBottom() const { return bottom; }
+  void SetBottom(float value) { bottom = value; }
+
+  float GetTop() const { return top; }
+  void SetTop(float value) { top = value; }
+#pragma endregion
 };

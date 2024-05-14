@@ -8,8 +8,6 @@ class SpotLight : public BaseLight {
 
   float fovy = 45;
   float aspect = -1;
-  float near = 0.1f;
-  float far = 1000;
 
  public:
   template <typename... Args>
@@ -44,4 +42,11 @@ class SpotLight : public BaseLight {
     }
     projMatrix[1][1] *= -1;
   }
+#pragma region Params
+  float GetFovy() const { return fovy; }
+  void SetFovy(float value) { fovy = value; }
+
+  float GetAspect() const { return aspect; }
+  void SetAspect(float value) { aspect = value; }
+#pragma endregion
 };

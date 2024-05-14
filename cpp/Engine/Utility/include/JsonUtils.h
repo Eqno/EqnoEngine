@@ -44,7 +44,8 @@ DEFINE_ParseGLMVec_NUM(4);
 #undef DEFINE_ParseGLMVec_NUM
 
 namespace JsonUtils {
-rapidjson::Document* GetJsonDocFromFile(const std::string& filePath);
+std::shared_ptr<rapidjson::Document> GetJsonDocFromFile(
+    const std::string& filePath);
 std::string ReadStringFromFile(const std::string& filePath,
                                const std::string& key);
 std::vector<std::string> ReadStringsFromFile(const std::string& filePath,
@@ -78,7 +79,7 @@ void WriteStringsToFile(const std::string& filePath, const std::string& key,
 void WriteBoolToFile(const std::string& filePath, const std::string& key,
                      bool value);
 void WriteDocumentToFile(const std::string& filePath,
-                         const rapidjson::Document* doc,
+                         std::weak_ptr<rapidjson::Document> docPtr,
                          bool withSuffix = true);
 void AppendStringToFile(const std::string& filePath, const std::string& key,
                         const std::string& value);

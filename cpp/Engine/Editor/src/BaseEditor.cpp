@@ -816,7 +816,7 @@ void BaseEditor::EditorDrawLaunchCommand() {
 namespace fs = std::filesystem;
 using namespace rapidjson;
 
-Document* BaseEditor::LoadJsonFile(const fs::path& path) {
+std::weak_ptr<Document> BaseEditor::LoadJsonFile(const fs::path& path) {
   return JsonUtils::GetJsonDocFromFile(GetRoot() +
                                        ParseFilePath(path.string()));
 }
@@ -885,7 +885,8 @@ void BaseEditor::DisplayJson(Value& value, bool& modifiedValue) {
 
     if (ImGui::InputText("##Value", buf, sizeof(buf),
                          ImGuiInputTextFlags_EnterReturnsTrue)) {
-      auto& allocator = selectedFile.second->GetAllocator();
+      auto selectedFilePtr = selectedFile.second.lock();
+      auto& allocator = selectedFilePtr->GetAllocator();
 
       std::string bufStr(buf);
       value.SetString(bufStr.data(), bufStr.size(), allocator);
@@ -967,9 +968,10 @@ std::string BaseEditor::GetObjectName(const std::string& originName,
 
 bool BaseEditor::GetAddToSceneEnable() {
   bool addToSceneEnable = false;
-  if (selectedObject.second.lock() && selectedFile.second != nullptr &&
-      selectedFile.second->HasMember("Type")) {
-    auto& value = (*selectedFile.second)["Type"];
+  auto selectedFilePtr = selectedFile.second.lock();
+  if (selectedObject.second.lock() && selectedFilePtr &&
+      selectedFilePtr->HasMember("Type")) {
+    auto& value = (*selectedFilePtr)["Type"];
     for (SizeType i = 0; i < value.Size(); i++) {
       if (strcmp(value[i].GetString(), "SceneObject") == 0) {
         addToSceneEnable = true;
@@ -1101,24 +1103,25 @@ void BaseEditor::EditorDrawFileExplorer() {
 
       ImGui::BeginDisabled(!GetAddToSceneEnable());
       if (ImGui::Button("Add To Scene", ImVec2(buttonWidth, buttonHeight))) {
+        auto selectedFilePtr = selectedFile.second.lock();
         std::shared_ptr<SceneObject> object;
         std::string objectName =
-            GetObjectName(selectedFile.second->HasMember("Name")
-                              ? (*selectedFile.second)["Name"].GetString()
+            GetObjectName(selectedFilePtr->HasMember("Name")
+                              ? (*selectedFilePtr)["Name"].GetString()
                               : "Unset",
                           object, selectedObject.second);
 
-        auto& value = (*selectedFile.second)["Type"];
+        auto& value = (*selectedFilePtr)["Type"];
         for (SizeType i = 0; i < value.Size(); i++) {
           if (strcmp(value[i].GetString(), "BaseCamera") == 0) {
             object = BaseObject::CreateImmediately<BaseCamera>(
                 appPointer->GetGraphics(), selectedObject.second, objectName,
                 GetRoot(), ParseFilePath(selectedFile.first),
                 appPointer->GetScene());
-            if (selectedFile.second->HasMember("DefaultTransform")) {
+            if (selectedFilePtr->HasMember("DefaultTransform")) {
               std::static_pointer_cast<BaseCamera>(object)->InitRotation(
                   glm::radians(ParseGLMVec3(
-                      (*selectedFile.second)["DefaultTransform"]["Rotation"]
+                      (*selectedFilePtr)["DefaultTransform"]["Rotation"]
                           .GetString())));
             }
             break;
@@ -1127,13 +1130,13 @@ void BaseEditor::EditorDrawFileExplorer() {
                 appPointer->GetGraphics(), selectedObject.second, objectName,
                 GetRoot(), ParseFilePath(selectedFile.first),
                 appPointer->GetScene());
-            if (selectedFile.second->HasMember("DefaultCamera")) {
+            if (selectedFilePtr->HasMember("DefaultCamera")) {
               std::static_pointer_cast<BaseModel>(object)->SetCamera(
-                  (*selectedFile.second)["DefaultCamera"].GetString());
+                  (*selectedFilePtr)["DefaultCamera"].GetString());
             }
-            if (selectedFile.second->HasMember("DefaultLightChannel")) {
+            if (selectedFilePtr->HasMember("DefaultLightChannel")) {
               std::static_pointer_cast<BaseModel>(object)->SetLightChannel(
-                  (*selectedFile.second)["DefaultLightChannel"].GetString());
+                  (*selectedFilePtr)["DefaultLightChannel"].GetString());
             }
             break;
           } else if (strcmp(value[i].GetString(), "SpotLight") == 0) {
@@ -1515,10 +1518,11 @@ void BaseEditor::EditorDrawObjectInspector() {
                          ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoScrollbar |
                          ImGuiWindowFlags_NoSavedSettings)) {
-      if (lastSelectType == LastSelectType::File &&
-          selectedFile.second != nullptr && selectedFile.second->IsObject()) {
+      auto selectedFilePtr = selectedFile.second.lock();
+      if (lastSelectType == LastSelectType::File && selectedFilePtr &&
+          selectedFilePtr->IsObject()) {
         bool valueModified = false;
-        DisplayJson(*selectedFile.second, valueModified);
+        DisplayJson(*selectedFilePtr, valueModified);
         expandAllProperties = false;
         collapseAllProperties = false;
       } else if (lastSelectType == LastSelectType::Object &&

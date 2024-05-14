@@ -1,1 +1,20 @@
-{"Name":"SunLight","Type":["SunLight","SceneObject"],"DefaultTransform":{"Position":"0,0,0","Rotation":"-40,0,0","Scale":"1,1,1"},"Intensity":0.6,"Color":"1,1,1,1","Left":-30,"Right":30,"Bottom":-30,"Top":30,"Near":0.01,"Far":200}
+{
+    "Name": "SunLight",
+    "Type": [
+        "SunLight",
+        "SceneObject"
+    ],
+    "DefaultTransform": {
+        "Position": "0,0,0",
+        "Rotation": "-40,0,0",
+        "Scale": "1,1,1"
+    },
+    "Intensity": 0.6,
+    "Color": "1,1,1,1",
+    "Left": -30,
+    "Right": 30,
+    "Bottom": -30,
+    "Top": 30,
+    "Near": 0.01,
+    "Far": 200
+}
