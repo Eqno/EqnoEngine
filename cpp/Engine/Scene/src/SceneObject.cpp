@@ -141,6 +141,10 @@ void SceneObject::OnCreate() {
   }
   transform.RegisterOwner(
       std::static_pointer_cast<SceneObject>(shared_from_this()));
+
+  JsonUtils::UseDefaultTransform(
+      static_pointer_cast<SceneObject>(shared_from_this()),
+      GetRoot() + GetFile());
 }
 
 void SceneObject::OnDestroy() {

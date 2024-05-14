@@ -141,7 +141,10 @@ void Application::OnCreate() { BaseObject::OnCreate(); }
 void Application::OnStart() { BaseObject::OnStart(); }
 void Application::OnUpdate() { BaseObject::OnUpdate(); }
 void Application::OnStop() { BaseObject::OnStop(); }
-void Application::OnDestroy() { BaseObject::OnDestroy(); }
+void Application::OnDestroy() {
+  JsonUtils::ClearDocumentCache();
+  BaseObject::OnDestroy();
+}
 
 std::unordered_map<int, std::weak_ptr<BaseLight>>&
 Application::GetLightsById() {

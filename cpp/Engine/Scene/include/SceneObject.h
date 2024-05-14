@@ -24,6 +24,7 @@ class SceneObject : public BaseObject {
   ~SceneObject() override = default;
 
   const std::string& GetName() { return name; }
+  void SetName(const std::string& name) { this->name = name; }
   std::list<std::shared_ptr<SceneObject>>& GetSons() { return sons; }
   [[nodiscard]] std::weak_ptr<SceneObject> GetParent() const { return parent; }
   [[nodiscard]] BaseTransform& GetTransform() { return transform; }

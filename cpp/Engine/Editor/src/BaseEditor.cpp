@@ -607,10 +607,6 @@ void BaseEditor::DestroyImgui() {
 
   CleanupVulkanWindow();
   CleanupVulkan();
-  for (auto cache : documentCache) {
-    delete cache.second;
-  }
-  documentCache.clear();
 
   glfwDestroyWindow(window);
   if (appPointer->GetLaunchSceneInEditor()) {
@@ -821,18 +817,8 @@ namespace fs = std::filesystem;
 using namespace rapidjson;
 
 Document* BaseEditor::LoadJsonFile(const fs::path& path) {
-  if (documentCache.contains(path)) {
-    return documentCache[path];
-  }
-  Document* doc = new Document;
-  documentCache[path] = doc;
-  std::ifstream file(path);
-  if (!file.is_open()) {
-    return doc;
-  }
-  IStreamWrapper isw(file);
-  doc->ParseStream(isw);
-  return doc;
+  return JsonUtils::GetJsonDocFromFile(GetRoot() +
+                                       ParseFilePath(path.string()));
 }
 
 void BaseEditor::DisplayJson(Value& value, bool& modifiedValue) {
@@ -956,6 +942,44 @@ std::string BaseEditor::ParseFilePath(std::string path) {
   return path;
 }
 
+std::string BaseEditor::GetObjectName(const std::string& originName,
+                                      std::weak_ptr<SceneObject> self,
+                                      std::weak_ptr<SceneObject> parent) {
+  std::string objectName = originName;
+  if (auto parentPtr = parent.lock()) {
+    int nameIndex = 0;
+    while (true) {
+      bool alreadyHasName = false;
+      for (std::shared_ptr<SceneObject> son : parentPtr->GetSons()) {
+        if (self.lock() != son && objectName == son->GetName()) {
+          nameIndex++;
+          alreadyHasName = true;
+          objectName = originName + " (" + std::to_string(nameIndex) + ")";
+        }
+      }
+      if (alreadyHasName == false) {
+        break;
+      }
+    }
+  }
+  return objectName;
+}
+
+bool BaseEditor::GetAddToSceneEnable() {
+  bool addToSceneEnable = false;
+  if (selectedObject.second.lock() && selectedFile.second != nullptr &&
+      selectedFile.second->HasMember("Type")) {
+    auto& value = (*selectedFile.second)["Type"];
+    for (SizeType i = 0; i < value.Size(); i++) {
+      if (strcmp(value[i].GetString(), "SceneObject") == 0) {
+        addToSceneEnable = true;
+        break;
+      }
+    }
+  }
+  return addToSceneEnable;
+}
+
 void BaseEditor::EditorDrawFileExplorer() {
   if (showFileExplorer) {
     float topWindowHeight = 0;
@@ -1075,52 +1099,22 @@ void BaseEditor::EditorDrawFileExplorer() {
       ImGui::SameLine();
       ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 82.0f);
 
-      bool addToSceneEnable = false;
-      std::weak_ptr<SceneObject> parent = selectedObject.second;
-      if (parent.lock() && selectedFile.second != nullptr &&
-          selectedFile.second->HasMember("Type")) {
-        auto& value = (*selectedFile.second)["Type"];
-        for (SizeType i = 0; i < value.Size(); i++) {
-          if (strcmp(value[i].GetString(), "SceneObject") == 0) {
-            addToSceneEnable = true;
-            break;
-          }
-        }
-      }
-
-      ImGui::BeginDisabled(!addToSceneEnable);
+      ImGui::BeginDisabled(!GetAddToSceneEnable());
       if (ImGui::Button("Add To Scene", ImVec2(buttonWidth, buttonHeight))) {
-        std::string originName =
-            selectedFile.second->HasMember("Name")
-                ? (*selectedFile.second)["Name"].GetString()
-                : "Unset";
-        std::string objectName = originName;
-
-        if (auto parentPtr = parent.lock()) {
-          int nameIndex = 0;
-          while (true) {
-            bool alreadyHasName = false;
-            for (std::shared_ptr<SceneObject> son : parentPtr->GetSons()) {
-              if (objectName == son->GetName()) {
-                nameIndex++;
-                alreadyHasName = true;
-                objectName =
-                    originName + " (" + std::to_string(nameIndex) + ")";
-              }
-            }
-            if (alreadyHasName == false) {
-              break;
-            }
-          }
-        }
+        std::shared_ptr<SceneObject> object;
+        std::string objectName =
+            GetObjectName(selectedFile.second->HasMember("Name")
+                              ? (*selectedFile.second)["Name"].GetString()
+                              : "Unset",
+                          object, selectedObject.second);
 
         auto& value = (*selectedFile.second)["Type"];
-        std::shared_ptr<SceneObject> object;
         for (SizeType i = 0; i < value.Size(); i++) {
           if (strcmp(value[i].GetString(), "BaseCamera") == 0) {
             object = BaseObject::CreateImmediately<BaseCamera>(
-                appPointer->GetGraphics(), parent, objectName, GetRoot(),
-                ParseFilePath(selectedFile.first), appPointer->GetScene());
+                appPointer->GetGraphics(), selectedObject.second, objectName,
+                GetRoot(), ParseFilePath(selectedFile.first),
+                appPointer->GetScene());
             if (selectedFile.second->HasMember("DefaultTransform")) {
               std::static_pointer_cast<BaseCamera>(object)->InitRotation(
                   glm::radians(ParseGLMVec3(
@@ -1130,8 +1124,9 @@ void BaseEditor::EditorDrawFileExplorer() {
             break;
           } else if (strcmp(value[i].GetString(), "BaseModel") == 0) {
             object = BaseObject::CreateImmediately<BaseModel>(
-                appPointer->GetGraphics(), parent, objectName, GetRoot(),
-                ParseFilePath(selectedFile.first), appPointer->GetScene());
+                appPointer->GetGraphics(), selectedObject.second, objectName,
+                GetRoot(), ParseFilePath(selectedFile.first),
+                appPointer->GetScene());
             if (selectedFile.second->HasMember("DefaultCamera")) {
               std::static_pointer_cast<BaseModel>(object)->SetCamera(
                   (*selectedFile.second)["DefaultCamera"].GetString());
@@ -1143,8 +1138,9 @@ void BaseEditor::EditorDrawFileExplorer() {
             break;
           } else if (strcmp(value[i].GetString(), "SpotLight") == 0) {
             object = BaseObject::CreateImmediately<SpotLight>(
-                appPointer->GetGraphics(), parent, objectName, GetRoot(),
-                ParseFilePath(selectedFile.first), appPointer->GetScene());
+                appPointer->GetGraphics(), selectedObject.second, objectName,
+                GetRoot(), ParseFilePath(selectedFile.first),
+                appPointer->GetScene());
             if (auto allLightsChannel =
                     appPointer->GetLightChannelByName("All").lock()) {
               allLightsChannel->AddLightToChannel(
@@ -1153,7 +1149,7 @@ void BaseEditor::EditorDrawFileExplorer() {
             break;
           } else if (strcmp(value[i].GetString(), "SunLight") == 0) {
             object = BaseObject::CreateImmediately<SunLight>(
-                parent, objectName, GetRoot(),
+                selectedObject.second, objectName, GetRoot(),
                 ParseFilePath(selectedFile.first), appPointer->GetScene());
             if (auto allLightsChannel =
                     appPointer->GetLightChannelByName("All").lock()) {
@@ -1161,20 +1157,6 @@ void BaseEditor::EditorDrawFileExplorer() {
                   static_pointer_cast<BaseLight>(object));
             }
             break;
-          }
-        }
-        if (object && selectedFile.second->HasMember("DefaultTransform")) {
-          const auto& trans = (*selectedFile.second)["DefaultTransform"];
-          if (trans.HasMember("Scale")) {
-            object->SetRelativeScale(ParseGLMVec3(trans["Scale"].GetString()));
-          }
-          if (trans.HasMember("Rotation")) {
-            object->SetRelativeRotation(
-                glm::radians(ParseGLMVec3(trans["Rotation"].GetString())));
-          }
-          if (trans.HasMember("Position")) {
-            object->SetRelativePosition(
-                ParseGLMVec3(trans["Position"].GetString()));
           }
         }
       }
@@ -1377,6 +1359,18 @@ void BaseEditor::EditorDrawSceneHierarchy() {
 void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
   if (auto objPtr = object.lock()) {
     ProcessExpandOrCollapse;
+    if (ImGui::TreeNode("Name")) {
+      char buf[256];
+      strncpy_s(buf, sizeof(buf), objPtr->GetName().c_str(), sizeof(buf));
+      buf[objPtr->GetName().size()] = 0;
+
+      if (ImGui::InputText("##Value", buf, sizeof(buf),
+                           ImGuiInputTextFlags_EnterReturnsTrue)) {
+        objPtr->SetName(GetObjectName(buf, object, objPtr->GetParent()));
+      }
+      ImGui::TreePop();
+    }
+    ProcessExpandOrCollapse;
     if (ImGui::TreeNode("Transform")) {
       ProcessExpandOrCollapse;
       if (ImGui::TreeNode("Relative")) {
@@ -1445,6 +1439,7 @@ void BaseEditor::DisplayProperties(std::weak_ptr<SceneObject> object) {
       ImGui::TreePop();
     }
     if (auto cameraPtr = dynamic_pointer_cast<BaseCamera>(objPtr)) {
+    } else if (auto cameraPtr = dynamic_pointer_cast<BaseCamera>(objPtr)) {
     }
   }
 }
@@ -1507,9 +1502,9 @@ void BaseEditor::EditorDrawObjectInspector() {
     windowPos = ImVec2(objectInspectorPosX,
                        menuBarHeight + topWindowHeight + titleWindowSizeY);
     windowSize =
-        ImVec2(objectInspectorWidth, ImGui::GetIO().DisplaySize.y -
-                                         menuBarHeight - topWindowHeight -
-                                         titleWindowSizeY - buttonWindowHeight);
+        ImVec2(objectInspectorWidth,
+               ImGui::GetIO().DisplaySize.y - menuBarHeight - topWindowHeight -
+                   titleWindowSizeY - buttonWindowHeight - 35.0f);
 
     ImGui::SetNextWindowPos(windowPos);
     ImGui::SetNextWindowSize(windowSize);

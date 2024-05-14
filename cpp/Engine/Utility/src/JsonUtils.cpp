@@ -14,7 +14,7 @@
 using namespace rapidjson;
 std::unordered_map<std::string, Document*> docCache;
 
-Document* GetJsonDocFromFile(const std::string& filePath) {
+Document* JsonUtils::GetJsonDocFromFile(const std::string& filePath) {
   Document* doc;
   if (const auto docIter = docCache.find(filePath); docIter != docCache.end()) {
     doc = docIter->second;
@@ -75,6 +75,27 @@ std::vector<std::string> JsonUtils::ReadStringsFromFile(
     return ret;
   }
   return {};
+}
+
+void JsonUtils::UseDefaultTransform(std ::weak_ptr<SceneObject> objectPtr,
+                                    const std::string& filePath) {
+  if (auto object = objectPtr.lock()) {
+    if (Document* doc = GetJsonDocFromFile(filePath);
+        doc->HasMember("DefaultTransform")) {
+      const auto& trans = (*doc)["DefaultTransform"];
+      if (trans.HasMember("Scale")) {
+        object->SetRelativeScale(ParseGLMVec3(trans["Scale"].GetString()));
+      }
+      if (trans.HasMember("Rotation")) {
+        object->SetRelativeRotation(
+            glm::radians(ParseGLMVec3(trans["Rotation"].GetString())));
+      }
+      if (trans.HasMember("Position")) {
+        object->SetRelativePosition(
+            ParseGLMVec3(trans["Position"].GetString()));
+      }
+    }
+  }
 }
 
 void TravelSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,

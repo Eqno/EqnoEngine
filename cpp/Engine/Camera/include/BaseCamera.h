@@ -65,4 +65,45 @@ class BaseCamera : public SceneObject {
   virtual std::mutex& GetMatrixLock() { return updateMatrixMutex; }
   glm::mat4& GetViewMatrix() { return viewMatrix; }
   glm::mat4& GetProjMatrix() { return projMatrix; }
+
+#pragma region EditorUse
+  float GetFOVy() const { return fovy; }
+  void SetFOVy(float value) { fovy = value; }
+
+  float GetAspect() const { return aspect; }
+  void SetAspect(float value) { aspect = value; }
+
+  float GetNear() const { return near; }
+  void SetNear(float value) { near = value; }
+
+  float GetFar() const { return far; }
+  void SetFar(float value) { far = value; }
+
+  float GetMaxFov() const { return maxFov; }
+  void SetMaxFov(float value) { maxFov = value; }
+
+  float GetMinFov() const { return minFov; }
+  void SetMinFov(float value) { minFov = value; }
+
+  float GetSensitivityX() const { return sensitivityX; }
+  void SetSensitivityX(float value) { sensitivityX = value; }
+
+  float GetSensitivityY() const { return sensitivityY; }
+  void SetSensitivityY(float value) { sensitivityY = value; }
+
+  float GetSensitivityZ() const { return sensitivityZ; }
+  void SetSensitivityZ(float value) { sensitivityZ = value; }
+
+  float GetMoveSpeed() const { return moveSpeed; }
+  void SetMoveSpeed(float value) { moveSpeed = value; }
+
+  float GetSpeedIncreasingRate() const { return speedIncreasingRate; }
+  void SetSpeedIncreasingRate(float value) { speedIncreasingRate = value; }
+
+  float GetMaxMoveSpeed() const { return maxMoveSpeed; }
+  void SetMaxMoveSpeed(float value) { maxMoveSpeed = value; }
+
+  float GetMinMoveSpeed() const { return minMoveSpeed; }
+  void SetMinMoveSpeed(float value) { minMoveSpeed = value; }
+#pragma endregion
 };

@@ -31,7 +31,6 @@ class BaseEditor : public BaseObject {
   std::pair<std::string, rapidjson::Document*> selectedFile{"Unset", nullptr};
   std::pair<std::string, std::weak_ptr<SceneObject>> selectedObject{
       "Unset", std::shared_ptr<SceneObject>(nullptr)};
-  std::unordered_map<std::filesystem::path, rapidjson::Document*> documentCache;
 
   // Our state
   bool show_demo_window = true;
@@ -75,6 +74,11 @@ class BaseEditor : public BaseObject {
 
   bool CheckDoubleClick();
   std::string ParseFilePath(std::string path);
+  std::string GetObjectName(const std::string& originName,
+                            std::weak_ptr<SceneObject> self,
+                            std::weak_ptr<SceneObject> parent);
+
+  bool GetAddToSceneEnable();
 
   rapidjson::Document* LoadJsonFile(const std::filesystem::path& path);
   void DisplayJson(rapidjson::Value& value, bool& modifiedValue);

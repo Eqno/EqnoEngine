@@ -44,6 +44,7 @@ DEFINE_ParseGLMVec_NUM(4);
 #undef DEFINE_ParseGLMVec_NUM
 
 namespace JsonUtils {
+rapidjson::Document* GetJsonDocFromFile(const std::string& filePath);
 std::string ReadStringFromFile(const std::string& filePath,
                                const std::string& key);
 std::vector<std::string> ReadStringsFromFile(const std::string& filePath,
@@ -53,6 +54,8 @@ bool ReadBoolFromFile(const std::string& filePath, const std::string& key);
 float ReadFloatFromFile(const std::string& filePath, const std::string& key);
 int ReadIntFromFile(const std::string& filePath, const std::string& key);
 
+void UseDefaultTransform(std ::weak_ptr<SceneObject> objectPtr,
+                         const std::string& filePath);
 void ParseSceneObjectTree(std::weak_ptr<GraphicsInterface> graphics,
                           std::shared_ptr<SceneObject> parent,
                           const std::string& root, const std::string& file,
