@@ -34,7 +34,7 @@ void BaseModel::ClearTextureCache() {
   }
 }
 
-#define LoadPNGTexture(type, _path, textures)                                  \
+#define LoadPNGTexture(type, _path, textures, comp)                            \
   {                                                                            \
     const auto texIter = model->TextureCache.find(_path);                      \
     if (texIter != model->TextureCache.end()) {                                \
@@ -48,7 +48,7 @@ void BaseModel::ClearTextureCache() {
       if (origData == nullptr) {                                               \
         PRINT_ERROR("failed to load texture image!");                          \
       } else {                                                                 \
-        int width = origWidth / 4, height = origHeight / 4;                    \
+        int width = origWidth / comp, height = origHeight / comp;              \
         stbi_uc* data = (stbi_uc*)malloc(width * height * 4);                  \
         data = stbir_resize_uint8_linear(origData, origWidth, origHeight, 0,   \
                                          data, width, height, 0, STBIR_RGBA);  \
@@ -64,14 +64,15 @@ void BaseModel::ClearTextureCache() {
     }                                                                          \
   }
 
-#define ParseFbxTextureType(_aiTexturetype, textureType)                       \
+#define ParseFbxTextureType(_aiTexturetype, textureType, textureComp)          \
   {                                                                            \
     for (int j = 0; j < material->GetTextureCount(_aiTexturetype); j++) {      \
       aiString path;                                                           \
       if (material->GetTexture(_aiTexturetype, j, &path) == AI_SUCCESS) {      \
         std::string fullPath = model->GetRoot() + dataPath;                    \
         fullPath = fullPath.substr(0, fullPath.rfind('/') + 1) + path.C_Str(); \
-        LoadPNGTexture(textureType, fullPath.c_str(), meshData->textures);     \
+        LoadPNGTexture(textureType, fullPath.c_str(), meshData->textures,      \
+                       textureComp);                                           \
       }                                                                        \
     }                                                                          \
   }
@@ -90,15 +91,19 @@ void ParseFbxTextures(
 
   if (combineTextures.empty()) {
     ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE,
-                        TextureType::BaseColor);
+                        TextureType::BaseColor,
+                        model->GetTextureCompressionRatio());
     ParseFbxTextureType(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS,
-                        TextureType::Roughness);
+                        TextureType::Roughness,
+                        model->GetTextureCompressionRatio());
     ParseFbxTextureType(aiTextureType::aiTextureType_METALNESS,
-                        TextureType::Metallic);
+                        TextureType::Metallic,
+                        model->GetTextureCompressionRatio());
     ParseFbxTextureType(aiTextureType::aiTextureType_NORMALS,
-                        TextureType::Normal);
+                        TextureType::Normal,
+                        model->GetTextureCompressionRatio());
     ParseFbxTextureType(aiTextureType::aiTextureType_AMBIENT_OCCLUSION,
-                        TextureType::AO);
+                        TextureType::AO, model->GetTextureCompressionRatio());
   } else {
     aiString path;
     if (material->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &path) ==
@@ -110,7 +115,8 @@ void ParseFbxTextures(
 
       for (const auto& info : combineTextures) {
         std::string fullPath = prefPath + info.second + ".png";
-        LoadPNGTexture(info.first, fullPath.c_str(), meshData->textures);
+        LoadPNGTexture(info.first, fullPath.c_str(), meshData->textures,
+                       model->GetTextureCompressionRatio());
       }
     }
   }
@@ -158,8 +164,8 @@ void ParseFbxData(const aiMatrix4x4& transform, const aiMesh* mesh,
 void ParseFbxDatas(
     std::weak_ptr<BaseModel> modelPtr, std::weak_ptr<BaseScene> modelScenePtr,
     std::weak_ptr<GraphicsInterface> graphicsPtr, const std::string& modelType,
-    float importSize, const aiMatrix4x4& transform, const aiNode* node,
-    const aiScene* scene, const std::string& dataPath,
+    const aiMatrix4x4& transform, const aiNode* node, const aiScene* scene,
+    const std::string& dataPath,
     const std::unordered_map<TextureType, std::string>& combineTextures,
     const std::unordered_map<std::string, std::string>& materialMap) {
   const aiMatrix4x4 nodeTransform = transform * node->mTransformation;
@@ -191,7 +197,7 @@ void ParseFbxDatas(
         MeshData({.state = {.alive = true}, .name = mesh->mName.C_Str()}));
 
     // Parse Data
-    ParseFbxData(nodeTransform, mesh, meshData, importSize);
+    ParseFbxData(nodeTransform, mesh, meshData, model->GetImportSize());
 
     if (texPaths.empty()) {
       // Parse Textures
@@ -201,7 +207,7 @@ void ParseFbxDatas(
       for (const auto& texPath : texPaths) {
         LoadPNGTexture(TextureTypeMap[texPath.first],
                        (model->GetRoot() + texPath.second).c_str(),
-                       meshData->textures);
+                       meshData->textures, model->GetTextureCompressionRatio());
       }
     }
 
@@ -228,7 +234,7 @@ void ParseFbxDatas(
   }
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-    ParseFbxDatas(modelPtr, modelScenePtr, graphicsPtr, modelType, importSize,
+    ParseFbxDatas(modelPtr, modelScenePtr, graphicsPtr, modelType,
                   nodeTransform, node->mChildren[i], scene, dataPath,
                   combineTextures, materialMap);
   }
@@ -245,8 +251,9 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
       if (sceneData == nullptr ||
           sceneData->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
           sceneData->mRootNode == nullptr) {
-        throw std::runtime_error(std::string("failed to load fbx model: ") +
-                                 importer.GetErrorString());
+        throw std::runtime_error(
+            std::string("failed to load model resource: ") +
+            importer.GetErrorString());
       }
 
       const std::unordered_map<TextureType, std::string> combineTextures(
@@ -258,9 +265,8 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
       const aiMatrix4x4 identity;
       ParseFbxDatas(static_pointer_cast<BaseModel>(shared_from_this()),
                     scenePtr, graphicsPtr, JSON_CONFIG(String, "ModelType"),
-                    JSON_CONFIG(Float, "ImportSize"), identity,
-                    sceneData->mRootNode, sceneData, dataPath, combineTextures,
-                    materialMap);
+                    identity, sceneData->mRootNode, sceneData, dataPath,
+                    combineTextures, materialMap);
 
       std::cout << "All meshes num: " << meshes.size() << std::endl;
     }
@@ -268,7 +274,11 @@ void BaseModel::LoadFbxDatas(const unsigned int parserFlags) {
   loaing = false;
 }
 
-void BaseModel::OnCreate() { SceneObject::OnCreate(); }
+void BaseModel::OnCreate() {
+  SceneObject::OnCreate();
+  importSize = JSON_CONFIG(Float, "ImportSize");
+  textureCompressionRatio = JSON_CONFIG(Float, "TextureCompressionRatio");
+}
 void BaseModel::OnStart() {
   SceneObject::OnStart();
   loaing = true;

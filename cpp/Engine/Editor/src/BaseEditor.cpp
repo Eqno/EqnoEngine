@@ -922,6 +922,18 @@ void BaseEditor::DisplayDirectory(const fs::path& path) {
           lastSelectType = LastSelectType::File;
           expandAllProperties = true;
 
+          if (auto selectedFilePtr = selectedFile.second.lock()) {
+            if (selectedFilePtr->HasMember("Type")) {
+              auto& type = (*selectedFilePtr)["Type"];
+              for (SizeType i = 0; i < type.Size(); i++) {
+                if (strcmp(type[i].GetString(), "BaseScene") == 0) {
+                  appPointer->SetScenePath(ParseFilePath(selectedFile.first));
+                  break;
+                }
+              }
+            }
+          }
+
           if (CheckDoubleClick()) {
             showObjectInspector = true;
           }

@@ -23,6 +23,7 @@ class Application final : public BaseObject {
   std::shared_ptr<BaseEditor> editor;
   std::shared_ptr<GraphicsInterface> graphics;
 
+  std::string scenePath = "Unset";
   bool graphicsSettingsModified = false;
   SceneState sceneState = SceneState::Unset;
   void CreateGraphics();
@@ -71,6 +72,7 @@ class Application final : public BaseObject {
   virtual void SetGraphicsSettingsModified(bool modified) {
     graphicsSettingsModified = modified;
   }
+  void SetScenePath(const std::string& path);
   void AddModelToResourceWaitQueue(std::function<void()> func,
                                    std::shared_ptr<BaseObject> obj) {
     modelResourceManager.AddToWaitQueue(func, obj);

@@ -27,6 +27,8 @@ class BaseModel final : public SceneObject {
   std::string _lightChannelName = "Unset";
   std::weak_ptr<LightChannel> _lightChannel;
 
+  float importSize = 1.0f;
+  float textureCompressionRatio = 1.0f;
   std::atomic<bool> loaing = false;
   virtual void LoadFbxDatas(const unsigned int parserFlags);
 
@@ -51,6 +53,8 @@ class BaseModel final : public SceneObject {
   virtual void SetCamera(const std::string& cameraName);
   virtual void SetLightChannel(const std::string& lightChannelName);
 
+  float GetImportSize() { return importSize; }
+  float GetTextureCompressionRatio() { return textureCompressionRatio; }
   virtual std::weak_ptr<BaseCamera> GetCamera();
   virtual std::weak_ptr<LightChannel> GetLightChannel();
   virtual std::vector<std::shared_ptr<MeshData>>& GetMeshes();

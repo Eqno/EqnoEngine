@@ -21,9 +21,7 @@ void Application::CreateGraphics() {
   } else if (rhiType == "DirectX") {
     PRINT_AND_THROW_ERROR("DirectX not supported now!");
   } else {
-    std::string errorMsg = rhiType + " not supported now!";
-    std::cout << errorMsg << std::endl;
-    throw std::runtime_error(errorMsg);
+    PRINT_AND_THROW_ERROR(rhiType + " not supported now!");
   }
 }
 
@@ -35,8 +33,11 @@ void Application::CreateWindow() const {
   graphics->InitGraphics();
 }
 
+void Application::SetScenePath(const std::string& path) { scenePath = path; }
 void Application::CreateLauncherScene() {
-  const std::string scenePath = JSON_CONFIG(String, "LauncherScene");
+  if (scenePath == "Unset") {
+    scenePath = JSON_CONFIG(String, "LauncherScene");
+  }
   scene = Create<BaseScene>(graphics, GetRoot(), scenePath);
 }
 

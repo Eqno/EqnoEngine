@@ -4,7 +4,6 @@
         "BaseModel",
         "SceneObject"
     ],
-
     "DefaultCamera": "MainCamera",
     "DefaultLightChannel": "All",
     "DefaultTransform": {
@@ -12,10 +11,10 @@
         "Rotation": "0,0,0",
         "Scale": "1,1,1"
     },
-        
     "ModelType": "OBJ",
     "ModelFile": "Assets/Models/Kurala_Workshop/source/Kurala_Workshop_SF.obj",
     "ImportSize": 1,
+    "TextureCompressionRatio": 1,
     "Meshes": {
         "Kurala_Workshop": {
             "Material": "Assets/Materials/KuralaWorkshop/KuralaWorkshop",
