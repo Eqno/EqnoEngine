@@ -211,12 +211,12 @@ void Vulkan::ParseMeshData() {
   if (needToUpdateMeshDatas) {
     updateMeshDataMutex.lock();
 
-    while (meshDataQueue.empty() == false) {
+    if (meshDataQueue.empty() == false) {
       if (auto mesh = meshDataQueue.front().lock()) {
         if (auto materialPtr = mesh->uniform.material.lock()) {
           std::vector<std::string>& shaders = materialPtr->GetShaders();
           if (shaders.empty()) {
-            continue;
+            return;
           }
 
           if (drawsByShader.contains(shaders[0])) {
@@ -268,8 +268,9 @@ void Vulkan::ParseMeshData() {
         }
       }
       meshDataQueue.pop();
+    } else {
+      needToUpdateMeshDatas = false;
     }
-    needToUpdateMeshDatas = false;
     updateMeshDataMutex.unlock();
   }
 }

@@ -30,7 +30,7 @@ void BaseObject::Active() {
     OnActive();
     if (_locked == false) {
       if (auto appPtr = _app.lock()) {
-        appPtr->activeObjects.emplace_back(this);
+        appPtr->passiveObjects.emplace_back(this);
       }
     }
   }
