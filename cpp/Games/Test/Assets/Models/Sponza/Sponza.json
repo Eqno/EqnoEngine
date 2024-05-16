@@ -1,0 +1,24 @@
+{
+    "Name": "Sponza",
+    "Type": [
+        "BaseModel",
+        "SceneObject"
+    ],
+    "DefaultCamera": "MainCamera",
+    "DefaultLightChannel": "All",
+    "DefaultTransform": {
+        "Position": "0,0,0",
+        "Rotation": "0,0,0",
+        "Scale": "1,1,1"
+    },
+    "ModelType": "GLTF",
+    "ModelFile": "Assets/Models/Sponza/Sponza.gltf",
+    "Material": "Assets/Materials/SponzaMaterial",
+    "ImportSize": 10,
+    "TextureCompressionRatio": 1,
+    "Meshes": {
+        "meshes[0]-50": {
+            "Material": "Assets/Materials/GlassMaterial"
+        }
+    }
+}
