@@ -1740,7 +1740,7 @@ void BaseEditor::EditorDrawObjectInspector() {
       ImGui::SameLine();
 
       ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f + 82.0f);
-      if (ImGui::Button("XXX", ImVec2(buttonWidth, buttonHeight))) {
+      if (ImGui::Button("Save Properties", ImVec2(buttonWidth, buttonHeight))) {
       }
       ImGui::End();
     }
