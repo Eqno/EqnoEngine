@@ -156,6 +156,7 @@ void Vulkan::ShowRenderFrameCount() {
 }
 
 void Vulkan::GameLoop() {
+  SetGameLoopEnd(false);
   while (GetRenderLoopEnd() == false) {
     UpdateGameDeltaTime();
     if (showGameFrameCount == true) {
@@ -165,6 +166,7 @@ void Vulkan::GameLoop() {
     appPointer->TriggerOnUpdate();
     Input::ResetDownUpFlags();
   }
+  SetGameLoopEnd(true);
 }
 
 void Vulkan::RenderLoop() {
@@ -188,6 +190,8 @@ void Vulkan::RenderLoop() {
     device.WaitIdle();
   }
   SetRenderLoopEnd(true);
+  while (GetGameLoopEnd() == false) {
+  }
 }
 
 void Vulkan::CleanupGraphics() {

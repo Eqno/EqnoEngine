@@ -282,14 +282,16 @@ void BaseModel::OnCreate() {
 void BaseModel::OnStart() {
   SceneObject::OnStart();
   loaing = true;
-  if (auto scenePtr = scene.lock()) {
-    scenePtr->AddModelToResourceWaitQueue(
-        std::function<void()>(
-            std::bind(&BaseModel::LoadFbxDatas, this,
-                      aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-                          aiProcess_FlipUVs | aiProcess_CalcTangentSpace)),
-        shared_from_this());
+  auto scenePtr = scene.lock();
+  while (!scenePtr) {
+    scenePtr = scene.lock();
   }
+  scenePtr->AddModelToResourceWaitQueue(
+      std::function<void()>(
+          std::bind(&BaseModel::LoadFbxDatas, this,
+                    aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+                        aiProcess_FlipUVs | aiProcess_CalcTangentSpace)),
+      shared_from_this());
 }
 void BaseModel::OnUpdate() { SceneObject::OnUpdate(); }
 void BaseModel::OnStop() { SceneObject::OnStop(); }

@@ -9,8 +9,9 @@
 struct MeshData;
 
 class GraphicsInterface : public BaseObject {
-  bool renderLoopEnd = false;
-  bool renderLoopShouldEnd = false;
+  std::atomic<bool> renderLoopEnd = false;
+  std::atomic<bool> gameLoopEnd = false;
+  std::atomic<bool> renderLoopShouldEnd = false;
 
  protected:
   int msaaSamples = 4;
@@ -56,7 +57,9 @@ class GraphicsInterface : public BaseObject {
   virtual int GetWindowHeight() = 0;
 
   virtual bool GetRenderLoopEnd() { return renderLoopEnd; }
+  virtual bool GetGameLoopEnd() { return gameLoopEnd; }
   virtual void SetRenderLoopEnd(bool inEnd) { renderLoopEnd = inEnd; }
+  virtual void SetGameLoopEnd(bool inEnd) { gameLoopEnd = inEnd; }
 
   virtual bool GetRenderLoopShouldEnd() { return renderLoopShouldEnd; }
   virtual void SetRenderLoopShouldEnd(bool inEnd) {

@@ -25,7 +25,7 @@ class Application final : public BaseObject {
 
   std::string scenePath = "Unset";
   bool graphicsSettingsModified = false;
-  SceneState sceneState = SceneState::Unset;
+  std::atomic<SceneState> sceneState = SceneState::Unset;
   void CreateGraphics();
   void CreateWindow() const;
   void CreateLauncherScene();
