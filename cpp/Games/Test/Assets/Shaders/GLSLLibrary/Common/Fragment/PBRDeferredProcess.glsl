@@ -25,6 +25,18 @@ void main() {
         vec3 lightDir = normalize(lights.object[i].pos - fragPosition.xyz);
         vec3 viewDir = normalize(cameraPosition - fragPosition.xyz);
 
+        #ifdef EnableShadowMap
+        vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition.xyz, 1.);
+        shadowMapPos /= shadowMapPos.w;
+
+        if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0  && shadowMapPos.z > -1.0 && shadowMapPos.z < 1.0) {
+            shadowMapPos.x = 0.5 * shadowMapPos.x + 0.5;
+            shadowMapPos.y = 0.5 * shadowMapPos.y + 0.5;
+
+            float shadowMapZ = texture(shadowMapSamplers[lights.object[i].id], shadowMapPos.xyz);
+            if (shadowMapZ >= shadowMapPos.z) {
+        #endif
+
         if (lights.object[i].type == 1) {
             vec3 brdf = BRDF(fragNormal, lightNormal, viewDir, fragColor.rgb, texRoughness, vec3(0.1), texMetallic);
             outColor += SpecularStength * vec4(brdf, 1.) * lightColor * lightIntensity;
@@ -33,6 +45,11 @@ void main() {
             vec3 brdf = BRDF(fragNormal, lightDir, viewDir, fragColor.rgb, texRoughness, vec3(0.1), texMetallic);
             outColor += SpecularStength * vec4(brdf, 1.) * lightColor * lightIntensity;
         }
+
+        #ifdef EnableShadowMap
+            }
+        }
+        #endif
     }
     outColor = pow(outColor, vec4(.45, .45, .45, 1.));
 }

@@ -1,17 +1,20 @@
+#version 450
+
 #include <GLSLLibrary/BRDF/CookTorrance.glsl>
-#include <GLSLLibrary/Utils/TBN.glsl>
-#include <GLSLLibrary/Binding/Fragment/PBR.glsl>
+#include <GLSLLibrary/Binding/Fragment/PBRDeferredProcess.glsl>
 
 void main() {
-    vec4 texBaseColor = texture(baseColorSampler, fragTexCoord);
-    float texRoughness = texture(roughnessSampler, fragTexCoord)[0];
-    float texMetallic = texture(metallicSampler, fragTexCoord)[0];
-    vec3 texNormal = normalize(texture(normalSampler, fragTexCoord).xyz);
-    float texAO = texture(AOSampler, fragTexCoord)[0];
+    ProcessSubpassInput;
+    if (FloatEqual(fragPosition.w, pipeline.id) == false) {
+        discard;
+    }
 
+    float texRoughness = fragMaterial.x;
+    float texMetallic = fragMaterial.y;
+    
     float DiffuseStrength = .5;
     float SpecularStength = 5.;
-    outColor = DiffuseStrength * texBaseColor / PI * texAO;
+    outColor = DiffuseStrength * fragColor / PI;
 
     for (int i=0; i<lights.num; ++i) {
 
@@ -20,11 +23,11 @@ void main() {
         vec3 lightNormal = normalize(lights.object[i].normal);
         float lightIntensity = lights.object[i].intensity;
 
-        vec3 lightDir = normalize(lights.object[i].pos - fragPosition);
-        vec3 viewDir = normalize(camera.pos - fragPosition);
+        vec3 lightDir = normalize(lights.object[i].pos - fragPosition.xyz);
+        vec3 viewDir = normalize(cameraPosition - fragPosition.xyz);
 
         #ifdef EnableShadowMap
-        vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition, 1.);
+        vec4 shadowMapPos = lights.object[i].projMatrix * lights.object[i].viewMatrix * vec4(fragPosition.xyz, 1.);
         shadowMapPos /= shadowMapPos.w;
 
         if (shadowMapPos.x > -1.0 && shadowMapPos.x < 1.0 && shadowMapPos.y > -1.0 && shadowMapPos.y < 1.0  && shadowMapPos.z > -1.0 && shadowMapPos.z < 1.0) {
@@ -36,11 +39,11 @@ void main() {
         #endif
 
         if (lights.object[i].type == 1) {
-            vec3 brdf = BRDF(TBN(fragPosition, fragTexCoord, fragNormal, texNormal), lightNormal, viewDir, texBaseColor.rgb, texRoughness, vec3(0.1), texMetallic);
+            vec3 brdf = BRDF(fragNormal, lightNormal, viewDir, fragColor.rgb, texRoughness, vec3(0.1), texMetallic);
             outColor += SpecularStength * vec4(brdf, 1.) * lightColor * lightIntensity;
         }
         if (lights.object[i].type == 3) {
-            vec3 brdf = BRDF(TBN(fragPosition, fragTexCoord, fragNormal, texNormal), lightDir, viewDir, texBaseColor.rgb, texRoughness, vec3(0.1), texMetallic);
+            vec3 brdf = BRDF(fragNormal, lightDir, viewDir, fragColor.rgb, texRoughness, vec3(0.1), texMetallic);
             outColor += SpecularStength * vec4(brdf, 1.) * lightColor * lightIntensity;
         }
 

@@ -1,0 +1,19 @@
+#version 450
+
+#include <GLSLLibrary/Utils/TBN.glsl>
+#include <GLSLLibrary/Binding/Fragment/BlinnPhongDeferredOutput.glsl>
+
+layout(binding = 5) uniform sampler2D roughnessSampler;
+layout(binding = 6) uniform sampler2D metallicSampler;
+layout(binding = 7) uniform sampler2D normalSampler;
+
+void main() {
+    outColor = fragColor * texture(baseColorSampler, fragTexCoord);
+    vec3 texNormal = normalize(texture(normalSampler, fragTexCoord).xyz);
+    outNormal = TBN(fragPosition, fragTexCoord, fragNormal, texNormal);
+    outPosition = vec4(fragPosition, pipeline.id);
+
+    float texRoughness = texture(roughnessSampler, fragTexCoord)[0];
+    float texMetallic = texture(metallicSampler, fragTexCoord)[0];
+    outMaterial = vec4(texRoughness, texMetallic, 1., 1.);
+}
