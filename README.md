@@ -77,3 +77,6 @@ A：使用 MultiSample 输出 GBuffer，占用显存太大了，后面的 Proces
 
 #### Q：为什么在 Deferred Process Subpass 中，Draw Fullscreen Quad 多次？
 A：每一次 Draw Fullscreen Quad 都是在渲染一种着色模型，故而支持多着色模型混合渲染。
+
+#### Q：为什么使用 bool 变量同步 Loop 状态时，Release 编译后同步失效？
+A：编译器优化后产生的乱序执行问题，要么添加内存屏障，要么使用 atomic bool。
